@@ -71,7 +71,7 @@ label.row input[type=checkbox]{width:24px;height:24px}
 .liste li small{display:block;color:var(--muted);font-size:13px}
 .liste li.kauf{color:var(--muted)}
 .liste li.kopf{font-size:13px;color:var(--muted);padding:10px 14px 6px}
-body.nacht{background:#000}
+body.nacht{background:#000!important}
 body.nacht #s-run{opacity:.45}
 .reps{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:6px}
 .reps button{width:64px;font-size:28px}
@@ -92,6 +92,58 @@ body.nacht #s-run{opacity:.45}
 pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:var(--muted);background:var(--surface);
   padding:10px;border-radius:12px}
 .hidden{display:none!important}
+/* ===== Design ===== */
+:root{--sun1:#ff9a5a;--sun2:#e8577e;--sun3:#6d4bd8;--moon1:#1d2a5e;--moon2:#3a2a6e;--moon3:#0f1530}
+body{transition:background .4s}
+body.morgen{background:radial-gradient(120% 60% at 50% -10%,#3a2433 0%,var(--bg) 60%) fixed}
+body.abend{background:radial-gradient(120% 60% at 50% -10%,#1d2347 0%,#0b0d16 60%) fixed}
+h1{font-size:31px;letter-spacing:-.5px}
+.hero{border-radius:24px;padding:20px 18px 18px;margin:16px 0 4px;position:relative;overflow:hidden;
+  background:linear-gradient(140deg,var(--sun1),var(--sun2) 55%,var(--sun3));box-shadow:0 10px 30px rgba(232,87,126,.25)}
+.hero.abend{background:linear-gradient(140deg,var(--moon2),var(--moon1) 55%,var(--moon3));box-shadow:0 10px 30px rgba(58,42,110,.35)}
+.hero .big{position:absolute;right:14px;top:8px;font-size:64px;opacity:.9}
+.hero .lbl{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.8}
+.hero .ttl{font-size:26px;font-weight:800;margin:4px 0 2px;letter-spacing:-.4px}
+.hero .meta{font-size:14px;opacity:.85;margin-bottom:12px}
+.hero .chips{display:flex;flex-wrap:wrap;gap:6px}
+.hero .chips span{font-size:13px;background:rgba(255,255,255,.18);border-radius:999px;padding:4px 10px}
+.vtiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 0}
+.vtiles button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 6px;border-radius:16px;background:var(--surface);min-height:0}
+.vtiles button .ic{font-size:26px}
+.vtiles button b{font-size:16px}
+.vtiles button span{font-size:12px;color:var(--muted)}
+.vtiles button.sel{outline:2px solid #ffb27a;background:#2a1f2a}
+body.abend .vtiles button.sel{outline-color:#9d8cff;background:#1f1d3a}
+.woche{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}
+.woche div{background:var(--surface);border-radius:12px;padding:7px 0 7px;text-align:center;font-size:11px;color:var(--muted)}
+.woche div b{display:block;font-size:16px;color:var(--text);margin:1px 0 3px}
+.woche div i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#2a2f3b;margin:0 1px}
+.woche div i.m{background:#ffb27a}.woche div i.a{background:#9d8cff}
+.woche .heute{outline:2px solid rgba(255,255,255,.35)}
+.wochetxt{font-size:13px;color:var(--muted);margin:8px 2px 0}
+details.card summary{cursor:pointer;color:var(--muted);font-size:15px;list-style:none}
+details.card summary::-webkit-details-marker{display:none}
+details.card[open] summary{margin-bottom:8px}
+#btnStart{background:linear-gradient(90deg,var(--sun1),var(--sun2));color:#1a0b12;font-weight:800;min-height:58px;font-size:19px;box-shadow:0 8px 24px rgba(232,87,126,.3)}
+body.abend #btnStart{background:linear-gradient(90deg,#8f7bff,#5b6cff);color:#0b0d1e;box-shadow:0 8px 24px rgba(91,108,255,.3)}
+/* Lauf */
+.bar{height:8px}
+.bar i{background:linear-gradient(90deg,var(--sun1),var(--sun2))}
+body.abend .bar i{background:linear-gradient(90deg,#8f7bff,#5b6cff)}
+.emoji{width:132px;height:132px;margin:16px auto 6px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:70px;
+  background:radial-gradient(circle,rgba(255,178,122,.28),rgba(255,178,122,0) 70%)}
+body.abend .emoji{background:radial-gradient(circle,rgba(157,140,255,.3),rgba(157,140,255,0) 70%)}
+.liste{border:1px solid #262a35}
+.liste li .n{width:26px;height:26px;border-radius:50%;background:#2a2340;color:#ffb27a;display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+body.abend .liste li .n{background:#24224a;color:#b9adff}
+.fig{border:1px solid #262a35}
+.name{font-size:29px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 4px}
+.tile{border-radius:18px;padding:14px}
+.tile .v{font-size:27px;font-weight:800;letter-spacing:-.5px}
+.tile .v small{font-size:15px;font-weight:600}
+.tile .l{font-size:13px;opacity:.75;margin-top:2px}
+.tile.a{background:#3a2433}.tile.b{background:#163626}.tile.c{background:#1f2a4a}.tile.d{background:#2c2142}
 </style>
 </head>
 <body>
@@ -100,6 +152,8 @@ pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:var(--muted)
 <section id="s-start" class="screen on">
   <h1 id="gruss">Guten Morgen, Noah</h1>
   <div class="muted" id="today"></div>
+  <div class="woche" id="woche"></div><div class="wochetxt" id="wochetxt"></div>
+  <div class="hero" id="hero"></div>
 
   <div class="card" id="resume" style="display:none">
     <div>Angefangene Routine von <b id="resumeTime"></b> gefunden.</div>
@@ -109,21 +163,19 @@ pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:var(--muted)
     </div>
   </div>
 
-  <div class="card">
-    <div class="muted small" style="margin-bottom:8px">Variante</div>
-    <div class="seg">
-      <button data-v="kurz" class="vbtn">Kurz<br><span class="small muted" id="durKurz"></span></button>
-      <button data-v="lang" class="vbtn">Lang<br><span class="small muted" id="durLang"></span></button>
-      <button data-v="abend" class="vbtn">Abend<br><span class="small muted" id="durAbend"></span></button>
-    </div>
+  <div class="vtiles">
+    <button data-v="kurz" class="vbtn"><span class="ic">☀️</span><b>Kurz</b><span id="durKurz"></span></button>
+    <button data-v="lang" class="vbtn"><span class="ic">🌄</span><b>Lang</b><span id="durLang"></span></button>
+    <button data-v="abend" class="vbtn"><span class="ic">🌙</span><b>Abend</b><span id="durAbend"></span></button>
   </div>
 
-  <div class="card">
+  <details class="card">
+    <summary>⚙︎ Stimme &amp; Töne</summary>
     <label class="row"><span>Stimme</span><input type="checkbox" id="optVoice" checked></label>
     <select id="voiceSel"></select>
     <label class="row"><span>Signaltöne</span><input type="checkbox" id="optBeep" checked></label>
     <button class="ghost small" id="btnTest" style="width:100%">Stimme &amp; Ton testen</button>
-  </div>
+  </details>
 
   <div class="grow"></div>
   <div class="bottom">
@@ -192,8 +244,9 @@ pre{white-space:pre-wrap;word-break:break-word;font-size:12px;color:var(--muted)
 
 <!-- ENDE -->
 <section id="s-end" class="screen">
-  <h1>Fertig 💪</h1>
+  <h1 id="endTitel">Fertig 💪</h1>
   <div class="muted" id="endSub"></div>
+  <div class="tiles" id="tiles"></div>
   <div class="card sum" id="sum"></div>
   <div class="grow"></div>
   <div class="bottom">
@@ -539,7 +592,7 @@ function finish(){
     z("Liegestütze / Klimmzüge / Sit-ups",`${rp("liegestuetze")} / ${rp("klimmzuege")} / ${rp("situps")}`)+
     z("Duschen",r("dusche")?"✓":"–")+z("Hautpflege",r("haut")?"✓":"–")+
     z("Supplements",r("supps")?"✓":"–")+z("Outfit",r("outfit")?"✓":"–");
-  $("logText").textContent=log;
+  $("logText").textContent=log; verlaufMerken(); kacheln();
   show("s-end"); say("Fertig. Starker Start in den Tag.");
 }
 
@@ -558,19 +611,56 @@ function finishAbend(){
   $("endSub").textContent=`${hm(start)}–${hm(end)} · ${min} Min. · Abend`;
   $("sum").innerHTML=z("Outfit am Herrendiener",r("outfitAbend")?"✓":"–")+z("Hautpflege abends",r("hautAbend")?"✓":"–")+z("Supplements",r("suppsAbend")?"✓":"–")+
     z("Rücken-Dehnen",`${fd}/${flow.length} Übungen`)+z("Sleep Cycle",r("sleepcycle")?"✓":"–")+z("Lesen",lesen?"15 Min. ✓":"–");
-  $("logText").textContent=log;
+  $("logText").textContent=log; verlaufMerken(); kacheln();
   show("s-end"); say("Fertig. Gute Nacht, Noah.");
+}
+
+/* ---------- Darstellung ---------- */
+const BAUSTEIN={gewicht:"⚖️ Wiegen",wasser:"💧 Wasser",liegestuetze:"💪 Kraft",dusche:"🚿 Duschen",haut:"🧴 Haut",supps:"💊 Supplements",outfit:"👔 Outfit",
+  outfitAbend:"👔 Outfit für morgen",hautAbend:"🧴 Haut",suppsAbend:"💊 Magnesium",sleepcycle:"🌙 Sleep Cycle",lesen:"📖 Lesen 15′"};
+function heroRender(){
+  const st=build(variante),n=st.filter(x=>x.k==="ex").length,ab=variante==="abend";
+  const chips=[];st.forEach(x=>{if(x.k==="ex"){if(!chips.includes("flow"))chips.push("flow")}else if(BAUSTEIN[x.id]&&!chips.includes(x.id))chips.push(x.id)});
+  $("hero").className="hero"+(ab?" abend":"");
+  $("hero").innerHTML=`<div class="big">${ab?"🌙":variante==="lang"?"🌄":"☀️"}</div><div class="lbl">${ab?"Abendroutine":"Morgenroutine"} · ${variante==="kurz"?"Kurz":variante==="lang"?"Lang":"Abend"}</div>
+    <div class="ttl">ca. ${dauerMin(variante)} Minuten</div><div class="meta">${n} Übungen im Rücken-Flow${ab?" · Lesen zum Schluss":""}</div>
+    <div class="chips">${chips.map(c=>`<span>${c==="flow"?"🧘 Rücken-Flow":BAUSTEIN[c]}</span>`).join("")}</div>`;
+  document.body.classList.toggle("abend",ab);document.body.classList.toggle("morgen",!ab);
+  $("btnStart").textContent=ab?"Abendroutine starten":"Morgenroutine starten";
+}
+function wocheRender(){
+  const h=store.get("verlauf",[])||[],d=new Date(),mo=new Date(d);mo.setDate(d.getDate()-((d.getDay()+6)%7));
+  let m=0,a=0;
+  $("woche").innerHTML=["Mo","Di","Mi","Do","Fr","Sa","So"].map((t,k)=>{const x=new Date(mo);x.setDate(mo.getDate()+k);
+    const iso=`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`,hm_=h.some(y=>y.d===iso&&y.v!=="abend"),ha=h.some(y=>y.d===iso&&y.v==="abend");
+    if(hm_)m++;if(ha)a++;
+    return `<div class="${x.toDateString()===d.toDateString()?"heute":""}">${t}<b>${x.getDate()}</b><i class="${hm_?"m":""}"></i><i class="${ha?"a":""}"></i></div>`}).join("");
+  $("wochetxt").textContent=`Diese Woche: ${m}× Morgen ☀️ · ${a}× Abend 🌙`;
+}
+function verlaufMerken(){
+  const datum=isoLocal(new Date(new Date(S.start).getTime()-4*3600e3)).slice(0,10);
+  const h=(store.get("verlauf",[])||[]).filter(x=>!(x.d===datum&&x.v===S.v));h.push({d:datum,v:S.v});store.set("verlauf",h.slice(-120));
+}
+function kacheln(){
+  const min=Math.max(1,Math.round((new Date()-new Date(S.start))/60000));
+  const chk=steps.filter(x=>x.k==="check"),ok=chk.filter(x=>S.res[x.id]).length;
+  const fl=steps.map((s,i)=>s.k==="ex"?i:-1).filter(i=>i>=0),fd=fl.filter(i=>S.ex[i]).length;
+  const T=(v,l,c)=>`<div class="tile ${c}"><div class="v">${v}</div><div class="l">${l}</div></div>`;
+  const vierte=S.v==="abend"?T(S.res.lesen?"15<small> Min.</small>":"–","Gelesen 📖","d"):T(S.kg?S.kg.replace(".",",")+"<small> kg</small>":"–","Gewicht ⚖️","d");
+  $("endTitel").textContent=S.v==="abend"?"Gute Nacht 🌙":"Stark gestartet ☀️";
+  $("tiles").innerHTML=T(min+"<small> Min.</small>","Dauer","a")+T(`${ok}/${chk.length}`,"Punkte erledigt","b")+T(`${fd}/${fl.length}`,"Rücken-Flow","c")+vierte;
 }
 
 /* ---------- Start-Bildschirm ---------- */
 let variante=(()=>{const d=new Date(),h=d.getHours();return h>=17||h<4?"abend":[0,6].includes(d.getDay())?"lang":"kurz"})();
-function markV(){ document.querySelectorAll(".vbtn").forEach(b=>b.classList.toggle("sel",b.dataset.v===variante)); $("gruss").textContent=variante==="abend"?"Guten Abend, Noah":"Guten Morgen, Noah"; }
+function markV(){ document.querySelectorAll(".vbtn").forEach(b=>b.classList.toggle("sel",b.dataset.v===variante)); $("gruss").textContent=variante==="abend"?"Guten Abend, Noah":"Guten Morgen, Noah"; heroRender(); }
 function initStart(){
   const d=new Date();
   $("today").textContent=d.toLocaleDateString("de-AT",{weekday:"long",day:"numeric",month:"long"});
   $("durKurz").textContent=`ca. ${dauerMin("kurz")} Min.`;
   $("durLang").textContent=`ca. ${dauerMin("lang")} Min.`;
   $("durAbend").textContent=`ca. ${dauerMin("abend")} Min.`;
+  wocheRender();
   markV();
   const o=store.get("optionen"); if(o){ $("optVoice").checked=o.voice!==false; $("optBeep").checked=o.beep!==false; }
   const alt=store.get("sitzung");
