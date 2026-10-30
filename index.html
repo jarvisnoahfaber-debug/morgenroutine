@@ -144,6 +144,25 @@ body.abend .liste li .n{background:#24224a;color:#b9adff}
 .tile .v small{font-size:15px;font-weight:600}
 .tile .l{font-size:13px;opacity:.75;margin-top:2px}
 .tile.a{background:#3a2433}.tile.b{background:#163626}.tile.c{background:#1f2a4a}.tile.d{background:#2c2142}
+/* ===== Abend Schritt für Schritt ===== */
+.phasen{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 2px}
+.phasen div{text-align:center;font-size:11px;color:var(--muted);padding:6px 0 7px;border-radius:12px;background:var(--surface)}
+.phasen div span{display:block;font-size:20px;margin-bottom:1px;filter:grayscale(1);opacity:.55}
+.phasen div.akt{background:#24224a;color:#d9d2ff;box-shadow:inset 0 0 0 1.5px #8f7bff}
+.phasen div.akt span,.phasen div.done span{filter:none;opacity:1}
+.phasen div.done{color:#b9adff}
+.stepcard{margin:14px 0 0;border-radius:24px;padding:22px 20px;background:linear-gradient(160deg,#211f42,#151729);border:1px solid #2e2b5a;text-align:center}
+.stepcard .sicon{width:110px;height:110px;margin:0 auto 10px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:58px;
+  background:radial-gradient(circle,rgba(157,140,255,.35),rgba(157,140,255,0) 70%)}
+.stepcard .snr{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#b9adff}
+.stepcard .stitel{font-size:26px;font-weight:800;letter-spacing:-.4px;margin:6px 0 8px}
+.stepcard .stext{font-size:17px;color:#cfd3ea;line-height:1.45}
+.stepcard .stipp{margin-top:14px;font-size:14px;color:#a7a2d6;background:rgba(255,255,255,.05);border-radius:12px;padding:9px 12px}
+.mini{margin-top:16px;display:flex;align-items:center;justify-content:center;gap:12px}
+.mini .zeit{font-size:38px;font-weight:800;font-variant-numeric:tabular-nums;min-width:96px}
+.mini button{min-height:44px;border-radius:999px;padding:10px 18px;background:#2e2b5a;color:#e7e3ff;font-weight:600}
+.mini.laeuft .zeit{color:#b9adff}
+body.abend #s-run .phase{display:none}
 </style>
 </head>
 <body>
@@ -190,6 +209,7 @@ body.abend .liste li .n{background:#24224a;color:#b9adff}
     <span class="muted small" id="clock"></span>
   </div>
   <div class="bar"><i id="barFill"></i></div>
+  <div class="phasen hidden" id="phasen"></div>
 
   <div style="text-align:center">
     <span class="phase" id="phase"></span>
@@ -207,6 +227,18 @@ body.abend .liste li .n{background:#24224a;color:#b9adff}
           stroke-linecap="round" stroke-dasharray="678.6" stroke-dashoffset="0"/>
       </svg>
       <div class="num" id="num">0</div>
+    </div>
+  </div>
+
+  <!-- Schritt (Abend) -->
+  <div id="stepView" class="hidden">
+    <div class="stepcard">
+      <div class="sicon" id="sIcon"></div>
+      <div class="snr" id="sNr"></div>
+      <div class="stitel" id="sTitel"></div>
+      <div class="stext" id="sText"></div>
+      <div class="stipp hidden" id="sTipp"></div>
+      <div class="mini hidden" id="mini"><span class="zeit" id="miniZeit">0:30</span><button id="miniBtn">▶ Timer</button></div>
     </div>
   </div>
 
@@ -314,6 +346,16 @@ FLOW.abend=["katzeKuh","kind","hueftbeuger","chestOpener","drehung","beineWand",
 EX.beineWand={n:"Beine an die Wand",t:120,c:"Rückenlage, Gesäß nah an die Wand, Beine senkrecht hoch. Ruhig atmen, Rücken lang."};
 EX.atmungAbend={n:"Atmung",t:90,c:"Vier Sekunden ein, sechs Sekunden aus. Schultern und Kiefer lösen."};
 const TIMER={lesen:{n:"Lesen",e:"📖",t:900,c:"Buch auf, Handy weg. Nach 15 Minuten kommt ein leiser Gong."}};
+const PHASEN=[["vorbereiten","👔","Vorbereiten"],["pflege","🧴","Pflege"],["dehnen","🧘","Dehnen"],["schlafen","🌙","Schlafen"]];
+const SCHRITT={
+  kleidung:{ph:"vorbereiten",i:"👕",t:"Kleidung für morgen",x:"Wirf einen Blick auf die Termine morgen und häng das passende Outfit komplett an den Herrendiener.",tipp:"Hemd/Shirt, Hose, Sakko oder Pullover – alles, was du morgen anziehst.",d:180},
+  schuhe:{ph:"vorbereiten",i:"👞",t:"Schuhe",x:"Passende Schuhe auswählen, kurz abwischen oder putzen und neben den Herrendiener stellen.",d:90},
+  accessoires:{ph:"vorbereiten",i:"⌚",t:"Accessoires",x:"Gürtel, Uhr, Socken und was du sonst brauchst dazulegen.",tipp:"Danach ist der Morgen entschieden – keine Suche mehr.",d:60},
+  reinigen:{ph:"pflege",i:"🫧",t:"Gesicht reinigen",x:"Gesicht mit lauwarmem Wasser anfeuchten, Reiniger 30 Sekunden einmassieren, gründlich abspülen, trocken tupfen.",timer:30,d:90},
+  creme:{ph:"pflege",i:"🧴",t:"Feuchtigkeitscreme",x:"Eine erbsengroße Menge – abends ruhig etwas großzügiger – auf Gesicht und Hals verteilen.",d:45},
+  magnesium:{ph:"pflege",i:"💊",t:"Magnesium",x:"Magnesium (Oxid), ca. 200 mg elementar – laut Routine des Ernährungsbots optional.",tipp:"Einzige Magnesiumquelle des Tages.",d:30},
+  sleep:{ph:"schlafen",i:"🌙",t:"Sleep Cycle einschalten",x:"Sleep Cycle starten und das Handy ans Ladekabel. Ab jetzt nur noch der Lese-Timer.",d:45}
+};
 const PREP = 8, SWITCH = 4;
 const CHECK = {
   gewicht:{n:"Wiegen",e:"⚖️",c:"Nach dem WC, vor dem Trinken. Gewicht eingeben.",kg:1,d:45},
@@ -407,7 +449,7 @@ function flowSteps(v){
   return st;
 }
 function build(v){
-  if(v==="abend") return [{k:"check",id:"outfitAbend"},{k:"check",id:"hautAbend"},{k:"check",id:"suppsAbend"},...flowSteps("abend"),{k:"check",id:"sleepcycle"},{k:"timer",id:"lesen"}];
+  if(v==="abend") return [...["kleidung","schuhe","accessoires","reinigen","creme","magnesium"].map(id=>({k:"schritt",id})),...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
   const st=[];
   st.push({k:"check",id:"gewicht"},{k:"check",id:"wasser"});
   FLOW[v].forEach(id=>{
@@ -421,7 +463,7 @@ function build(v){
   return st;
 }
 function dauerMin(v){
-  const s=build(v).reduce((a,x)=>a+(x.k==="ex"?x.prep+x.t:x.k==="timer"?TIMER[x.id].t:CHECK[x.id].d),0);
+  const s=build(v).reduce((a,x)=>a+(x.k==="ex"?x.prep+x.t:x.k==="timer"?TIMER[x.id].t:x.k==="schritt"?SCHRITT[x.id].d:CHECK[x.id].d),0);
   return Math.round(s/60);
 }
 
@@ -484,7 +526,23 @@ function enter(i){
   $("stepCount").textContent=`Schritt ${i+1} von ${steps.length}`;
   $("barFill").style.width=(i/steps.length*100)+"%";
   const nx=steps[i+1];
-  $("next").textContent=nx?"Nächste: "+(nx.k==="ex"?EX[nx.id].n+(nx.side?" · "+nx.side:""):nx.k==="timer"?TIMER[nx.id].n:CHECK[nx.id].n):"Danach: fertig";
+  $("next").textContent=nx?"Nächste: "+(nx.k==="ex"?EX[nx.id].n+(nx.side?" · "+nx.side:""):nx.k==="timer"?TIMER[nx.id].n:nx.k==="schritt"?SCHRITT[nx.id].t:CHECK[nx.id].n):"Danach: fertig";
+  $("stepView").classList.add("hidden"); miniStop();
+  const phAkt=st.k==="schritt"?SCHRITT[st.id].ph:st.ph;
+  $("phasen").classList.toggle("hidden",!phAkt);
+  if(phAkt){const ai=PHASEN.findIndex(p=>p[0]===phAkt);$("phasen").innerHTML=PHASEN.map((p,k)=>`<div class="${k===ai?"akt":k<ai?"done":""}"><span>${k<ai?"✓":p[1]}</span>${p[2]}</div>`).join("")}
+  if(st.k==="schritt"){const sc=SCHRITT[st.id],gr=steps.filter(x=>x.k==="schritt"&&SCHRITT[x.id].ph===sc.ph),pos=gr.indexOf(st)+1;
+    phase="check"; document.body.classList.remove("nacht");
+    $("exView").classList.add("hidden"); $("checkView").classList.add("hidden"); $("stepView").classList.remove("hidden");
+    $("exCtrl").classList.add("hidden"); $("checkCtrl").classList.remove("hidden");
+    $("name").textContent=""; $("side").textContent=""; $("cue").textContent="";
+    $("sIcon").textContent=sc.i; $("sNr").textContent=`${PHASEN.find(p=>p[0]===sc.ph)[2]} · ${pos} von ${gr.length}`;
+    $("sTitel").textContent=sc.t; $("sText").textContent=sc.x;
+    $("sTipp").classList.toggle("hidden",!sc.tipp); $("sTipp").textContent=sc.tipp?"💡 "+sc.tipp:"";
+    $("mini").classList.toggle("hidden",!sc.timer); if(sc.timer){miniSek=sc.timer;$("miniZeit").textContent=`0:${pad(sc.timer)}`;$("miniBtn").textContent="▶ Timer"}
+    say(sc.t+". "+sc.x);
+    return;
+  }
   document.body.classList.toggle("nacht",st.k==="timer");
   if(st.k==="timer"){const tm=TIMER[st.id];
     $("exView").classList.remove("hidden"); $("checkView").classList.add("hidden");
@@ -525,12 +583,18 @@ function startPhase(p,sec){
   setPhase(p, p==="prep"?"Einnehmen":"Halten");
   $("ring").style.stroke=p==="prep"?"var(--prep)":"var(--hold)";
 }
+let miniEnd=0,miniSek=30;
+function miniStop(){miniEnd=0;$("mini").classList.remove("laeuft")}
+function miniTick(){if(!miniEnd)return;const r_=Math.ceil((miniEnd-Date.now())/1000);
+  if(r_<=0){miniStop();$("miniZeit").textContent="✓";beep(660,.2);setTimeout(()=>beep(990,.3),200);say("Fertig. Abspülen.");$("miniBtn").textContent="↺ Nochmal";return}
+  $("miniZeit").textContent=`0:${pad(r_)}`}
 function tick(){
-  $("clock").textContent=hm(new Date());
+  $("clock").textContent=hm(new Date()); miniTick();
   if(phase!=="prep"&&phase!=="hold") return;
   const rem=paused?pausedRem:Math.max(0,phaseEnd-performance.now());
   const sec=Math.ceil(rem/1000);
-  $("num").textContent=sec;
+  $("num").textContent=steps[S.idx]&&steps[S.idx].k==="timer"?`${Math.floor(sec/60)}:${pad(sec%60)}`:sec;
+  $("num").style.fontSize=steps[S.idx]&&steps[S.idx].k==="timer"?"40px":"";
   $("ring").style.strokeDashoffset=(678.6*(1-rem/phaseLen)).toFixed(1);
   if(paused) return;
   if(sec!==lastSec){ if(sec>0&&sec<=3&&steps[S.idx].k!=="timer") beep(sec===1?990:880); lastSec=sec; }
@@ -554,7 +618,7 @@ function checkDone(ok){
     if(ok&&!(n>30&&n<250)){ $("kg").focus(); $("cue").textContent="Bitte ein gültiges Gewicht eingeben – oder „Auslassen“."; return; }
     S.kg=ok?n.toFixed(1):"";
   }
-  if(CHECK[st.id].r){ S.reps=S.reps||{}; S.reps[st.id]=ok?repN:0; }
+  if(st.k==="check"&&CHECK[st.id].r){ S.reps=S.reps||{}; S.reps[st.id]=ok?repN:0; }
   S.res[st.id]=ok?1:0; save(); enter(S.idx+1);
 }
 function finish(){
@@ -597,27 +661,27 @@ function finish(){
 }
 
 function finishAbend(){
-  clearInterval(timer); phase=""; wakeOff(); document.body.classList.remove("nacht");
+  clearInterval(timer); phase=""; wakeOff(); miniStop(); document.body.classList.remove("nacht");
   const end=new Date(), start=new Date(S.start);
   const flow=steps.map((s,i)=>s.k==="ex"?i:-1).filter(i=>i>=0), fd=flow.filter(i=>S.ex[i]).length;
   const min=Math.max(1,Math.round((end-start)/60000)), r=k=>S.res[k]?1:0;
   const datum=isoLocal(new Date(start.getTime()-4*3600e3)).slice(0,10);
-  const lesenIdx=steps.findIndex(s=>s.k==="timer"), lesen=S.ex[lesenIdx]?15:0;
+  const lesen=S.res.lesen?15:0, outfit=r("kleidung")&&r("schuhe")?1:0, haut=r("reinigen")&&r("creme")?1:0;
   const log=["Abendroutine",`datum=${datum}`,`start=${S.start}`,`ende=${isoLocal(end)}`,`dauer_min=${min}`,
-    `outfit=${r("outfitAbend")}`,`haut_abends=${r("hautAbend")}`,`supplements=${r("suppsAbend")}`,`dehnen=${fd}/${flow.length}`,
-    `sleepcycle=${r("sleepcycle")}`,`lesen_min=${lesen}`].join("; ")+";";
+    `outfit=${outfit}`,`haut_abends=${haut}`,`supplements=${r("magnesium")}`,`dehnen=${fd}/${flow.length}`,
+    `sleepcycle=${r("sleep")}`,`lesen_min=${lesen}`].join("; ")+";";
   S.log=log; S.fertig=isoLocal(end); save();
   const z=(l,v)=>`<div><span class="muted">${l}</span><b>${v}</b></div>`;
   $("endSub").textContent=`${hm(start)}–${hm(end)} · ${min} Min. · Abend`;
-  $("sum").innerHTML=z("Outfit am Herrendiener",r("outfitAbend")?"✓":"–")+z("Hautpflege abends",r("hautAbend")?"✓":"–")+z("Supplements",r("suppsAbend")?"✓":"–")+
-    z("Rücken-Dehnen",`${fd}/${flow.length} Übungen`)+z("Sleep Cycle",r("sleepcycle")?"✓":"–")+z("Lesen",lesen?"15 Min. ✓":"–");
+  $("sum").innerHTML=z("👔 Outfit am Herrendiener",outfit?"✓":"–")+z("🧴 Hautpflege abends",haut?"✓":"–")+z("💊 Magnesium",r("magnesium")?"✓":"–")+
+    z("🧘 Rücken-Dehnen",`${fd}/${flow.length}`)+z("🌙 Sleep Cycle",r("sleep")?"✓":"–")+z("📖 Lesen",lesen?"15 Min. ✓":"–");
   $("logText").textContent=log; verlaufMerken(); kacheln();
   show("s-end"); say("Fertig. Gute Nacht, Noah.");
 }
 
 /* ---------- Darstellung ---------- */
 const BAUSTEIN={gewicht:"⚖️ Wiegen",wasser:"💧 Wasser",liegestuetze:"💪 Kraft",dusche:"🚿 Duschen",haut:"🧴 Haut",supps:"💊 Supplements",outfit:"👔 Outfit",
-  outfitAbend:"👔 Outfit für morgen",hautAbend:"🧴 Haut",suppsAbend:"💊 Magnesium",sleepcycle:"🌙 Sleep Cycle",lesen:"📖 Lesen 15′"};
+  kleidung:"👔 Outfit für morgen",reinigen:"🧴 Hautpflege",magnesium:"💊 Magnesium",sleep:"🌙 Sleep Cycle",lesen:"📖 Lesen 15′"};
 function heroRender(){
   const st=build(variante),n=st.filter(x=>x.k==="ex").length,ab=variante==="abend";
   const chips=[];st.forEach(x=>{if(x.k==="ex"){if(!chips.includes("flow"))chips.push("flow")}else if(BAUSTEIN[x.id]&&!chips.includes(x.id))chips.push(x.id)});
@@ -643,7 +707,7 @@ function verlaufMerken(){
 }
 function kacheln(){
   const min=Math.max(1,Math.round((new Date()-new Date(S.start))/60000));
-  const chk=steps.filter(x=>x.k==="check"),ok=chk.filter(x=>S.res[x.id]).length;
+  const chk=steps.filter(x=>x.k==="check"||x.k==="schritt"),ok=chk.filter(x=>S.res[x.id]).length;
   const fl=steps.map((s,i)=>s.k==="ex"?i:-1).filter(i=>i>=0),fd=fl.filter(i=>S.ex[i]).length;
   const T=(v,l,c)=>`<div class="tile ${c}"><div class="v">${v}</div><div class="l">${l}</div></div>`;
   const vierte=S.v==="abend"?T(S.res.lesen?"15<small> Min.</small>":"–","Gelesen 📖","d"):T(S.kg?S.kg.replace(".",",")+"<small> kg</small>":"–","Gewicht ⚖️","d");
@@ -678,6 +742,7 @@ $("btnDiscard").onclick=()=>{ store.del("sitzung"); initStart(); };
 
 /* ---------- Lauf-Steuerung ---------- */
 $("btnPause").onclick=togglePause;
+$("miniBtn").onclick=()=>{audioInit();miniEnd=Date.now()+miniSek*1000;$("mini").classList.add("laeuft");$("miniBtn").textContent="läuft …";miniTick()};
 $("btnSkip").onclick=()=>{ try{speechSynthesis.cancel()}catch(e){} enter(S.idx+1); };
 $("btnBack").onclick=()=>{ try{speechSynthesis.cancel()}catch(e){} enter(Math.max(0,S.idx-1)); };
 let repN=10;
