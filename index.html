@@ -538,9 +538,13 @@ function enter(i){
     $("name").textContent=""; $("side").textContent=""; $("cue").textContent="";
     $("sIcon").textContent=sc.i; $("sNr").textContent=`${PHASEN.find(p=>p[0]===sc.ph)[2]} · ${pos} von ${gr.length}`;
     let sx=sc.x, stp=sc.tipp?"💡 "+sc.tipp:"", link=false;
-    if(st.id==="kleidung"){const o=outfitFuer(tagMorgen()); link=true;
-      sx=o?`Jarvis schlägt für morgen vor (Stufe ${o.stufe}${o.angenommen==="1"?", Anlass angenommen":""}):\n`+outfitZeilen(o).map(x=>x[0]+": "+x[1]).join("\n")+(o.begruendung?"\n\n"+o.begruendung:"")+(o.wetter?"\n🌦 "+o.wetter:"")
-          :sc.x+"\n\nNoch kein Vorschlag von Jarvis (kommt mit dem Abendcheck um 21:50).";}
+    if(["kleidung","schuhe","accessoires"].includes(st.id)){const o=outfitFuer(tagMorgen()); link=st.id==="kleidung";
+      if(o){const z=outfitZeilen(o), w=k=>z.filter(x=>k.some(y=>x[0].includes(y)));
+        const teil=st.id==="kleidung"?w(["Oberteil","Hose","Jacke"]):st.id==="schuhe"?w(["Schuhe"]):w(["Accessoires"]);
+        sx=(st.id==="kleidung"?`Jarvis für morgen (Stufe ${o.stufe}${o.angenommen==="1"?", Anlass angenommen":""}) – an den Herrendiener:\n`:"Bereitlegen:\n")
+          +(teil.length?teil.map(x=>x[0]+": "+x[1]).join("\n"):"–")
+          +(st.id==="kleidung"?(o.ersatz?"\n☔ Ersatz: "+o.ersatz:"")+(o.begruendung?"\n\n"+o.begruendung:"")+(o.wetter?"\n🌦 "+o.wetter:""):"");}
+      else if(st.id==="kleidung") sx=sc.x+"\n\nNoch kein Vorschlag von Jarvis (kommt mit dem Abendcheck um 21:50) – oder unten „Jarvis fragen“.";}
     $("sTitel").textContent=sc.t; $("sText").textContent=sx; $("sText").style.whiteSpace="pre-line";
     $("sTipp").classList.toggle("hidden",!stp&&!link);
     $("sTipp").innerHTML=(stp?esc(stp):"")+(link?`${stp?"<br>":""}<a href="${JARVIS_LINK}" style="color:#c9c4ff">✏️ Anders? Jarvis fragen</a>`:"");
@@ -742,6 +746,7 @@ function outfitFuer(tag){return OUTFIT&&OUTFIT.datum===tag?OUTFIT:null}
 function tagMorgen(){const d=new Date(Date.now()-4*3600e3);d.setDate(d.getDate()+1);return isoLocal(d).slice(0,10)}
 function outfitZeilen(o){return [["👔 Oberteil",o.oberteil],["👖 Hose",o.hose],["👞 Schuhe + Gürtel",o.schuhe],["🧥 Jacke",o.jacke],["⌚ Accessoires",o.accessoires],["☔ Ersatz",o.ersatz]].filter(x=>x[1])}
 outfitLaden();
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)outfitLaden()});
 
 function initStart(){
   const d=new Date();
