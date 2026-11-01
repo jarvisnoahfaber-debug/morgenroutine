@@ -537,10 +537,15 @@ function enter(i){
     $("exCtrl").classList.add("hidden"); $("checkCtrl").classList.remove("hidden");
     $("name").textContent=""; $("side").textContent=""; $("cue").textContent="";
     $("sIcon").textContent=sc.i; $("sNr").textContent=`${PHASEN.find(p=>p[0]===sc.ph)[2]} · ${pos} von ${gr.length}`;
-    $("sTitel").textContent=sc.t; $("sText").textContent=sc.x;
-    $("sTipp").classList.toggle("hidden",!sc.tipp); $("sTipp").textContent=sc.tipp?"💡 "+sc.tipp:"";
+    let sx=sc.x, stp=sc.tipp?"💡 "+sc.tipp:"", link=false;
+    if(st.id==="kleidung"){const o=outfitFuer(tagMorgen()); link=true;
+      sx=o?`Jarvis schlägt für morgen vor (Stufe ${o.stufe}${o.angenommen==="1"?", Anlass angenommen":""}):\n`+outfitZeilen(o).map(x=>x[0]+": "+x[1]).join("\n")+(o.begruendung?"\n\n"+o.begruendung:"")+(o.wetter?"\n🌦 "+o.wetter:"")
+          :sc.x+"\n\nNoch kein Vorschlag von Jarvis (kommt mit dem Abendcheck um 21:50).";}
+    $("sTitel").textContent=sc.t; $("sText").textContent=sx; $("sText").style.whiteSpace="pre-line";
+    $("sTipp").classList.toggle("hidden",!stp&&!link);
+    $("sTipp").innerHTML=(stp?esc(stp):"")+(link?`${stp?"<br>":""}<a href="${JARVIS_LINK}" style="color:#c9c4ff">✏️ Anders? Jarvis fragen</a>`:"");
     $("mini").classList.toggle("hidden",!sc.timer); if(sc.timer){miniSek=sc.timer;$("miniZeit").textContent=`0:${pad(sc.timer)}`;$("miniBtn").textContent="▶ Timer"}
-    say(sc.t+". "+sc.x);
+    say(sc.t+". "+sx);
     return;
   }
   document.body.classList.toggle("nacht",st.k==="timer");
@@ -553,7 +558,8 @@ function enter(i){
     return;
   }
   if(st.k==="check"){
-    const c=CHECK[st.id];
+    let c=CHECK[st.id];
+    if(st.id==="outfit"){const o=outfitFuer(isoLocal(new Date()).slice(0,10)); if(o) c={...c,c:"Heute laut Jarvis – ✓ = so getragen:",l:outfitZeilen(o).filter(x=>!x[0].includes("Ersatz")).map(x=>[x[1],x[0]])};}
     phase="check"; setPhase("check",c.r?"Kraft":"Checkliste");
     $("name").textContent=c.n; $("side").textContent=""; $("cue").textContent=c.c;
     $("exView").classList.add("hidden"); $("checkView").classList.remove("hidden");
@@ -646,7 +652,8 @@ function finish(){
     `dusche=${r("dusche")}`,
     `haut=${r("haut")}`,
     `supplements=${r("supps")}`,
-    `outfit=${r("outfit")}`
+    `outfit=${r("outfit")}`,
+    `outfit_ids=${r("outfit")&&outfitFuer(isoLocal(new Date()).slice(0,10))?outfitFuer(isoLocal(new Date()).slice(0,10)).ids||"":""}`
   ].join("; ")+";";
   S.log=log; S.fertig=isoLocal(end); save();
   const z=(l,v)=>`<div><span class="muted">${l}</span><b>${v}</b></div>`;
@@ -718,6 +725,24 @@ function kacheln(){
 /* ---------- Start-Bildschirm ---------- */
 let variante=(()=>{const d=new Date(),h=d.getHours();return h>=17||h<4?"abend":[0,6].includes(d.getDay())?"lang":"kurz"})();
 function markV(){ document.querySelectorAll(".vbtn").forEach(b=>b.classList.toggle("sel",b.dataset.v===variante)); $("gruss").textContent=variante==="abend"?"Guten Abend, Noah":"Guten Morgen, Noah"; heroRender(); }
+// ---- Outfit von Jarvis (Tab „Morgen“ im Sheet Garderobe, als CSV veröffentlicht) ----
+const OUTFIT_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSucGG1xTKhNTGkzn-4tbXNgIx_nURPV4R_5WcdPaejnSOR_c7qOEOzeUorDMQc4qaDBB2YdLM6cD2S/pub?gid=753380724&single=true&output=csv";
+const JARVIS_LINK="tg://resolve?domain=noah_faber_jarvis_bot";
+let OUTFIT=null; try{OUTFIT=JSON.parse(localStorage.getItem("outfit")||"null")}catch(e){}
+const esc=t=>String(t).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function csvZeilen(t){const z=[];let r=[],f="",q=false;for(let i=0;i<t.length;i++){const c=t[i];
+  if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+  else if(c==='"')q=true;else if(c===","){r.push(f);f=""}else if(c==="\n"){r.push(f);z.push(r);r=[];f=""}else if(c!=="\r")f+=c}
+  if(f||r.length){r.push(f);z.push(r)}return z}
+async function outfitLaden(){ if(!OUTFIT_URL.startsWith("http"))return;
+  try{const t=await (await fetch(OUTFIT_URL+(OUTFIT_URL.includes("?")?"&":"?")+"t="+Date.now(),{cache:"no-store"})).text();
+    const o={};csvZeilen(t).forEach(r=>{if(r[0])o[r[0].trim()]=(r[1]||"").trim()});
+    if(o.datum){OUTFIT=o;try{localStorage.setItem("outfit",JSON.stringify(o))}catch(e){}}}catch(e){}}
+function outfitFuer(tag){return OUTFIT&&OUTFIT.datum===tag?OUTFIT:null}
+function tagMorgen(){const d=new Date(Date.now()-4*3600e3);d.setDate(d.getDate()+1);return isoLocal(d).slice(0,10)}
+function outfitZeilen(o){return [["👔 Oberteil",o.oberteil],["👖 Hose",o.hose],["👞 Schuhe + Gürtel",o.schuhe],["🧥 Jacke",o.jacke],["⌚ Accessoires",o.accessoires],["☔ Ersatz",o.ersatz]].filter(x=>x[1])}
+outfitLaden();
+
 function initStart(){
   const d=new Date();
   $("today").textContent=d.toLocaleDateString("de-AT",{weekday:"long",day:"numeric",month:"long"});
