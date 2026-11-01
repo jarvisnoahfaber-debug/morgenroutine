@@ -567,33 +567,51 @@ function dauerMin(v){
 /* ---------- Ton & Stimme ---------- */
 let actx=null, voices=[];
 function audioInit(){
-  try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==="suspended") actx.resume(); }catch(e){}
+  // Töne auch bei Stummschalter (iOS 17+): kurze Signale, Musik/Podcast wird nur kurz leiser, nicht gestoppt
+  try{ if(navigator.audioSession&&navigator.audioSession.type!=="transient") navigator.audioSession.type="transient"; }catch(e){}
+  try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state!=="running") actx.resume(); }catch(e){}
 }
-function beep(f=880,dur=.12,vol=.25){
-  if(!$("optBeep").checked||!actx) return;
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&actx) audioInit(); });
+// weicher Ton: Sinus + leiser Oberton, kurzer Anstieg, natürliches Ausklingen
+function beep(f=880,dur=.14,vol=.22){
+  if(!$("optBeep").checked) return;
+  if(!actx||actx.state!=="running") audioInit();
+  if(!actx) return;
   try{
-    const o=actx.createOscillator(), g=actx.createGain(), t=actx.currentTime;
-    o.frequency.value=f; o.type="sine"; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+dur);
-    o.connect(g).connect(actx.destination); o.start(t); o.stop(t+dur+.02);
+    const t=actx.currentTime+.01, g=actx.createGain(), o=actx.createOscillator(), o2=actx.createOscillator(), g2=actx.createGain();
+    o.type="sine"; o.frequency.value=f; o2.type="sine"; o2.frequency.value=f*2; g2.gain.value=.12;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.012); g.gain.exponentialRampToValueAtTime(.0008,t+dur+.25);
+    o.connect(g); o2.connect(g2).connect(g); g.connect(actx.destination);
+    o.start(t); o2.start(t); o.stop(t+dur+.3); o2.stop(t+dur+.3);
   }catch(e){}
 }
-function gong(){ beep(523,.6,.3); setTimeout(()=>beep(784,.7,.25),120); }
+function gong(){ beep(659,.35,.22); setTimeout(()=>beep(988,.5,.18),110); }
+function tonOk(){ beep(784,.12,.2); setTimeout(()=>beep(1175,.22,.16),90); }
+function tonAus(){ beep(523,.12,.14); }
 function loadVoices(){
   if(!("speechSynthesis" in window)) return;
+  const spass=/eddy|flo|grandma|grandpa|oma|opa|reed|rocko|sandy|shelley|albert|bad news|bahh|bells|boing|bubbles|cellos|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|kathy|ralph/i;
   voices=speechSynthesis.getVoices().filter(v=>/^de/i.test(v.lang));
-  const rank=v=>(/premium/i.test(v.name)?0:/enhanced|erweitert/i.test(v.name)?1:2);
+  const rank=v=>{const k=(v.name+" "+v.voiceURI).toLowerCase();
+    return spass.test(v.name)?9:/premium/.test(k)?0:/enhanced|erweitert|siri/.test(k)?1:/compact|kompakt/.test(k)?4:/de-de/i.test(v.lang)?2:3;};
   voices.sort((a,b)=>rank(a)-rank(b)||a.name.localeCompare(b.name));
   const saved=store.get("voice"), sel=$("voiceSel");
-  sel.innerHTML=voices.length?voices.map((v,i)=>`<option value="${i}">${v.name} (${v.lang})</option>`).join(""):"<option>Standardstimme</option>";
-  const i=voices.findIndex(v=>v.name===saved); if(i>=0) sel.value=i;
+  sel.innerHTML=voices.length?voices.map((v,i)=>`<option value="${i}">${v.name}${rank(v)===0?" · Premium":rank(v)===1?" · Erweitert":""}</option>`).join(""):"<option>Standardstimme</option>";
+  const i=voices.findIndex(v=>v.name===saved);
+  // gespeicherte Stimme nur behalten, wenn sie nicht schlechter ist als die beste verfügbare
+  sel.value=(i>=0&&rank(voices[i])<=rank(voices[0]))?i:0;
 }
 function say(txt){
-  if(!$("optVoice").checked||!("speechSynthesis" in window)) return;
+  if(!$("optVoice").checked||!("speechSynthesis" in window)||!txt) return;
   try{
     speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(txt); u.lang="de-DE"; u.rate=1;
-    const v=voices[+$("voiceSel").value]; if(v) u.voice=v;
-    speechSynthesis.speak(u);
+    const v=voices[+$("voiceSel").value];
+    // in Sätze teilen: klingt flüssiger und iOS bricht lange Texte nicht ab
+    const teile=String(txt).replace(/\s*\(?\b[A-Z]{2}\d{2}\b\)?/g,"").replace(/\bca\.\s/g,"circa ").replace(/(\d+)\s*°C/g,"$1 Grad").replace(/\s*\n+\s*/g,". ").replace(/\s*·\s*/g,", ").match(/[^.!?]+[.!?]*/g)||[txt];
+    teile.map(t=>t.trim()).filter(Boolean).forEach(t=>{
+      const u=new SpeechSynthesisUtterance(t); u.lang=v?v.lang:"de-DE"; u.rate=.96; u.pitch=1; u.volume=1;
+      if(v) u.voice=v; speechSynthesis.speak(u);
+    });
   }catch(e){}
 }
 
@@ -881,8 +899,8 @@ $("btnBack").onclick=()=>{ try{speechSynthesis.cancel()}catch(e){} enter(Math.ma
 let repN=10;
 $("repMinus").onclick=()=>{ repN=Math.max(0,repN-1); $("repNum").textContent=repN; };
 $("repPlus").onclick=()=>{ repN=Math.min(99,repN+1); $("repNum").textContent=repN; };
-$("btnDone").onclick=()=>checkDone(true);
-$("btnNo").onclick=()=>checkDone(false);
+$("btnDone").onclick=()=>{tonOk();checkDone(true)};
+$("btnNo").onclick=()=>{tonAus();checkDone(false)};
 $("btnAbort").onclick=()=>{ if(confirm("Routine jetzt beenden? Erledigtes wird gespeichert.")) finish(); };
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden){ if((phase==="prep"||phase==="hold")&&!paused) togglePause(); }
