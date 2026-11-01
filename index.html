@@ -163,6 +163,103 @@ body.abend .liste li .n{background:#24224a;color:#b9adff}
 .mini button{min-height:44px;border-radius:999px;padding:10px 18px;background:#2e2b5a;color:#e7e3ff;font-weight:600}
 .mini.laeuft .zeit{color:#b9adff}
 body.abend #s-run .phase{display:none}
+/* ===== Apple-Look (iOS Dark, System-Farben, flach) ===== */
+:root{
+  --bg:#000; --surface:#1c1c1e; --surface2:#2c2c2e; --fill:rgba(118,118,128,.24);
+  --text:#fff; --muted:rgba(235,235,245,.6); --muted2:rgba(235,235,245,.3); --sep:rgba(84,84,88,.6);
+  --orange:#ff9f0a; --indigo:#5e5ce6; --green:#30d158; --blue:#0a84ff; --red:#ff453a;
+  --prep:var(--orange); --hold:var(--green); --accent:var(--orange); --danger:var(--red);
+}
+body.abend{--accent:#7d7aff}
+html,body{font:17px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.2px}
+body,body.morgen,body.abend{background:#000}
+h1{font-size:34px;font-weight:700;letter-spacing:-.6px;margin:18px 0 2px}
+#today{font-size:15px}
+.card{background:var(--surface);border-radius:12px;padding:14px 16px;border:0}
+button{border-radius:12px;background:var(--surface2);min-height:50px;font-weight:500}
+button.primary,#btnStart,body.abend #btnStart{background:var(--accent);color:#fff;font-weight:600;font-size:17px;box-shadow:none;min-height:52px;border-radius:14px}
+button.ok{background:var(--green);color:#fff;font-weight:600;font-size:17px}
+button.ghost{background:transparent;color:var(--accent);font-weight:400}
+#btnAbort{color:var(--muted)}
+button.sel{outline:0}
+select,input{background:var(--surface2);border-radius:10px}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:0}
+/* Woche */
+.woche{gap:0;margin-top:16px}
+.woche div{background:transparent;border-radius:0;padding:4px 0;color:var(--muted)}
+.woche div b{width:32px;height:32px;line-height:32px;border-radius:50%;margin:3px auto 4px;font-size:17px;font-weight:500}
+.woche .heute{outline:0}
+.woche .heute b{background:var(--accent);color:#fff;font-weight:600}
+.woche div i{width:5px;height:5px;background:var(--surface2)}
+.woche div i.m{background:var(--orange)}.woche div i.a{background:var(--indigo)}
+.wochetxt{font-size:13px;margin:6px 0 0;color:var(--muted)}
+/* Hero = gruppierte Zelle */
+.hero,.hero.abend{background:var(--surface);box-shadow:none;border-radius:12px;padding:14px 16px 16px;margin:18px 0 0}
+.hero .big{display:none}
+.hero .lbl{font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--accent);opacity:1}
+.hero .ttl{font-size:28px;font-weight:700;letter-spacing:-.5px;margin:2px 0 0}
+.hero .meta{font-size:15px;color:var(--muted);opacity:1;margin:2px 0 12px}
+.hero .chips{gap:6px}
+.hero .chips span{background:var(--fill);color:rgba(235,235,245,.85);font-size:13px;border-radius:7px;padding:4px 8px}
+/* Varianten = Segmented Control */
+.vtiles{gap:2px;margin:16px 0 0;background:var(--fill);border-radius:10px;padding:2px}
+.vtiles button,.vtiles button.sel,body.abend .vtiles button.sel{background:transparent;outline:0;border-radius:8px;padding:6px 4px;min-height:0;gap:0}
+.vtiles button.sel,body.abend .vtiles button.sel{background:#636366;box-shadow:0 3px 8px rgba(0,0,0,.12)}
+.vtiles button .ic{display:none}
+.vtiles button b{font-size:15px;font-weight:600}
+.vtiles button span{font-size:11px;color:var(--muted)}
+details.card summary{color:var(--text);font-size:17px}
+/* Lauf */
+.top{margin-top:8px}
+.bar{height:4px;border-radius:2px;background:var(--surface2)}
+.bar i,body.abend .bar i{background:var(--accent)}
+.phase,.phase.prep,.phase.hold,.phase.check,.phase.pause{background:transparent;padding:0;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;margin-top:20px}
+.phase.prep{color:var(--orange)}.phase.hold{color:var(--green)}.phase.check{color:var(--accent)}.phase.pause{color:var(--red)}
+.name{font-size:28px;font-weight:700;letter-spacing:-.5px}
+.side{color:var(--orange);font-size:17px}
+.phasen{gap:2px;background:var(--fill);border-radius:10px;padding:2px;margin:14px 0 0}
+.phasen div{background:transparent;border-radius:8px;font-size:13px;font-weight:500;padding:7px 0;color:var(--muted)}
+.phasen div span{display:none}
+.phasen div.akt{background:#636366;color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.12)}
+.phasen div.done{color:var(--text)}
+.phasen div.done::after{content:" ✓";color:var(--green)}
+.stepcard{background:var(--surface);border:0;border-radius:12px;padding:18px 16px;text-align:left;margin:18px 0 0}
+.stepcard .sicon{width:52px;height:52px;border-radius:12px;margin:0 0 12px;font-size:28px;background:var(--fill)}
+.stepcard .snr{font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--accent)}
+.stepcard .stitel{font-size:28px;font-weight:700;letter-spacing:-.5px;margin:2px 0 8px}
+.stepcard .stext{font-size:17px;color:rgba(235,235,245,.85);line-height:1.4}
+.stepcard .stipp{background:transparent;padding:12px 0 0;margin-top:14px;border-top:.5px solid var(--sep);border-radius:0;color:var(--muted);font-size:15px}
+.stepcard .stipp a{display:inline-block;margin-top:10px;color:var(--blue)!important;text-decoration:none;font-weight:500}
+.mini{justify-content:flex-start}
+.mini .zeit{font-size:34px;font-weight:600}
+.mini button{background:var(--fill);color:var(--accent);border-radius:999px}
+.mini.laeuft .zeit{color:var(--accent)}
+/* Outfit als Liste */
+.olist{margin:4px 0 0;border-radius:10px;background:var(--surface2);overflow:hidden}
+.orow{padding:10px 12px;border-bottom:.5px solid var(--sep)}
+.orow:last-child{border:0}
+.orow span{display:block;font-size:13px;color:var(--muted)}
+.orow b{display:block;font-weight:500;color:#fff;font-size:17px}
+.onote{margin-top:12px;font-size:15px;color:var(--muted)}
+/* Checkliste */
+.emoji,body.abend .emoji{width:88px;height:88px;border-radius:20px;font-size:46px;margin:22px auto 8px;background:var(--surface)}
+.liste{border:0;border-radius:12px;background:var(--surface)}
+.liste li{border-bottom:.5px solid var(--sep);padding:12px 16px}
+.liste li .n,body.abend .liste li .n{background:transparent;color:var(--muted);width:auto;height:auto;font-size:15px;font-weight:500}
+.liste li.kopf{color:var(--muted);font-size:13px}
+.cue{color:var(--muted);font-size:17px}
+.next{color:var(--muted2);font-size:15px}
+.fig{background:var(--surface);border:0;border-radius:12px}
+.fig path.ar{stroke:var(--orange)}.fig text{fill:var(--orange)}
+.ringwrap circle:first-child{stroke:var(--surface2)}
+.reps button{border-radius:50%;width:56px;height:56px;min-height:0;background:var(--fill);color:var(--accent);font-weight:400}
+.kg{font-weight:600}
+/* Ende */
+.tile,.tile.a,.tile.b,.tile.c,.tile.d{background:var(--surface);border-radius:12px}
+.tile .l{color:var(--muted);opacity:1;font-size:13px}
+.tile.a .v{color:var(--orange)}.tile.b .v{color:var(--green)}.tile.c .v{color:var(--blue)}.tile.d .v{color:var(--indigo)}
+.sum div{border-bottom:.5px solid var(--sep);padding:10px 0}
+pre{background:var(--surface);border-radius:12px}
 </style>
 </head>
 <body>
@@ -423,7 +520,7 @@ const FIG={
 };
 FIG.beineWand=FL+`<line x1="104" y1="8" x2="104" y2="90" class="st"/>`+Hd(28,84)+P(36,86,96,86)+P(96,86,100,30)+P(42,86,40,74);FIG.atmungAbend=FIG.atmung;
 FIG.katzeKuhL=FIG.katzeKuh; FIG.birdDogL=FIG.birdDog; FIG.hueftbeugerL=FIG.hueftbeuger; FIG.bridgeL=FIG.bridge;
-const svgFig=id=>`<svg viewBox="0 0 120 96" aria-hidden="true"><defs><marker id="mk" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7aa2ff"/></marker></defs>${FIG[id]||""}</svg>`;
+const svgFig=id=>`<svg viewBox="0 0 120 96" aria-hidden="true"><defs><marker id="mk" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ff9f0a"/></marker></defs>${FIG[id]||""}</svg>`;
 
 /* ---------- Hilfen ---------- */
 const $ = id => document.getElementById(id);
@@ -537,7 +634,7 @@ function enter(i){
     $("exCtrl").classList.add("hidden"); $("checkCtrl").classList.remove("hidden");
     $("name").textContent=""; $("side").textContent=""; $("cue").textContent="";
     $("sIcon").textContent=sc.i; $("sNr").textContent=`${PHASEN.find(p=>p[0]===sc.ph)[2]} · ${pos} von ${gr.length}`;
-    let sx=sc.x, stp=sc.tipp?"💡 "+sc.tipp:"", link=false;
+    let sx=sc.x, stp=(sc.tipp&&!(st.id==="kleidung"&&outfitFuer(tagMorgen())))?sc.tipp:"", link=false;
     if(["kleidung","schuhe","accessoires"].includes(st.id)){const o=outfitFuer(tagMorgen()); link=st.id==="kleidung";
       if(o){const z=outfitZeilen(o), w=k=>z.filter(x=>k.some(y=>x[0].includes(y)));
         const teil=st.id==="kleidung"?w(["Oberteil","Hose","Jacke"]):st.id==="schuhe"?w(["Schuhe"]):w(["Accessoires"]);
@@ -546,8 +643,14 @@ function enter(i){
           +(st.id==="kleidung"?(o.ersatz?"\n☔ Ersatz: "+o.ersatz:"")+(o.begruendung?"\n\n"+o.begruendung:"")+(o.wetter?"\n🌦 "+o.wetter:""):"");}
       else if(st.id==="kleidung") sx=sc.x+"\n\nNoch kein Vorschlag von Jarvis (kommt mit dem Abendcheck um 21:50) – oder unten „Jarvis fragen“.";}
     $("sTitel").textContent=sc.t; $("sText").textContent=sx; $("sText").style.whiteSpace="pre-line";
+    if(["kleidung","schuhe","accessoires"].includes(st.id)){const o=outfitFuer(tagMorgen());
+      if(o){const z=outfitZeilen(o).map(x=>[x[0].replace(/^\S+\s/,""),x[1]]), w=k=>z.filter(x=>k.some(y=>x[0].includes(y)));
+        const teil=st.id==="kleidung"?w(["Oberteil","Hose","Jacke"]):st.id==="schuhe"?w(["Schuhe"]):w(["Accessoires"]);
+        $("sText").innerHTML=(st.id==="kleidung"?`<div class="onote" style="margin:0 0 10px">Stufe ${esc(o.stufe)}${o.angenommen==="1"?" · Anlass angenommen":""} · an den Herrendiener</div>`:"")
+          +`<div class="olist">${(teil.length?teil:[["–","nichts vorgesehen"]]).map(x=>`<div class="orow"><span>${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join("")}</div>`
+          +(st.id==="kleidung"?[o.ersatz&&"Ersatz: "+o.ersatz,o.begruendung,o.wetter&&"Wetter: "+o.wetter].filter(Boolean).map(t=>`<div class="onote">${esc(t)}</div>`).join(""):"");}}
     $("sTipp").classList.toggle("hidden",!stp&&!link);
-    $("sTipp").innerHTML=(stp?esc(stp):"")+(link?`${stp?"<br>":""}<a href="${JARVIS_LINK}" style="color:#c9c4ff">✏️ Anders? Jarvis fragen</a>`:"");
+    $("sTipp").innerHTML=(stp?esc(stp):"")+(link?`${stp?"<br>":""}<a href="${JARVIS_LINK}">Anders? Jarvis fragen</a>`:"");
     $("mini").classList.toggle("hidden",!sc.timer); if(sc.timer){miniSek=sc.timer;$("miniZeit").textContent=`0:${pad(sc.timer)}`;$("miniBtn").textContent="▶ Timer"}
     say(sc.t+". "+sx);
     return;
@@ -699,7 +802,7 @@ function heroRender(){
   $("hero").className="hero"+(ab?" abend":"");
   $("hero").innerHTML=`<div class="big">${ab?"🌙":variante==="lang"?"🌄":"☀️"}</div><div class="lbl">${ab?"Abendroutine":"Morgenroutine"} · ${variante==="kurz"?"Kurz":variante==="lang"?"Lang":"Abend"}</div>
     <div class="ttl">ca. ${dauerMin(variante)} Minuten</div><div class="meta">${n} Übungen im Rücken-Flow${ab?" · Lesen zum Schluss":""}</div>
-    <div class="chips">${chips.map(c=>`<span>${c==="flow"?"🧘 Rücken-Flow":BAUSTEIN[c]}</span>`).join("")}</div>`;
+    <div class="chips">${chips.map(c=>`<span>${(c==="flow"?"Rücken-Flow":BAUSTEIN[c]).replace(/^\S+\s/,"")}</span>`).join("")}</div>`;
   document.body.classList.toggle("abend",ab);document.body.classList.toggle("morgen",!ab);
   $("btnStart").textContent=ab?"Abendroutine starten":"Morgenroutine starten";
 }
