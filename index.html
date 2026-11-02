@@ -442,7 +442,9 @@ const FLOW = {
 FLOW.abend=["katzeKuh","kind","hueftbeuger","chestOpener","drehung","beineWand","atmungAbend"];
 EX.beineWand={n:"Beine an die Wand",t:120,c:"Rückenlage, Gesäß nah an die Wand, Beine senkrecht hoch. Ruhig atmen, Rücken lang."};
 EX.atmungAbend={n:"Atmung",t:90,c:"Vier Sekunden ein, sechs Sekunden aus. Schultern und Kiefer lösen."};
-const TIMER={lesen:{n:"Lesen",e:"📖",t:900,c:"Buch auf, Handy weg. Nach 15 Minuten kommt ein leiser Gong."}};
+const TIMER={lesen:{n:"Lesen",e:"📖",t:900,c:"Buch auf, Handy weg. Nach 15 Minuten kommt ein leiser Gong."},
+  zaehne:{n:"Zähne putzen",e:"🪥",t:120,c:"Zwei Minuten, alle Flächen. Nach einer Minute kommt ein Ton – dann die andere Seite."},
+  zaehneAbend:{n:"Zähne putzen",e:"🪥",t:120,c:"Zwei Minuten, alle Flächen. Nach einer Minute kommt ein Ton – dann die andere Seite."}};
 const PHASEN=[["vorbereiten","👔","Vorbereiten"],["pflege","🧴","Pflege"],["dehnen","🧘","Dehnen"],["schlafen","🌙","Schlafen"]];
 const SCHRITT={
   kleidung:{ph:"vorbereiten",i:"👕",t:"Kleidung für morgen",x:"Wirf einen Blick auf die Termine morgen und häng das passende Outfit komplett an den Herrendiener.",tipp:"Hemd/Shirt, Hose, Sakko oder Pullover – alles, was du morgen anziehst.",d:180},
@@ -520,7 +522,80 @@ const FIG={
 };
 FIG.beineWand=FL+`<line x1="104" y1="8" x2="104" y2="90" class="st"/>`+Hd(28,84)+P(36,86,96,86)+P(96,86,100,30)+P(42,86,40,74);FIG.atmungAbend=FIG.atmung;
 FIG.katzeKuhL=FIG.katzeKuh; FIG.birdDogL=FIG.birdDog; FIG.hueftbeugerL=FIG.hueftbeuger; FIG.bridgeL=FIG.bridge;
-const svgFig=id=>`<svg viewBox="0 0 120 96" aria-hidden="true"><defs><marker id="mk" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ff9f0a"/></marker></defs>${FIG[id]||""}</svg>`;
+/* ---------- Animationen: zweite (dritte) Pose je Übung, weich überblendet ---------- */
+const SITH=(x=60,y=19,sy=33)=>Hd(x,y)+P(60,26,60,60)+P(48,sy,72,sy)+LEGS;
+const DN=(sy=33)=>P(48,sy,44,48,40,62)+P(72,sy,76,48,80,62);
+const SSIDEH=(x=62)=>Hd(x,18)+P(60,25,58,60)+P(58,60,84,66,96,74)+P(58,60,80,74,64,76);
+const FIGB={
+  armeSchwingen:SIT+P(48,33,46,46,50,58)+P(72,33,74,46,70,58),
+  kopfkreisen:[SITH(53,22)+DOWN,SITH(60,23)+DOWN,SITH(67,22)+DOWN],
+  rollenRueck:[SITH(60,18,28)+DN(28),SITH(60,19,31)+DN(31),SITH(60,19,36)+DN(36)],
+  rollenVor:[SITH(60,19,36)+DN(36),SITH(60,19,31)+DN(31),SITH(60,18,28)+DN(28)],
+  hochziehen:Hd(60,17)+P(60,24,60,60)+P(47,35,73,35)+LEGS+P(47,35,44,50,41,66)+P(73,35,76,50,79,66),
+  armRotation:[SIT+P(48,33,30,29,12,26)+P(72,33,90,29,108,26),SIT+P(48,33,30,33,12,33)+P(72,33,90,33,108,33),SIT+P(48,33,30,37,12,40)+P(72,33,90,37,108,40)],
+  armRollenVor:[SIT+P(48,33,38,22,46,30)+P(72,33,82,22,74,30),SIT+P(48,33,28,34,46,30)+P(72,33,92,34,74,30),SIT+P(48,33,38,46,46,30)+P(72,33,82,46,74,30)],
+  armRollenRueck:[SIT+P(48,33,38,46,46,30)+P(72,33,82,46,74,30),SIT+P(48,33,28,34,46,30)+P(72,33,92,34,74,30),SIT+P(48,33,38,22,46,30)+P(72,33,82,22,74,30)],
+  overhead:SIT+P(48,33,42,24,56,16)+P(72,33,78,24,64,16),
+  interlocked:Hd(60,19)+P(60,26,60,60)+P(48,33,72,33)+LEGS+P(48,33,46,18,60,6)+P(72,33,74,18,60,6),
+  chestOpener:Hd(60,18)+P(60,25,60,60)+P(45,32,75,32)+LEGS+P(45,32,44,48,54,62)+P(75,32,76,48,66,62),
+  extension:SSIDE+P(60,32,46,44,32,44),
+  armRotHoch:SIT+P(48,33,32,33,32,48)+P(72,33,88,33,88,48),
+  schmetterling:SIT+P(48,33,44,22,54,14)+P(72,33,76,22,66,14),
+  elefant:[SIT+P(48,33,44,48,40,62)+P(72,33,64,12,46,8),SIT+P(48,33,44,48,40,62)+P(72,33,80,24,88,14)],
+  ueberkopf:SIT+P(72,33,68,10,53,28)+P(48,33,52,22,65,14),
+  einarmig:SIT+P(72,33,52,35,30,33)+P(48,33,47,43,53,35),
+  band:SIT+P(48,33,40,42,30,48)+P(72,33,80,42,90,48)+`<line x1="30" y1="48" x2="90" y2="48" class="bd"/>`,
+  twist:SIT+P(48,33,46,46,52,54)+P(72,33,74,46,68,54),
+  nacken:Hd(60,19)+P(60,27,60,60)+P(48,33,72,33)+LEGS+P(48,33,44,48,40,62)+P(72,33,72,14,62,10),
+  chinTuck:SSIDEH(57)+P(60,32,62,48,70,56),
+  atmung:SITH(60,18,31)+DN(31),
+  katzeKuh:FL+Hd(22,49)+Ln("M30 60 Q55 74 80 60")+P(30,60,30,88)+P(80,60,80,88,100,88),
+  birdDog:FL+Hd(22,56)+P(30,62,80,62)+P(30,62,30,88)+P(30,62,28,88)+P(80,62,80,88,98,88)+P(80,62,84,88),
+  openBook:FL+Hd(18,80)+P(26,82,68,82)+P(68,82,86,70,92,86)+P(30,82,50,84)+P(30,80,44,72,54,76),
+  neunzig:FL+Hd(60,30)+P(60,37,60,70)+P(60,70,80,80,92,88)+P(60,70,36,72,36,88)+P(60,44,48,60)+P(60,44,72,60),
+  hueftbeuger:FL+Hd(63,20)+P(63,27,66,63)+P(66,63,42,65,40,88)+P(66,63,78,88,96,88)+P(63,34,60,50,66,60),
+  deadBug:FL+Hd(14,82)+P(22,84,64,84)+P(30,84,8,78)+P(30,84,32,58)+P(64,84,66,64,84,64)+P(64,84,64,64,82,64),
+  bridge:FL+Hd(14,84)+P(22,86,58,86)+P(58,86,74,70,82,88)+P(26,86,42,88),
+  hundKobra:FL+Hd(22,52)+P(34,88,30,62,62,84)+P(62,84,104,88),
+  drehung:FL+Hd(14,84)+P(22,86,70,86)+P(70,86,78,66,92,86)+P(28,86,40,72),
+  kind:FL+Hd(30,79)+Ln("M38 80 Q56 56 74 80")+P(74,80,60,88,92,88)+P(40,78,8,86),
+  kindSeit:FL+Hd(30,80)+Ln("M38 80 Q56 60 74 80")+P(74,80,60,88,92,88)+P(40,78,10,74),
+  liegestuetze:FL+Hd(18,76)+P(26,80,100,86)+P(30,80,30,88),
+  klimmzuege:`<line x1="20" y1="8" x2="100" y2="8" class="st"/>`+Hd(60,32)+P(48,8,47,22,50,40)+P(72,8,73,22,70,40)+P(50,40,70,40)+P(60,38,60,68)+P(60,68,57,82,58,94)+P(60,68,63,82,66,94),
+  situps:FL+Hd(14,82)+P(20,86,60,86)+P(60,86,78,66,92,88)+P(24,84,36,82)
+};
+FIGB.katzeKuhL=FIGB.katzeKuh; FIGB.birdDogL=FIGB.birdDog; FIGB.hueftbeugerL=FIGB.hueftbeuger; FIGB.bridgeL=FIGB.bridge; FIGB.atmungAbend=FIGB.atmung;
+const ANIM_DAUER={atmung:10,atmungAbend:10,kind:5,kindSeit:4,katzeKuh:5,katzeKuhL:5,bridge:3.5,bridgeL:3.5,hundKobra:5,hochziehen:2.6,liegestuetze:2.2,klimmzuege:2.8,situps:2.6};
+function figTeile(svg){
+  const out=[], re=/<(polyline|circle|path|line|text)\b([^>]*?)(?:\/>|>([^<]*)<\/text>)/g; let m;
+  while((m=re.exec(svg))){ if(/class="ar"/.test(m[2])) continue; out.push({tag:m[1],attr:m[2],txt:m[3]}); }
+  return out;
+}
+const ATTR={polyline:["points"],circle:["cx","cy"],path:["d"],line:["x1","y1","x2","y2"]};
+const wert=(a,n)=>{const m=a.match(new RegExp(`\\b${n}="([^"]*)"`));return m?m[1]:null};
+function animFig(id){
+  const A=FIG[id]; let Bs=FIGB[id]; if(!A||!Bs) return null;
+  if(!Array.isArray(Bs)) Bs=[Bs];
+  const a=figTeile(A), statisch=a.filter(x=>x.tag==="text"), ka=a.filter(x=>x.tag!=="text");
+  const bs=Bs.map(b=>figTeile(b).filter(x=>x.tag!=="text"));
+  if(bs.some(b=>b.length!==ka.length||b.some((x,i)=>x.tag!==ka[i].tag))) return null;
+  const dur=ANIM_DAUER[id]||(Bs.length>1?3.6:3), n=Bs.length+1;
+  const kt=(id==="atmung"||id==="atmungAbend")?"0;0.4;1":Array.from({length:n+1},(_,i)=>(i/n).toFixed(3)).join(";");
+  const ks=Array(n).fill(".42 0 .58 1").join(";");
+  let body="";
+  ka.forEach((x,i)=>{
+    let anim="";
+    ATTR[x.tag].forEach(at=>{
+      const v=[wert(x.attr,at),...bs.map(b=>wert(b[i].attr,at)),wert(x.attr,at)];
+      if(v.some(z=>z===null)||v.every(z=>z===v[0])) return;
+      anim+=`<animate attributeName="${at}" values="${v.join(";")}" keyTimes="${kt}" calcMode="spline" keySplines="${ks}" dur="${dur}s" repeatCount="indefinite"/>`;
+    });
+    body+=anim?`<${x.tag}${x.attr}>${anim}</${x.tag}>`:`<${x.tag}${x.attr}/>`;
+  });
+  statisch.forEach(x=>body+=`<text${x.attr}>${x.txt}</text>`);
+  return `<svg viewBox="0 0 120 96" aria-hidden="true">${body}</svg>`;
+}
+const svgFig=id=>animFig(id)||`<svg viewBox="0 0 120 96" aria-hidden="true"><defs><marker id="mk" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ff9f0a"/></marker></defs>${FIG[id]||""}</svg>`;
 
 /* ---------- Hilfen ---------- */
 const $ = id => document.getElementById(id);
@@ -546,7 +621,7 @@ function flowSteps(v){
   return st;
 }
 function build(v){
-  if(v==="abend") return [...["kleidung","schuhe","accessoires","reinigen","creme","magnesium"].map(id=>({k:"schritt",id})),...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
+  if(v==="abend") return [...["kleidung","schuhe","accessoires"].map(id=>({k:"schritt",id})),{k:"timer",id:"zaehneAbend",ph:"pflege"},...["reinigen","creme","magnesium"].map(id=>({k:"schritt",id})),...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
   const st=[];
   st.push({k:"check",id:"gewicht"},{k:"check",id:"wasser"});
   FLOW[v].forEach(id=>{
@@ -556,7 +631,9 @@ function build(v){
       st.push({k:"ex",id,side:"Rechte Seite",prep:SWITCH,t:e.t,sw:1});
     } else st.push({k:"ex",id,side:"",prep:PREP,t:e.t});
   });
-  ["liegestuetze","klimmzuege","situps","dusche","haut","supps","outfit"].forEach(id=>st.push({k:"check",id}));
+  ["liegestuetze","klimmzuege","situps"].forEach(id=>st.push({k:"check",id}));
+  st.push({k:"timer",id:"zaehne"});
+  ["dusche","haut","supps","outfit"].forEach(id=>st.push({k:"check",id}));
   return st;
 }
 function dauerMin(v){
@@ -673,13 +750,13 @@ function enter(i){
     say(sc.t+". "+sx);
     return;
   }
-  document.body.classList.toggle("nacht",st.k==="timer");
+  document.body.classList.toggle("nacht",st.k==="timer"&&st.id==="lesen");
   if(st.k==="timer"){const tm=TIMER[st.id];
     $("exView").classList.remove("hidden"); $("checkView").classList.add("hidden");
     $("exCtrl").classList.remove("hidden"); $("checkCtrl").classList.add("hidden");
     $("name").textContent=tm.n; $("side").textContent=""; $("cue").textContent=tm.c;
-    $("fig").innerHTML=`<div class="emoji" style="margin:18px 0">${tm.e}</div>`; $("btnPause").textContent="Pause";
-    startPhase("hold",tm.t); setPhase("hold",tm.n); say("Jetzt lesen. Fünfzehn Minuten.");
+    $("fig").innerHTML=`<div class="emoji" style="margin:18px auto">${tm.e}</div>`; $("btnPause").textContent="Pause";
+    startPhase("hold",tm.t); setPhase("hold",tm.n); say(st.id==="lesen"?"Jetzt lesen. Fünfzehn Minuten.":tm.n+". Zwei Minuten.");
     return;
   }
   if(st.k==="check"){
@@ -728,6 +805,7 @@ function tick(){
   $("num").style.fontSize=steps[S.idx]&&steps[S.idx].k==="timer"?"40px":"";
   $("ring").style.strokeDashoffset=(678.6*(1-rem/phaseLen)).toFixed(1);
   if(paused) return;
+  if(steps[S.idx]&&steps[S.idx].k==="timer"&&/^zaehne/.test(steps[S.idx].id)&&sec===60&&lastSec!==60){beep(880,.15);setTimeout(()=>beep(880,.15),180);say("Andere Seite.")}
   if(sec!==lastSec){ if(sec>0&&sec<=3&&steps[S.idx].k!=="timer") beep(sec===1?990:880); lastSec=sec; }
   if(rem<=0){
     const st=steps[S.idx];
@@ -774,6 +852,7 @@ function finish(){
     `liegestuetze=${rp("liegestuetze")}`,
     `klimmzuege=${rp("klimmzuege")}`,
     `situps=${rp("situps")}`,
+    `zaehne=${r("zaehne")}`,
     `dusche=${r("dusche")}`,
     `haut=${r("haut")}`,
     `supplements=${r("supps")}`,
@@ -787,7 +866,7 @@ function finish(){
     z("Rücken-Flow",`${exDone}/${exSteps.length} Übungen`)+
     z("Liegestütze / Klimmzüge / Sit-ups",`${rp("liegestuetze")} / ${rp("klimmzuege")} / ${rp("situps")}`)+
     z("Duschen",r("dusche")?"✓":"–")+z("Hautpflege",r("haut")?"✓":"–")+
-    z("Supplements",r("supps")?"✓":"–")+z("Outfit",r("outfit")?"✓":"–");
+    z("Supplements",r("supps")?"✓":"–")+z("Zähne",r("zaehne")?"✓":"–")+z("Outfit",r("outfit")?"✓":"–");
   $("logText").textContent=log; verlaufMerken(); kacheln();
   show("s-end"); say("Fertig. Starker Start in den Tag.");
 }
@@ -800,12 +879,12 @@ function finishAbend(){
   const datum=isoLocal(new Date(start.getTime()-4*3600e3)).slice(0,10);
   const lesen=S.res.lesen?15:0, outfit=r("kleidung")&&r("schuhe")?1:0, haut=r("reinigen")&&r("creme")?1:0;
   const log=["Abendroutine",`datum=${datum}`,`start=${S.start}`,`ende=${isoLocal(end)}`,`dauer_min=${min}`,
-    `outfit=${outfit}`,`haut_abends=${haut}`,`supplements=${r("magnesium")}`,`dehnen=${fd}/${flow.length}`,
+    `outfit=${outfit}`,`haut_abends=${haut}`,`zaehne_abends=${r("zaehneAbend")}`,`supplements=${r("magnesium")}`,`dehnen=${fd}/${flow.length}`,
     `sleepcycle=${r("sleep")}`,`lesen_min=${lesen}`].join("; ")+";";
   S.log=log; S.fertig=isoLocal(end); save();
   const z=(l,v)=>`<div><span class="muted">${l}</span><b>${v}</b></div>`;
   $("endSub").textContent=`${hm(start)}–${hm(end)} · ${min} Min. · Abend`;
-  $("sum").innerHTML=z("👔 Outfit am Herrendiener",outfit?"✓":"–")+z("🧴 Hautpflege abends",haut?"✓":"–")+z("💊 Magnesium",r("magnesium")?"✓":"–")+
+  $("sum").innerHTML=z("👔 Outfit am Herrendiener",outfit?"✓":"–")+z("🪥 Zähne",r("zaehneAbend")?"✓":"–")+z("🧴 Hautpflege abends",haut?"✓":"–")+z("💊 Magnesium",r("magnesium")?"✓":"–")+
     z("🧘 Rücken-Dehnen",`${fd}/${flow.length}`)+z("🌙 Sleep Cycle",r("sleep")?"✓":"–")+z("📖 Lesen",lesen?"15 Min. ✓":"–");
   $("logText").textContent=log; verlaufMerken(); kacheln();
   show("s-end"); say("Fertig. Gute Nacht, Noah.");
@@ -813,7 +892,7 @@ function finishAbend(){
 
 /* ---------- Darstellung ---------- */
 const BAUSTEIN={gewicht:"⚖️ Wiegen",wasser:"💧 Wasser",liegestuetze:"💪 Kraft",dusche:"🚿 Duschen",haut:"🧴 Haut",supps:"💊 Supplements",outfit:"👔 Outfit",
-  kleidung:"👔 Outfit für morgen",reinigen:"🧴 Hautpflege",magnesium:"💊 Magnesium",sleep:"🌙 Sleep Cycle",lesen:"📖 Lesen 15′"};
+  kleidung:"👔 Outfit für morgen",reinigen:"🧴 Hautpflege",magnesium:"💊 Magnesium",sleep:"🌙 Sleep Cycle",lesen:"📖 Lesen 15′",zaehne:"🪥 Zähne",zaehneAbend:"🪥 Zähne"};
 function heroRender(){
   const st=build(variante),n=st.filter(x=>x.k==="ex").length,ab=variante==="abend";
   const chips=[];st.forEach(x=>{if(x.k==="ex"){if(!chips.includes("flow"))chips.push("flow")}else if(BAUSTEIN[x.id]&&!chips.includes(x.id))chips.push(x.id)});
