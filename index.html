@@ -260,6 +260,16 @@ details.card summary{color:var(--text);font-size:17px}
 .tile.a .v{color:var(--orange)}.tile.b .v{color:var(--green)}.tile.c .v{color:var(--blue)}.tile.d .v{color:var(--indigo)}
 .sum div{border-bottom:.5px solid var(--sep);padding:10px 0}
 pre{background:var(--surface);border-radius:12px}
+.ckopf{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:600;color:var(--accent);margin-bottom:4px}
+.ckopf span{color:var(--muted);font-weight:500}
+#heuteCard .orow{padding:8px 0}
+#heuteCard .orow b{font-size:16px}
+.gchart{width:100%;height:auto;display:block;margin-top:4px}
+.gchart .kurve{fill:none;stroke:var(--orange);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.gchart .ziel{stroke:rgba(235,235,245,.3);stroke-width:1;stroke-dasharray:4 4}
+.gchart .zl{fill:rgba(235,235,245,.6);font-size:11px}
+.gchart .punkt{fill:var(--orange);stroke:#1c1c1e;stroke-width:2}
+#s-start .bottom{position:sticky;bottom:0;padding:24px 0 calc(12px + env(safe-area-inset-bottom));background:linear-gradient(rgba(0,0,0,0),#000 40%)}
 </style>
 </head>
 <body>
@@ -270,6 +280,8 @@ pre{background:var(--surface);border-radius:12px}
   <div class="muted" id="today"></div>
   <div class="woche" id="woche"></div><div class="wochetxt" id="wochetxt"></div>
   <div class="hero" id="hero"></div>
+  <div class="card hidden" id="heuteCard"></div>
+  <div class="card hidden" id="gewCard"></div>
 
   <div class="card" id="resume" style="display:none">
     <div>Angefangene Routine von <b id="resumeTime"></b> gefunden.</div>
@@ -452,6 +464,7 @@ const SCHRITT={
   accessoires:{ph:"vorbereiten",i:"⌚",t:"Accessoires",x:"Gürtel, Uhr, Socken und was du sonst brauchst dazulegen.",tipp:"Danach ist der Morgen entschieden – keine Suche mehr.",d:60},
   reinigen:{ph:"pflege",i:"🫧",t:"Gesicht reinigen",x:"Gesicht mit lauwarmem Wasser anfeuchten, Reiniger 30 Sekunden einmassieren, gründlich abspülen, trocken tupfen.",timer:30,d:90},
   creme:{ph:"pflege",i:"🧴",t:"Feuchtigkeitscreme",x:"Eine erbsengroße Menge – abends ruhig etwas großzügiger – auf Gesicht und Hals verteilen.",d:45},
+  zahnseide:{ph:"pflege",i:"🦷",t:"Zahnseide",x:"Einmal zwischen allen Zähnen durch, sanft am Zahnfleisch entlang.",tipp:"Optional – „Auslassen“ ist okay.",d:60},
   magnesium:{ph:"pflege",i:"💊",t:"Magnesium",x:"Magnesium (Oxid), ca. 200 mg elementar – laut Routine des Ernährungsbots optional.",tipp:"Einzige Magnesiumquelle des Tages.",d:30},
   sleep:{ph:"schlafen",i:"🌙",t:"Sleep Cycle einschalten",x:"Sleep Cycle starten und das Handy ans Ladekabel. Ab jetzt nur noch der Lese-Timer.",d:45}
 };
@@ -621,7 +634,7 @@ function flowSteps(v){
   return st;
 }
 function build(v){
-  if(v==="abend") return [...["kleidung","schuhe","accessoires"].map(id=>({k:"schritt",id})),{k:"timer",id:"zaehneAbend",ph:"pflege"},...["reinigen","creme","magnesium"].map(id=>({k:"schritt",id})),...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
+  if(v==="abend") return [...["kleidung","schuhe","accessoires"].map(id=>({k:"schritt",id})),{k:"timer",id:"zaehneAbend",ph:"pflege"},...["zahnseide","reinigen","creme","magnesium"].map(id=>({k:"schritt",id})),...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
   const st=[];
   st.push({k:"check",id:"gewicht"},{k:"check",id:"wasser"});
   FLOW[v].forEach(id=>{
@@ -879,12 +892,12 @@ function finishAbend(){
   const datum=isoLocal(new Date(start.getTime()-4*3600e3)).slice(0,10);
   const lesen=S.res.lesen?15:0, outfit=r("kleidung")&&r("schuhe")?1:0, haut=r("reinigen")&&r("creme")?1:0;
   const log=["Abendroutine",`datum=${datum}`,`start=${S.start}`,`ende=${isoLocal(end)}`,`dauer_min=${min}`,
-    `outfit=${outfit}`,`haut_abends=${haut}`,`zaehne_abends=${r("zaehneAbend")}`,`supplements=${r("magnesium")}`,`dehnen=${fd}/${flow.length}`,
+    `outfit=${outfit}`,`haut_abends=${haut}`,`zaehne_abends=${r("zaehneAbend")}`,`zahnseide=${r("zahnseide")}`,`supplements=${r("magnesium")}`,`dehnen=${fd}/${flow.length}`,
     `sleepcycle=${r("sleep")}`,`lesen_min=${lesen}`].join("; ")+";";
   S.log=log; S.fertig=isoLocal(end); save();
   const z=(l,v)=>`<div><span class="muted">${l}</span><b>${v}</b></div>`;
   $("endSub").textContent=`${hm(start)}–${hm(end)} · ${min} Min. · Abend`;
-  $("sum").innerHTML=z("👔 Outfit am Herrendiener",outfit?"✓":"–")+z("🪥 Zähne",r("zaehneAbend")?"✓":"–")+z("🧴 Hautpflege abends",haut?"✓":"–")+z("💊 Magnesium",r("magnesium")?"✓":"–")+
+  $("sum").innerHTML=z("👔 Outfit am Herrendiener",outfit?"✓":"–")+z("🪥 Zähne",r("zaehneAbend")?"✓":"–")+z("🦷 Zahnseide",r("zahnseide")?"✓":"–")+z("🧴 Hautpflege abends",haut?"✓":"–")+z("💊 Magnesium",r("magnesium")?"✓":"–")+
     z("🧘 Rücken-Dehnen",`${fd}/${flow.length}`)+z("🌙 Sleep Cycle",r("sleep")?"✓":"–")+z("📖 Lesen",lesen?"15 Min. ✓":"–");
   $("logText").textContent=log; verlaufMerken(); kacheln();
   show("s-end"); say("Fertig. Gute Nacht, Noah.");
@@ -892,7 +905,7 @@ function finishAbend(){
 
 /* ---------- Darstellung ---------- */
 const BAUSTEIN={gewicht:"⚖️ Wiegen",wasser:"💧 Wasser",liegestuetze:"💪 Kraft",dusche:"🚿 Duschen",haut:"🧴 Haut",supps:"💊 Supplements",outfit:"👔 Outfit",
-  kleidung:"👔 Outfit für morgen",reinigen:"🧴 Hautpflege",magnesium:"💊 Magnesium",sleep:"🌙 Sleep Cycle",lesen:"📖 Lesen 15′",zaehne:"🪥 Zähne",zaehneAbend:"🪥 Zähne"};
+  kleidung:"👔 Outfit für morgen",reinigen:"🧴 Hautpflege",magnesium:"💊 Magnesium",sleep:"🌙 Sleep Cycle",lesen:"📖 Lesen 15′",zaehne:"🪥 Zähne",zaehneAbend:"🪥 Zähne",zahnseide:"🦷 Zahnseide"};
 function heroRender(){
   const st=build(variante),n=st.filter(x=>x.k==="ex").length,ab=variante==="abend";
   const chips=[];st.forEach(x=>{if(x.k==="ex"){if(!chips.includes("flow"))chips.push("flow")}else if(BAUSTEIN[x.id]&&!chips.includes(x.id))chips.push(x.id)});
@@ -902,6 +915,7 @@ function heroRender(){
     <div class="chips">${chips.map(c=>`<span>${(c==="flow"?"Rücken-Flow":BAUSTEIN[c]).replace(/^\S+\s/,"")}</span>`).join("")}</div>`;
   document.body.classList.toggle("abend",ab);document.body.classList.toggle("morgen",!ab);
   $("btnStart").textContent=ab?"Abendroutine starten":"Morgenroutine starten";
+  heuteRender(); gewichtRender();
 }
 function wocheRender(){
   const h=store.get("verlauf",[])||[],d=new Date(),mo=new Date(d);mo.setDate(d.getDate()-((d.getDay()+6)%7));
@@ -914,7 +928,7 @@ function wocheRender(){
 }
 function verlaufMerken(){
   const datum=isoLocal(new Date(new Date(S.start).getTime()-4*3600e3)).slice(0,10);
-  const h=(store.get("verlauf",[])||[]).filter(x=>!(x.d===datum&&x.v===S.v));h.push({d:datum,v:S.v});store.set("verlauf",h.slice(-120));
+  const h=(store.get("verlauf",[])||[]).filter(x=>!(x.d===datum&&x.v===S.v));h.push(Object.assign({d:datum,v:S.v},S.v!=="abend"&&S.kg&&!isNaN(parseFloat(String(S.kg).replace(",",".")))?{kg:parseFloat(String(S.kg).replace(",","."))}:{}));store.set("verlauf",h.slice(-120));
 }
 function kacheln(){
   const min=Math.max(1,Math.round((new Date()-new Date(S.start))/60000));
@@ -941,12 +955,40 @@ function csvZeilen(t){const z=[];let r=[],f="",q=false;for(let i=0;i<t.length;i+
 async function outfitLaden(){ if(!OUTFIT_URL.startsWith("http"))return;
   try{const t=await (await fetch(OUTFIT_URL+(OUTFIT_URL.includes("?")?"&":"?")+"t="+Date.now(),{cache:"no-store"})).text();
     const o={};csvZeilen(t).forEach(r=>{if(r[0])o[r[0].trim()]=(r[1]||"").trim()});
-    if(o.datum){OUTFIT=o;try{localStorage.setItem("outfit",JSON.stringify(o))}catch(e){}}}catch(e){}}
+    if(o.datum){OUTFIT=o;try{localStorage.setItem("outfit",JSON.stringify(o))}catch(e){} try{heuteRender()}catch(e){}}}catch(e){}}
 function outfitFuer(tag){return OUTFIT&&OUTFIT.datum===tag?OUTFIT:null}
 function tagMorgen(){const d=new Date(Date.now()-4*3600e3);d.setDate(d.getDate()+1);return isoLocal(d).slice(0,10)}
 function outfitZeilen(o){return [["👔 Oberteil",o.oberteil],["👖 Hose",o.hose],["👞 Schuhe + Gürtel",o.schuhe],["🧥 Jacke",o.jacke],["⌚ Accessoires",o.accessoires],["☔ Ersatz",o.ersatz]].filter(x=>x[1])}
 outfitLaden();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)outfitLaden()});
+
+function heuteRender(){
+  const el=$("heuteCard"); if(!el) return;
+  const ab=variante==="abend", o=outfitFuer(ab?tagMorgen():isoLocal(new Date()).slice(0,10));
+  if(!o){el.classList.add("hidden");return}
+  const z=outfitZeilen(o).filter(x=>!/Ersatz/.test(x[0])).map(x=>[x[0].replace(/^\S+\s/,""),x[1].replace(/\s*\([A-Z]{2}\d{2}\)/g,"")]);
+  el.innerHTML=`<div class="ckopf">${ab?"Morgen anziehen":"Heute anziehen"}<span>Stufe ${esc(o.stufe)}</span></div>`+z.map(x=>`<div class="orow"><span>${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join("");
+  el.classList.remove("hidden");
+}
+const fmtKg=n=>n.toFixed(1).replace(".",",");
+function gewichtRender(){
+  const el=$("gewCard"); if(!el) return;
+  if(variante==="abend"){el.classList.add("hidden");return}
+  const h=(store.get("verlauf")||[]).filter(x=>x.kg).slice(-60);
+  el.classList.remove("hidden");
+  if(!h.length){el.innerHTML=`<div class="ckopf">Gewicht</div><div class="onote" style="margin:2px 0 0">Die Kurve startet mit deiner nächsten Messung in der Morgenroutine.</div>`;return}
+  const last=h[h.length-1], first=h[0], ZIEL=90, ZD="2026-12-24";
+  const W=320,H=110,pt=10,pb=10;
+  const t0=new Date(first.d).getTime(), t1=Math.max(new Date(last.d).getTime(),t0+7*864e5);
+  const ks=h.map(x=>x.kg).concat([ZIEL]), lo=Math.floor(Math.min(...ks)-.5), hi=Math.ceil(Math.max(...ks)+.5);
+  const X=d=>6+(new Date(d).getTime()-t0)/(t1-t0)*(W-12), Y=k=>pt+(hi-k)/(hi-lo)*(H-pt-pb);
+  const pts=h.map(x=>`${X(x.d).toFixed(1)},${Y(x.kg).toFixed(1)}`).join(" ");
+  const diff=last.kg-first.kg, rest=last.kg-ZIEL, tage=Math.ceil((new Date(ZD)-new Date())/864e5);
+  const seit=new Date(first.d).toLocaleDateString("de-AT",{day:"numeric",month:"short"});
+  el.innerHTML=`<div class="ckopf">Gewicht<span>${fmtKg(last.kg)} kg</span></div>
+    <svg viewBox="0 0 ${W} ${H}" class="gchart" aria-hidden="true"><line x1="0" x2="${W}" y1="${Y(ZIEL)}" y2="${Y(ZIEL)}" class="ziel"/><text x="${W-2}" y="${Y(ZIEL)-4}" text-anchor="end" class="zl">Ziel ${ZIEL}</text>${h.length>1?`<polyline points="${pts}" class="kurve"/>`:""}<circle cx="${X(last.d)}" cy="${Y(last.kg)}" r="4.5" class="punkt"/></svg>
+    <div class="onote" style="margin:6px 0 0">${h.length>1?`${diff<=0?"−":"+"}${fmtKg(Math.abs(diff))} kg seit ${seit} · `:""}${rest>0?`noch ${fmtKg(rest)} kg bis ${ZIEL} · ${tage} Tage bis Weihnachten`:`Unter ${ZIEL} kg – Weihnachtsziel erreicht`}</div>`;
+}
 
 function initStart(){
   const d=new Date();
