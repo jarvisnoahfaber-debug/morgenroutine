@@ -469,7 +469,7 @@ const SCHRITT={
   accessoires:{ph:"vorbereiten",i:"⌚",t:"Accessoires",x:"Gürtel, Uhr, Socken und was du sonst brauchst dazulegen.",tipp:"Danach ist der Morgen entschieden – keine Suche mehr.",d:60},
   reinigen:{ph:"pflege",i:"🫧",t:"Gesicht reinigen",x:"Gesicht mit lauwarmem Wasser anfeuchten, Reiniger 30 Sekunden einmassieren, gründlich abspülen, trocken tupfen.",timer:30,d:90},
   creme:{ph:"pflege",i:"🧴",t:"Feuchtigkeitscreme",x:"Eine erbsengroße Menge – abends ruhig etwas großzügiger – auf Gesicht und Hals verteilen.",d:45},
-  wochencheck:{ph:"vorbereiten",i:"🧳",t:"Sonntag: Spender & Essential Bag",x:"Tablettenspender für die Woche befüllen:\n• Morgen: D3 (2 Softgels), K2 (1), Omega-3 (2)\n• Abend: Magnesium\n• Kreatin: 7 Portionen à 5 g abfüllen\n\nEssential Bag prüfen und auffüllen:\n• Zahnpasta, Zahnseide\n• Duschgel, Shampoo\n• Rasiergel, Ersatzklingen\n• Reiniger, Feuchtigkeitscreme, LSF\n• Deo, Kamm, Lippenpflege\n• Trimmer und Zahnbürste laden",tipp:"Nur sonntags – dauert ca. 10 Minuten.",d:600},
+  wochencheck:{ph:"vorbereiten",i:"🧳",t:"Sonntag: Spender & Essential Bag",x:"Tablettenspender für die Woche befüllen:\n• Morgen: D3 (2 Softgels), K2 (1), Omega-3 (2)\n• Abend: Magnesium\n• Kreatin: 7 Portionen à 5 g abfüllen\n\nEssential Bag prüfen und auffüllen:\n• Zahnpasta, Zahnseide\n• Duschgel, Shampoo\n• Rasiergel, Ersatzklingen\n• Reiniger, Feuchtigkeitscreme, LSF\n• Deo-Stick, Kamm, Lippenpflege\n• Duft-Shots № 600 und № 602\n• Trimmer und Zahnbürste laden",tipp:"Nur sonntags – dauert ca. 10 Minuten.",d:600},
   zahnseide:{ph:"pflege",i:"🦷",t:"Zahnseide",x:"Einmal zwischen allen Zähnen durch, sanft am Zahnfleisch entlang.",tipp:"Optional – „Auslassen“ ist okay.",d:60},
   magnesium:{ph:"pflege",i:"💊",t:"Magnesium",x:"Magnesium (Oxid), ca. 200 mg elementar – laut Routine des Ernährungsbots optional.",tipp:"Einzige Magnesiumquelle des Tages.",d:30},
   sleep:{ph:"schlafen",i:"🌙",t:"Sleep Cycle einschalten",x:"Sleep Cycle starten und das Handy ans Ladekabel. Ab jetzt nur noch der Lese-Timer.",d:45}
@@ -480,7 +480,7 @@ const CHECK = {
   hampelmann:{n:"Step-Jacks",r:30,c:"Ohne Sprung: abwechselnd ein Bein zur Seite setzen, Arme dabei über den Kopf – zügig, aber leise.",d:45},
   kniebeugen:{n:"Kniebeugen",r:20,c:"Füße schulterbreit, Gesäß nach hinten, Rücken gerade, Fersen bleiben am Boden.",d:60},
   burpees:{n:"Burpees ohne Sprung",r:10,c:"Hocke, Beine nacheinander nach hinten in den Stütz setzen, nacheinander zurück, aufstehen und strecken.",d:75},
-  deoHaare:{n:"Deo & Haare",e:"💈",c:"Letzter Schliff vor dem Anziehen:",d:120,l:[["Deo"],["Haare kämmen und stylen"],["Lippenpflege"]]},
+  deoHaare:{n:"Deo, Duft & Haare",e:"💈",c:"Letzter Schliff vor dem Anziehen:",d:120,l:[["Deo","№ 600 Stick"],["Duft","2 Sprühstöße – Hals und Handgelenk"],["Haare kämmen und stylen"],["Lippenpflege"]]},
   rasieren:{n:"Rasieren",e:"🪒",c:"Nach dem Duschen – die Haut ist jetzt weich:",d:240,l:[["Konturen trimmen","Wangen, Hals, Übergänge"],["Rasieren","mit dem Strich, ohne Druck"],["Kalt abspülen, trocken tupfen"]]},
   gewicht:{n:"Wiegen",e:"⚖️",c:"Nach dem WC, vor dem Trinken. Gewicht eingeben.",kg:1,d:45},
   wasser:{n:"Wasser trinken",e:"💧",c:"Ein großes Glas, etwa ein halber Liter.",d:45},
@@ -792,6 +792,7 @@ function enter(i){
   }
   if(st.k==="check"){
     let c=CHECK[st.id];
+    if(st.id==="deoHaare"){const d=duftHeute(); c={...c,l:[["Deo","№ 600 Stick"],[`Duft: № ${d.nr} ${d.name}`,"2 Sprühstöße – Hals und Handgelenk"+(d.abend?` · am Abend № ${d.abend} nachlegen, Shot ins Bag`:"")],["Haare kämmen und stylen"],["Lippenpflege"]]};}
     if(st.id==="outfit"){const o=outfitFuer(isoLocal(new Date()).slice(0,10)); if(o) c={...c,c:"Heute laut Jarvis – ✓ = so getragen:",l:outfitZeilen(o).filter(x=>!x[0].includes("Ersatz")).map(x=>[x[1],x[0]])};}
     phase="check"; setPhase("check",c.r?"Kraft":"Checkliste");
     $("name").textContent=c.n; $("side").textContent=""; $("cue").textContent=c.c;
@@ -891,6 +892,7 @@ function finish(){
     `dusche=${r("dusche")}`,
     `rasieren=${r("rasieren")}`,
     `deo_haare=${r("deoHaare")}`,
+    `duft=${r("deoHaare")?duftHeute().nr:""}`,
     `haut=${r("haut")}`,
     `supplements=${r("supps")}`,
     `outfit=${r("outfit")}`,
@@ -902,7 +904,7 @@ function finish(){
   $("sum").innerHTML=z("Gewicht",S.kg?S.kg.replace(".",",")+" kg":"–")+z("Wasser",r("wasser")?"✓":"–")+
     z("Bett gebaut",r("bett")?"✓":"–")+z("Rücken-Flow",`${exDone}/${exSteps.length} Übungen`)+z("Drill: Step-Jacks / Kniebeugen / Burpees",`${rp("hampelmann")} / ${rp("kniebeugen")} / ${rp("burpees")}`)+
     z("Liegestütze / Klimmzüge / Sit-ups",`${rp("liegestuetze")} / ${rp("klimmzuege")} / ${rp("situps")}`)+
-    z("Duschen",r("dusche")?"✓":"–")+z("Rasieren",r("rasieren")?"✓":"–")+z("Deo & Haare",r("deoHaare")?"✓":"–")+z("Hautpflege",r("haut")?"✓":"–")+
+    z("Duschen",r("dusche")?"✓":"–")+z("Rasieren",r("rasieren")?"✓":"–")+z("Deo, Duft & Haare",r("deoHaare")?"✓ (№ "+duftHeute().nr+")":"–")+z("Hautpflege",r("haut")?"✓":"–")+
     z("Supplements",r("supps")?"✓":"–")+z("Zähne",r("zaehne")?"✓":"–")+z("Outfit",r("outfit")?"✓":"–");
   $("logText").textContent=log; verlaufMerken(); kacheln();
   show("s-end"); say("Fertig. Starker Start in den Tag.");
@@ -929,7 +931,7 @@ function finishAbend(){
 
 /* ---------- Darstellung ---------- */
 const BAUSTEIN={gewicht:"⚖️ Wiegen",wasser:"💧 Wasser",liegestuetze:"💪 Kraft",dusche:"🚿 Duschen",haut:"🧴 Haut",supps:"💊 Supplements",outfit:"👔 Outfit",
-  kleidung:"👔 Outfit für morgen",reinigen:"🧴 Hautpflege",magnesium:"💊 Magnesium",sleep:"🌙 Sleep Cycle",lesen:"📖 Lesen 15′",zaehne:"🪥 Zähne",zaehneAbend:"🪥 Zähne",zahnseide:"🦷 Zahnseide",bett:"🛏️ Bett",hampelmann:"🎖️ Drill",rasieren:"🪒 Rasieren",deoHaare:"💈 Deo & Haare",wochencheck:"🧳 Spender & Bag (So)"};
+  kleidung:"👔 Outfit für morgen",reinigen:"🧴 Hautpflege",magnesium:"💊 Magnesium",sleep:"🌙 Sleep Cycle",lesen:"📖 Lesen 15′",zaehne:"🪥 Zähne",zaehneAbend:"🪥 Zähne",zahnseide:"🦷 Zahnseide",bett:"🛏️ Bett",hampelmann:"🎖️ Drill",rasieren:"🪒 Rasieren",deoHaare:"💈 Deo & Duft",wochencheck:"🧳 Spender & Bag (So)"};
 function heroRender(){
   const st=build(variante),n=st.filter(x=>x.k==="ex").length,ab=variante==="abend";
   const chips=[];st.forEach(x=>{if(x.k==="ex"){if(!chips.includes("flow"))chips.push("flow")}else if(BAUSTEIN[x.id]&&!chips.includes(x.id))chips.push(x.id)});
@@ -986,6 +988,12 @@ function outfitZeilen(o){return [["👔 Oberteil",o.oberteil],["👖 Hose",o.hos
 outfitLaden();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)outfitLaden()});
 
+function duftHeute(){
+  const o=outfitFuer(isoLocal(new Date()).slice(0,10)), st=o?(+o.stufe||3):3, m=new Date().getMonth()+1;
+  const abend=st>=5||/ball|kommers|skalden|gala|abend|kneipe/i.test(o?(o.anlass||"")+" "+befehlZeilen(o).join(" "):"");
+  if(m>=5&&m<=9&&st<=2&&!abend) return {nr:"614",name:"Mandarine & Orange",abend:null};
+  return {nr:"600",name:"Schwarzer Tee & Bergamotte",abend:abend?"602 Honig & Tabak":null};
+}
 function befehlZeilen(o){return o?["befehl1","befehl2","befehl3"].map(k=>o[k]).filter(Boolean):[]}
 function befehlRender(){
   const el=$("befehlCard"); if(!el) return;
@@ -999,6 +1007,7 @@ function heuteRender(){
   const ab=variante==="abend", o=outfitFuer(ab?tagMorgen():isoLocal(new Date()).slice(0,10));
   if(!o){el.classList.add("hidden");return}
   const z=outfitZeilen(o).filter(x=>!/Ersatz/.test(x[0])).map(x=>[x[0].replace(/^\S+\s/,""),x[1].replace(/\s*\([A-Z]{2}\d{2}\)/g,"")]);
+  const d=ab?null:duftHeute(); if(d) z.push(["Duft",`№ ${d.nr} ${d.name}`+(d.abend?` · abends № ${d.abend}`:"")]);
   el.innerHTML=`<div class="ckopf">${ab?"Morgen anziehen":"Heute anziehen"}<span>Stufe ${esc(o.stufe)}</span></div>`+z.map(x=>`<div class="orow"><span>${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join("");
   el.classList.remove("hidden");
 }
