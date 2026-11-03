@@ -269,6 +269,10 @@ pre{background:var(--surface);border-radius:12px}
 .gchart .ziel{stroke:rgba(235,235,245,.3);stroke-width:1;stroke-dasharray:4 4}
 .gchart .zl{fill:rgba(235,235,245,.6);font-size:11px}
 .gchart .punkt{fill:var(--orange);stroke:#1c1c1e;stroke-width:2}
+.brow{display:flex;gap:12px;align-items:baseline;padding:8px 0;border-bottom:.5px solid var(--sep)}
+.brow:last-child{border:0}
+.brow i{font-style:normal;font-weight:700;color:var(--accent);min-width:14px}
+.brow b{font-weight:500;font-size:16px}
 #s-start .bottom{position:sticky;bottom:0;padding:24px 0 calc(12px + env(safe-area-inset-bottom));background:linear-gradient(rgba(0,0,0,0),#000 40%)}
 </style>
 </head>
@@ -280,6 +284,7 @@ pre{background:var(--surface);border-radius:12px}
   <div class="muted" id="today"></div>
   <div class="woche" id="woche"></div><div class="wochetxt" id="wochetxt"></div>
   <div class="hero" id="hero"></div>
+  <div class="card hidden" id="befehlCard"></div>
   <div class="card hidden" id="heuteCard"></div>
   <div class="card hidden" id="gewCard"></div>
 
@@ -470,6 +475,10 @@ const SCHRITT={
 };
 const PREP = 8, SWITCH = 4;
 const CHECK = {
+  bett:{n:"Bett bauen",e:"🛏️",c:"Wie beim Bundesheer:",d:90,l:[["Decke glatt ziehen","keine Falten, straff"],["Kanten sauber einschlagen"],["Polster gerade und aufgeschüttelt"]]},
+  hampelmann:{n:"Hampelmann",r:30,c:"Zügig und sauber: Arme über den Kopf, Beine auseinander – und zurück.",d:45},
+  kniebeugen:{n:"Kniebeugen",r:20,c:"Füße schulterbreit, Gesäß nach hinten, Rücken gerade, Fersen bleiben am Boden.",d:60},
+  burpees:{n:"Burpees",r:10,c:"Hocke, Sprung in den Stütz, zurück in die Hocke, Strecksprung mit Armen nach oben.",d:75},
   gewicht:{n:"Wiegen",e:"⚖️",c:"Nach dem WC, vor dem Trinken. Gewicht eingeben.",kg:1,d:45},
   wasser:{n:"Wasser trinken",e:"💧",c:"Ein großes Glas, etwa ein halber Liter.",d:45},
   liegestuetze:{n:"Liegestütze",r:10,c:"Körper gerade wie ein Brett, Brust bis knapp über den Boden.",d:60},
@@ -534,6 +543,9 @@ const FIG={
   situps:FL+Hd(36,56)+P(42,62,60,86)+P(60,86,78,66,92,88)+P(44,66,54,72)+Ar("M22 82 Q20 66 28 56")
 };
 FIG.beineWand=FL+`<line x1="104" y1="8" x2="104" y2="90" class="st"/>`+Hd(28,84)+P(36,86,96,86)+P(96,86,100,30)+P(42,86,40,74);FIG.atmungAbend=FIG.atmung;
+FIG.hampelmann=Hd(60,14)+P(60,21,60,54)+P(50,27,70,27)+P(60,54,56,72,54,90)+P(60,54,64,72,66,90)+P(50,27,46,42,44,56)+P(70,27,74,42,76,56);
+FIG.kniebeugen=FL+Hd(57,14)+P(58,21,60,54)+P(60,54,57,72,60,90)+P(58,28,44,29,30,29);
+FIG.burpees=FL+Hd(57,13)+P(59,20,61,52)+P(61,52,58,70,61,88)+P(59,25,50,13,46,2);
 FIG.katzeKuhL=FIG.katzeKuh; FIG.birdDogL=FIG.birdDog; FIG.hueftbeugerL=FIG.hueftbeuger; FIG.bridgeL=FIG.bridge;
 /* ---------- Animationen: zweite (dritte) Pose je Übung, weich überblendet ---------- */
 const SITH=(x=60,y=19,sy=33)=>Hd(x,y)+P(60,26,60,60)+P(48,sy,72,sy)+LEGS;
@@ -577,8 +589,11 @@ const FIGB={
   klimmzuege:`<line x1="20" y1="8" x2="100" y2="8" class="st"/>`+Hd(60,32)+P(48,8,47,22,50,40)+P(72,8,73,22,70,40)+P(50,40,70,40)+P(60,38,60,68)+P(60,68,57,82,58,94)+P(60,68,63,82,66,94),
   situps:FL+Hd(14,82)+P(20,86,60,86)+P(60,86,78,66,92,88)+P(24,84,36,82)
 };
+FIGB.hampelmann=Hd(60,14)+P(60,21,60,54)+P(50,27,70,27)+P(60,54,48,72,40,90)+P(60,54,72,72,80,90)+P(50,27,40,14,36,2)+P(70,27,80,14,84,2);
+FIGB.kniebeugen=FL+Hd(46,38)+P(50,45,66,66)+P(66,66,44,72,52,90)+P(52,50,36,50,22,50);
+FIGB.burpees=[FL+Hd(48,40)+P(52,46,64,66)+P(64,66,44,72,52,88)+P(52,50,42,70,40,88),FL+Hd(22,64)+P(28,68,72,80)+P(72,80,88,84,104,88)+P(30,68,30,78,30,88),FL+Hd(48,40)+P(52,46,64,66)+P(64,66,44,72,52,88)+P(52,50,42,70,40,88)];
 FIGB.katzeKuhL=FIGB.katzeKuh; FIGB.birdDogL=FIGB.birdDog; FIGB.hueftbeugerL=FIGB.hueftbeuger; FIGB.bridgeL=FIGB.bridge; FIGB.atmungAbend=FIGB.atmung;
-const ANIM_DAUER={atmung:10,atmungAbend:10,kind:5,kindSeit:4,katzeKuh:5,katzeKuhL:5,bridge:3.5,bridgeL:3.5,hundKobra:5,hochziehen:2.6,liegestuetze:2.2,klimmzuege:2.8,situps:2.6};
+const ANIM_DAUER={hampelmann:1.1,kniebeugen:2.4,burpees:3.6,atmung:10,atmungAbend:10,kind:5,kindSeit:4,katzeKuh:5,katzeKuhL:5,bridge:3.5,bridgeL:3.5,hundKobra:5,hochziehen:2.6,liegestuetze:2.2,klimmzuege:2.8,situps:2.6};
 function figTeile(svg){
   const out=[], re=/<(polyline|circle|path|line|text)\b([^>]*?)(?:\/>|>([^<]*)<\/text>)/g; let m;
   while((m=re.exec(svg))){ if(/class="ar"/.test(m[2])) continue; out.push({tag:m[1],attr:m[2],txt:m[3]}); }
@@ -636,7 +651,7 @@ function flowSteps(v){
 function build(v){
   if(v==="abend") return [...["kleidung","schuhe","accessoires"].map(id=>({k:"schritt",id})),{k:"timer",id:"zaehneAbend",ph:"pflege"},...["zahnseide","reinigen","creme","magnesium"].map(id=>({k:"schritt",id})),...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
   const st=[];
-  st.push({k:"check",id:"gewicht"},{k:"check",id:"wasser"});
+  st.push({k:"check",id:"bett"},{k:"check",id:"gewicht"},{k:"check",id:"wasser"});
   FLOW[v].forEach(id=>{
     const e=EX[id];
     if(e.s){
@@ -644,7 +659,7 @@ function build(v){
       st.push({k:"ex",id,side:"Rechte Seite",prep:SWITCH,t:e.t,sw:1});
     } else st.push({k:"ex",id,side:"",prep:PREP,t:e.t});
   });
-  ["liegestuetze","klimmzuege","situps"].forEach(id=>st.push({k:"check",id}));
+  ["hampelmann","kniebeugen","burpees","liegestuetze","klimmzuege","situps"].forEach(id=>st.push({k:"check",id}));
   st.push({k:"timer",id:"zaehne"});
   ["dusche","haut","supps","outfit"].forEach(id=>st.push({k:"check",id}));
   return st;
@@ -859,11 +874,15 @@ function finish(){
     `ende=${isoLocal(end)}`,
     `variante=${S.v}`,
     `dauer_min=${min}`,
+    `bett=${r("bett")}`,
     `gewicht=${S.kg||""}`,
     `wasser=${r("wasser")}`,
     `flow=${exDone}/${exSteps.length}`,
     `liegestuetze=${rp("liegestuetze")}`,
     `klimmzuege=${rp("klimmzuege")}`,
+    `hampelmann=${rp("hampelmann")}`,
+    `kniebeugen=${rp("kniebeugen")}`,
+    `burpees=${rp("burpees")}`,
     `situps=${rp("situps")}`,
     `zaehne=${r("zaehne")}`,
     `dusche=${r("dusche")}`,
@@ -876,7 +895,7 @@ function finish(){
   const z=(l,v)=>`<div><span class="muted">${l}</span><b>${v}</b></div>`;
   $("endSub").textContent=`${hm(start)}–${hm(end)} · ${min} Min. · ${S.v==="kurz"?"Kurz":"Lang"}`;
   $("sum").innerHTML=z("Gewicht",S.kg?S.kg.replace(".",",")+" kg":"–")+z("Wasser",r("wasser")?"✓":"–")+
-    z("Rücken-Flow",`${exDone}/${exSteps.length} Übungen`)+
+    z("Bett gebaut",r("bett")?"✓":"–")+z("Rücken-Flow",`${exDone}/${exSteps.length} Übungen`)+z("Drill: Hampelmann / Kniebeugen / Burpees",`${rp("hampelmann")} / ${rp("kniebeugen")} / ${rp("burpees")}`)+
     z("Liegestütze / Klimmzüge / Sit-ups",`${rp("liegestuetze")} / ${rp("klimmzuege")} / ${rp("situps")}`)+
     z("Duschen",r("dusche")?"✓":"–")+z("Hautpflege",r("haut")?"✓":"–")+
     z("Supplements",r("supps")?"✓":"–")+z("Zähne",r("zaehne")?"✓":"–")+z("Outfit",r("outfit")?"✓":"–");
@@ -905,7 +924,7 @@ function finishAbend(){
 
 /* ---------- Darstellung ---------- */
 const BAUSTEIN={gewicht:"⚖️ Wiegen",wasser:"💧 Wasser",liegestuetze:"💪 Kraft",dusche:"🚿 Duschen",haut:"🧴 Haut",supps:"💊 Supplements",outfit:"👔 Outfit",
-  kleidung:"👔 Outfit für morgen",reinigen:"🧴 Hautpflege",magnesium:"💊 Magnesium",sleep:"🌙 Sleep Cycle",lesen:"📖 Lesen 15′",zaehne:"🪥 Zähne",zaehneAbend:"🪥 Zähne",zahnseide:"🦷 Zahnseide"};
+  kleidung:"👔 Outfit für morgen",reinigen:"🧴 Hautpflege",magnesium:"💊 Magnesium",sleep:"🌙 Sleep Cycle",lesen:"📖 Lesen 15′",zaehne:"🪥 Zähne",zaehneAbend:"🪥 Zähne",zahnseide:"🦷 Zahnseide",bett:"🛏️ Bett",hampelmann:"🎖️ Drill"};
 function heroRender(){
   const st=build(variante),n=st.filter(x=>x.k==="ex").length,ab=variante==="abend";
   const chips=[];st.forEach(x=>{if(x.k==="ex"){if(!chips.includes("flow"))chips.push("flow")}else if(BAUSTEIN[x.id]&&!chips.includes(x.id))chips.push(x.id)});
@@ -915,7 +934,7 @@ function heroRender(){
     <div class="chips">${chips.map(c=>`<span>${(c==="flow"?"Rücken-Flow":BAUSTEIN[c]).replace(/^\S+\s/,"")}</span>`).join("")}</div>`;
   document.body.classList.toggle("abend",ab);document.body.classList.toggle("morgen",!ab);
   $("btnStart").textContent=ab?"Abendroutine starten":"Morgenroutine starten";
-  heuteRender(); gewichtRender();
+  befehlRender(); heuteRender(); gewichtRender();
 }
 function wocheRender(){
   const h=store.get("verlauf",[])||[],d=new Date(),mo=new Date(d);mo.setDate(d.getDate()-((d.getDay()+6)%7));
@@ -955,13 +974,21 @@ function csvZeilen(t){const z=[];let r=[],f="",q=false;for(let i=0;i<t.length;i+
 async function outfitLaden(){ if(!OUTFIT_URL.startsWith("http"))return;
   try{const t=await (await fetch(OUTFIT_URL+(OUTFIT_URL.includes("?")?"&":"?")+"t="+Date.now(),{cache:"no-store"})).text();
     const o={};csvZeilen(t).forEach(r=>{if(r[0])o[r[0].trim()]=(r[1]||"").trim()});
-    if(o.datum){OUTFIT=o;try{localStorage.setItem("outfit",JSON.stringify(o))}catch(e){} try{heuteRender()}catch(e){}}}catch(e){}}
+    if(o.datum){OUTFIT=o;try{localStorage.setItem("outfit",JSON.stringify(o))}catch(e){} try{befehlRender();heuteRender()}catch(e){}}}catch(e){}}
 function outfitFuer(tag){return OUTFIT&&OUTFIT.datum===tag?OUTFIT:null}
 function tagMorgen(){const d=new Date(Date.now()-4*3600e3);d.setDate(d.getDate()+1);return isoLocal(d).slice(0,10)}
 function outfitZeilen(o){return [["👔 Oberteil",o.oberteil],["👖 Hose",o.hose],["👞 Schuhe + Gürtel",o.schuhe],["🧥 Jacke",o.jacke],["⌚ Accessoires",o.accessoires],["☔ Ersatz",o.ersatz]].filter(x=>x[1])}
 outfitLaden();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)outfitLaden()});
 
+function befehlZeilen(o){return o?["befehl1","befehl2","befehl3"].map(k=>o[k]).filter(Boolean):[]}
+function befehlRender(){
+  const el=$("befehlCard"); if(!el) return;
+  const b=variante==="abend"?[]:befehlZeilen(outfitFuer(isoLocal(new Date()).slice(0,10)));
+  if(!b.length){el.classList.add("hidden");return}
+  el.innerHTML=`<div class="ckopf">Tagesbefehl<span>${new Date().toLocaleDateString("de-AT",{weekday:"short",day:"numeric",month:"short"})}</span></div>`+b.map((x,i)=>`<div class="brow"><i>${i+1}</i><b>${esc(x)}</b></div>`).join("");
+  el.classList.remove("hidden");
+}
 function heuteRender(){
   const el=$("heuteCard"); if(!el) return;
   const ab=variante==="abend", o=outfitFuer(ab?tagMorgen():isoLocal(new Date()).slice(0,10));
@@ -1008,7 +1035,7 @@ document.querySelectorAll(".vbtn").forEach(b=>b.onclick=()=>{variante=b.dataset.
 function saveOpts(){ store.set("optionen",{voice:$("optVoice").checked,beep:$("optBeep").checked}); const v=voices[+$("voiceSel").value]; if(v) store.set("voice",v.name); }
 ["optVoice","optBeep","voiceSel"].forEach(id=>$(id).onchange=saveOpts);
 $("btnTest").onclick=()=>{ audioInit(); beep(880); setTimeout(()=>beep(990),400); setTimeout(()=>say("Guten Morgen, Noah. So klingt die Ansage."),800); };
-$("btnStart").onclick=()=>{ audioInit(); saveOpts(); say(variante==="abend"?"Abendroutine. Los geht's.":"Los geht's."); startNew(variante); };
+$("btnStart").onclick=()=>{ audioInit(); saveOpts(); const bf=variante==="abend"?[]:befehlZeilen(outfitFuer(isoLocal(new Date()).slice(0,10))); say(variante==="abend"?"Abendroutine. Los geht's.":(bf.length?"Tagesbefehl. "+bf.map((x,i)=>["Erstens","Zweitens","Drittens"][i]+": "+x).join(". ")+". Los geht's.":"Los geht's.")); startNew(variante); };
 $("btnResume").onclick=()=>{ audioInit(); S=store.get("sitzung"); run(); };
 $("btnDiscard").onclick=()=>{ store.del("sitzung"); initStart(); };
 
