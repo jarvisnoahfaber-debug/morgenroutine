@@ -273,6 +273,14 @@ pre{background:var(--surface);border-radius:12px}
 .brow:last-child{border:0}
 .brow i{font-style:normal;font-weight:700;color:var(--accent);min-width:14px}
 .brow b{font-weight:500;font-size:16px}
+.trow{padding:10px 0;border-bottom:.5px solid var(--sep)}
+.tt{display:flex;gap:10px;align-items:baseline}
+.tt i{font-style:normal;color:var(--muted);font-size:14px;min-width:66px;font-variant-numeric:tabular-nums}
+.tt b{font-weight:500;font-size:16px}
+.tbtn{display:flex;gap:6px;margin-top:8px;padding-left:76px;flex-wrap:wrap}
+.tbtn button{min-height:30px;padding:4px 10px;font-size:13px;border-radius:8px;background:var(--fill);color:rgba(235,235,245,.7);font-weight:500}
+.tbtn button.on.hin{background:var(--green);color:#fff}.tbtn button.on.nein{background:#636366;color:#fff}.tbtn button.on.aus{background:var(--red);color:#fff}
+.tsend{width:100%;margin-top:12px;min-height:44px;background:var(--fill);color:var(--accent);font-weight:600}
 #s-start .bottom{position:sticky;bottom:0;padding:24px 0 calc(12px + env(safe-area-inset-bottom));background:linear-gradient(rgba(0,0,0,0),#000 40%)}
 </style>
 </head>
@@ -285,6 +293,7 @@ pre{background:var(--surface);border-radius:12px}
   <div class="woche" id="woche"></div><div class="wochetxt" id="wochetxt"></div>
   <div class="hero" id="hero"></div>
   <div class="card hidden" id="befehlCard"></div>
+  <div class="card hidden" id="termineCard"></div>
   <div class="card hidden" id="heuteCard"></div>
   <div class="card hidden" id="gewCard"></div>
 
@@ -308,6 +317,8 @@ pre{background:var(--surface);border-radius:12px}
     <select id="voiceSel"></select>
     <label class="row"><span>Signaltöne</span><input type="checkbox" id="optBeep" checked></label>
     <button class="ghost small" id="btnTest" style="width:100%">Stimme &amp; Ton testen</button>
+    <label class="row" style="margin-top:14px"><span>Termin-Schlüssel</span></label>
+    <input id="tkey" type="password" placeholder="einfügen" autocomplete="off">
   </details>
 
   <div class="grow"></div>
@@ -985,13 +996,37 @@ function csvZeilen(t){const z=[];let r=[],f="",q=false;for(let i=0;i<t.length;i+
 async function outfitLaden(){ if(!OUTFIT_URL.startsWith("http"))return;
   try{const t=await (await fetch(OUTFIT_URL+(OUTFIT_URL.includes("?")?"&":"?")+"t="+Date.now(),{cache:"no-store"})).text();
     const o={};csvZeilen(t).forEach(r=>{if(r[0])o[r[0].trim()]=(r[1]||"").trim()});
-    if(o.datum){OUTFIT=o;try{localStorage.setItem("outfit",JSON.stringify(o))}catch(e){} try{befehlRender();heuteRender()}catch(e){}}}catch(e){}}
+    if(o.datum){OUTFIT=o;try{localStorage.setItem("outfit",JSON.stringify(o))}catch(e){} try{befehlRender();heuteRender();termineLaden()}catch(e){}}}catch(e){}}
 function outfitFuer(tag){return OUTFIT&&OUTFIT.datum===tag?OUTFIT:null}
 function tagMorgen(){const d=new Date(Date.now()-4*3600e3);d.setDate(d.getDate()+1);return isoLocal(d).slice(0,10)}
 function outfitZeilen(o){return [["👔 Oberteil",o.oberteil],["👖 Hose",o.hose],["👞 Schuhe + Gürtel",o.schuhe],["🧥 Jacke",o.jacke],["⌚ Accessoires",o.accessoires],["☔ Ersatz",o.ersatz]].filter(x=>x[1])}
 outfitLaden();
+setTimeout(()=>{try{const i=$("tkey"); if(store.get("tkey")) i.placeholder="gespeichert ✓"; i.onchange=()=>{const v=i.value.trim(); if(v){store.set("tkey",v); i.value=""; i.placeholder="gespeichert ✓"; termineLaden();}}; termineLaden();}catch(e){}},0);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)outfitLaden()});
 
+let TERMINE=null;
+const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function termineLaden(){
+  const k=store.get("tkey"), e=OUTFIT&&OUTFIT.termine_enc;
+  if(!k||!e){TERMINE=null;termineRender();return}
+  try{const [iv,b]=e.split(":");
+    const key=await crypto.subtle.importKey("raw",b64(k),"AES-CBC",false,["decrypt"]);
+    const pt=await crypto.subtle.decrypt({name:"AES-CBC",iv:Uint8Array.from(iv.match(/../g).map(h=>parseInt(h,16)))},key,b64(b));
+    const d=JSON.parse(new TextDecoder().decode(pt)); TERMINE=d.datum===isoLocal(new Date()).slice(0,10)?d:null;
+  }catch(err){TERMINE=null}
+  termineRender();
+}
+const tKey=()=>"tstatus-"+isoLocal(new Date()).slice(0,10);
+function termineRender(){
+  const el=$("termineCard"); if(!el) return;
+  if(!TERMINE||!TERMINE.termine.length){el.classList.add("hidden");return}
+  const s=store.get(tKey())||{};
+  el.innerHTML=`<div class="ckopf">Heute<span>Stand ${esc(TERMINE.stand||"")}</span></div>`+TERMINE.termine.map(t=>`<div class="trow"><div class="tt"><i>${esc(t.zeit)}</i><b>${esc(t.titel)}</b></div><div class="tbtn">${[["hin","Ich gehe hin"],["nein","Egal"],["aus","Fällt aus"]].map(([k,l])=>`<button data-tid="${t.id}" data-st="${k}" class="${s[t.id]===k?"on "+k:""}">${l}</button>`).join("")}</div></div>`).join("")+`<button class="tsend" id="tSend">An Jarvis senden</button>`;
+  el.classList.remove("hidden");
+  el.querySelectorAll("button[data-tid]").forEach(b=>b.onclick=()=>{const s=store.get(tKey())||{}; if(s[b.dataset.tid]===b.dataset.st) delete s[b.dataset.tid]; else s[b.dataset.tid]=b.dataset.st; store.set(tKey(),s); termineRender();});
+  $("tSend").onclick=()=>{const s=store.get(tKey())||{}, kv=Object.entries(s).map(([k,v])=>`${k}=${v}`); if(!kv.length) return;
+    location.href="shortcuts://run-shortcut?name="+encodeURIComponent("Morgen an Jarvis")+"&input=text&text="+encodeURIComponent(["Termine",`datum=${TERMINE.datum}`,...kv].join("; ")+";");};
+}
 function abendBlock(o,id){ if(!o||!o.abend_oberteil) return "";
   const m={kleidung:[["Oberteil",o.abend_oberteil],["Hose",o.abend_hose],["Jacke",o.abend_jacke]],schuhe:[["Schuhe + Gürtel",o.abend_schuhe]],accessoires:[["Accessoires",o.abend_accessoires]]}[id]||[];
   const z=m.filter(x=>x[1]); if(!z.length) return "";
