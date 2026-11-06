@@ -293,6 +293,7 @@ pre{background:var(--surface);border-radius:12px}
   <div class="woche" id="woche"></div><div class="wochetxt" id="wochetxt"></div>
   <div class="hero" id="hero"></div>
   <div class="card hidden" id="befehlCard"></div>
+  <div class="card hidden" id="putzCard"></div>
   <div class="card hidden" id="termineCard"></div>
   <div class="card hidden" id="heuteCard"></div>
   <div class="card hidden" id="gewCard"></div>
@@ -1017,8 +1018,18 @@ async function termineLaden(){
   termineRender();
 }
 const tKey=()=>"tstatus-"+isoLocal(new Date()).slice(0,10);
+function putzRender(){
+  const el=$("putzCard"); if(!el) return;
+  const g=TERMINE&&TERMINE.putzen; if(!g){el.classList.add("hidden");return}
+  const h=new Date(isoLocal(new Date()).slice(0,10)), p=new Date(g.datum), diff=Math.round((p-h)/864e5);
+  if(diff<1||diff>2){el.classList.add("hidden");return}
+  const zeit=g.slot==="vm"?"Vormittag, 9–12 Uhr":"Nachmittag, 14–17 Uhr";
+  el.innerHTML=`<div class="ckopf">🧹 ${diff===1?"Morgen putzen":"In 2 Tagen putzen"}<span>${p.toLocaleDateString("de-AT",{weekday:"long",day:"numeric",month:"numeric"})}</span></div><div class="orow"><span>${zeit}</span><b>${esc((g.raeume||[]).join(", "))}</b></div>`;
+  el.classList.remove("hidden");
+}
 function termineRender(){
   const el=$("termineCard"); if(!el) return;
+  putzRender();
   if(!TERMINE||!TERMINE.termine.length){el.classList.add("hidden");return}
   const s=store.get(tKey())||{};
   el.innerHTML=`<div class="ckopf">Heute<span>Stand ${esc(TERMINE.stand||"")}</span></div>`+TERMINE.termine.map(t=>`<div class="trow"><div class="tt"><i>${esc(t.zeit)}</i><b>${esc(t.titel)}</b></div><div class="tbtn">${[["hin","Ich gehe hin"],["nein","Egal"],["aus","Fällt aus"]].map(([k,l])=>`<button data-tid="${t.id}" data-st="${k}" class="${s[t.id]===k?"on "+k:""}">${l}</button>`).join("")}</div></div>`).join("")+`<button class="tsend" id="tSend">An Jarvis senden</button>`;
