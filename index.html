@@ -311,6 +311,7 @@ pre{background:var(--surface);border-radius:12px}
     <button data-v="lang" class="vbtn"><span class="ic">🌄</span><b>Lang</b><span id="durLang"></span></button>
     <button data-v="abend" class="vbtn"><span class="ic">🌙</span><b>Abend</b><span id="durAbend"></span></button>
   </div>
+  <button class="ghost" id="btnBuero" style="width:100%;margin-top:10px">🪑 Büro-Pause · Stuhl &amp; Stehen <span id="durBuero"></span></button>
 
   <details class="card">
     <summary>⚙︎ Stimme &amp; Töne</summary>
@@ -457,7 +458,12 @@ const EX = {
   drehung:{n:"Liegende Drehung",t:30,s:1,c:"Rückenlage, Knie zur Seite sinken lassen, Schultern bleiben am Boden."},
   kind:{n:"Kindhaltung",t:45,c:"Gesäß zu den Fersen, Arme lang nach vorne, ruhig atmen."},
   kindSeit:{n:"Kindhaltung mit Seitzug",t:30,s:1,c:"Kindhaltung, beide Hände zur Seite wandern lassen, Flanke dehnen."},
-  atmung:{n:"Atmung",t:60,c:"Bequem sitzen. Vier Sekunden ein, sechs Sekunden aus."}
+  atmung:{n:"Atmung",t:60,c:"Bequem sitzen. Vier Sekunden ein, sechs Sekunden aus."},
+  // Büro-Pause (Stuhl / Stehen)
+  twistStuhl:{n:"Sitz-Twist am Stuhl",t:30,s:1,c:"Aufrecht auf der Stuhlkante. Oberkörper drehen, Hand an die Lehne, Blick über die Schulter."},
+  sitzKatzeKuh:{n:"Katze-Kuh im Sitzen",t:45,c:"Hände auf den Knien. Einatmen: Brust vor, Rücken hohl. Ausatmen: Rücken rund, Kinn zur Brust."},
+  sitzTaube:{n:"Gesäß-Dehnung im Sitzen",t:30,s:1,c:"Knöchel aufs andere Knie legen, Rücken lang, Oberkörper leicht nach vorne neigen."},
+  stehHueftbeuger:{n:"Hüftbeuger im Stehen",t:30,s:1,c:"Aufstehen, großer Schritt nach vorne, Gesäß anspannen, Becken leicht nach vorne schieben. Eine Hand am Tisch."}
 };
 const FLOW = {
   kurz:["armeSchwingen","kopfkreisen","rollenRueck","rollenVor","armRotation","chestOpener","elefant",
@@ -468,6 +474,7 @@ const FLOW = {
         "katzeKuhL","kindSeit","openBook","neunzig","hueftbeugerL","birdDogL","deadBug","bridgeL",
         "hundKobra","drehung","atmung"]
 };
+FLOW.buero=["kopfkreisen","rollenRueck","chinTuck","nacken","overhead","chestOpener","einarmig","twistStuhl","sitzKatzeKuh","sitzTaube","stehHueftbeuger"];
 FLOW.abend=["katzeKuh","kind","hueftbeuger","chestOpener","tuerrahmen","drehung","beineWand","atmungAbend"];
 EX.beineWand={n:"Beine an die Wand",t:120,c:"Rückenlage, Gesäß nah an die Wand, Beine senkrecht hoch. Ruhig atmen, Rücken lang."};
 EX.atmungAbend={n:"Rippenatmung",t:180,c:"Rückenlage oder bequem sitzen, Hände seitlich an den Rippen. Vier Sekunden ein, die Rippen weiten sich nach außen. Sechs Sekunden aus. Schultern bleiben unten."};
@@ -625,6 +632,7 @@ function figTeile(svg){
 }
 const ATTR={polyline:["points"],circle:["cx","cy"],path:["d"],line:["x1","y1","x2","y2"]};
 const wert=(a,n)=>{const m=a.match(new RegExp(`\\b${n}="([^"]*)"`));return m?m[1]:null};
+if(typeof FIG!=="undefined"&&FIG.twist&&FIGB.twist){FIG.twistStuhl=FIG.twist;FIGB.twistStuhl=FIGB.twist}
 function animFig(id){
   const A=FIG[id]; let Bs=FIGB[id]; if(!A||!Bs) return null;
   if(!Array.isArray(Bs)) Bs=[Bs];
@@ -674,6 +682,7 @@ function flowSteps(v){
   return st;
 }
 function build(v){
+  if(v==="buero") return flowSteps("buero");
   if(v==="abend") return [...["waerme","kleidung","schuhe","accessoires",...([0,1,4].includes(new Date(Date.now()-4*3600e3).getDay())?["gymAbend"]:[]),...(new Date(Date.now()-4*3600e3).getDay()===0?["wochencheck"]:[])].map(id=>({k:"schritt",id})),...(new Date(Date.now()-4*3600e3).getDay()===0?[{k:"check",id:"verspannung",ph:"vorbereiten"}]:[]),{k:"timer",id:"zaehneAbend",ph:"pflege"},...["zahnseide","reinigen","creme","magnesium"].map(id=>({k:"schritt",id})),...([3,4].includes(new Date(Date.now()-4*3600e3).getDay())?[{k:"schritt",id:"fechtAusgleich"}]:[]),{k:"schritt",id:"massage"},...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
   const st=[];
   st.push({k:"check",id:"bett"},{k:"check",id:"gewicht"},{k:"check",id:"wasser"});
@@ -761,6 +770,7 @@ function startNew(v){
   save(); run();
 }
 function run(){
+  ["btnSend","btnCopy","sum"].forEach(id=>$(id).classList.toggle("hidden",S.v==="buero"));
   steps=build(S.v); show("s-run"); wakeOn();
   clearInterval(timer); timer=setInterval(tick,100);
   enter(S.idx);
@@ -888,6 +898,7 @@ function checkDone(ok){
 }
 function finish(){
   if(S.v==="abend") return finishAbend();
+  if(S.v==="buero") return finishBuero();
   clearInterval(timer); phase=""; wakeOff();
   const end=new Date(), start=new Date(S.start);
   const exSteps=steps.map((s,i)=>s.k==="ex"?i:-1).filter(i=>i>=0);
@@ -937,6 +948,18 @@ function finish(){
   show("s-end"); say("Fertig. Starker Start in den Tag.");
 }
 
+function finishBuero(){
+  clearInterval(timer); phase=""; wakeOff(); miniStop();
+  const end=new Date(), start=new Date(S.start);
+  const fl=steps.map((s,i)=>s.k==="ex"?i:-1).filter(i=>i>=0), fd=fl.filter(i=>S.ex[i]).length;
+  const min=Math.max(1,Math.round((end-start)/60000));
+  S.fertig=isoLocal(end); save();
+  const T=(v,l,c)=>`<div class="tile ${c}"><div class="v">${v}</div><div class="l">${l}</div></div>`;
+  $("endTitel").textContent="Pause erledigt 🪑"; $("endSub").textContent=`${hm(start)}–${hm(end)} · ${min} Min. · Büro`;
+  $("tiles").innerHTML=T(min+"<small> Min.</small>","Dauer","a")+T(`${fd}/${fl.length}`,"Übungen","c");
+  $("logText").textContent="";
+  show("s-end"); say("Fertig. Weiter geht's.");
+}
 function finishAbend(){
   clearInterval(timer); phase=""; wakeOff(); miniStop(); document.body.classList.remove("nacht");
   const end=new Date(), start=new Date(S.start);
@@ -1104,6 +1127,7 @@ function initStart(){
   $("durKurz").textContent=`ca. ${dauerMin("kurz")} Min.`;
   $("durLang").textContent=`ca. ${dauerMin("lang")} Min.`;
   $("durAbend").textContent=`ca. ${dauerMin("abend")} Min.`;
+  $("durBuero").textContent=`· ca. ${dauerMin("buero")} Min.`;
   wocheRender();
   markV();
   const o=store.get("optionen"); if(o){ $("optVoice").checked=o.voice!==false; $("optBeep").checked=o.beep!==false; }
@@ -1117,6 +1141,7 @@ function saveOpts(){ store.set("optionen",{voice:$("optVoice").checked,beep:$("o
 ["optVoice","optBeep","voiceSel"].forEach(id=>$(id).onchange=saveOpts);
 $("btnTest").onclick=()=>{ audioInit(); beep(880); setTimeout(()=>beep(990),400); setTimeout(()=>say("Guten Morgen, Noah. So klingt die Ansage."),800); };
 $("btnStart").onclick=()=>{ audioInit(); saveOpts(); const bf=variante==="abend"?[]:befehlZeilen(outfitFuer(isoLocal(new Date()).slice(0,10))); say(variante==="abend"?"Abendroutine. Los geht's.":(bf.length?"Tagesbefehl. "+bf.map((x,i)=>["Erstens","Zweitens","Drittens"][i]+": "+x).join(". ")+". Los geht's.":"Los geht's.")); startNew(variante); };
+$("btnBuero").onclick=()=>{ audioInit(); saveOpts(); say("Büro-Pause. Los geht's."); startNew("buero"); };
 $("btnResume").onclick=()=>{ audioInit(); S=store.get("sitzung"); run(); };
 $("btnDiscard").onclick=()=>{ store.del("sitzung"); initStart(); };
 
