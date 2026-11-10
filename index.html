@@ -373,6 +373,7 @@ pre{background:var(--surface);border-radius:12px}
   <div id="checkView" class="hidden">
     <div class="emoji" id="emoji"></div>
     <ul class="liste hidden" id="liste"></ul>
+    <div class="mini hidden" id="cmini" style="margin-top:12px"><span class="zeit" id="cminiZeit">0:00</span><span class="muted small" id="cminiTxt" style="flex:1;margin:0 10px"></span><button id="cminiBtn">▶ Timer</button></div>
     <div class="fig hidden" id="repFig" style="max-width:260px;margin:10px auto 0"></div>
     <div class="reps hidden" id="repsBox">
       <button id="repMinus">−</button><b id="repNum">10</b><button id="repPlus">+</button>
@@ -519,7 +520,7 @@ const CHECK = {
   hautAbend:{n:"Hautpflege abends",e:"🧴",c:"In dieser Reihenfolge:",d:240,l:[["Reiniger","Tagesschmutz und Sonnenschutz runter, ca. 30 Sek."],["Feuchtigkeitscreme","etwas großzügiger als morgens"]]},
   suppsAbend:{n:"Supplements abends",e:"💊",c:"Routine des Ernährungsbots (A022):",d:30,l:[["Magnesium (Oxid) – ca. 200 mg elementar","optional, einzige Magnesiumquelle"]]},
   sleepcycle:{n:"Sleep Cycle einschalten",e:"🌙",c:"Sleep Cycle starten, Handy ans Ladekabel. Danach nur noch die App für den Lese-Timer.",d:45},
-  haltung:{n:"Haltungs-Block",e:"🧍",c:"Drei Übungen für die Haltung:",d:180,l:[["Chin Tucks – 10 × 5 Sek.","Kinn gerade zurückschieben, Doppelkinn, Blick bleibt gerade"],["Wall Angels – 10×","Rücken, Hinterkopf und Arme an der Wand, Arme langsam hoch und runter schieben"],["Band Pull-Aparts – 15×","Band schulterbreit vor der Brust, mit gestreckten Armen auseinanderziehen"],["Cue für heute: Kopf über die Schultern, Brustbein leicht hoch, Schulterblätter in die Gesäßtaschen","den ganzen Tag immer wieder kurz einnehmen"]]},
+  haltung:{n:"Haltungs-Block",e:"🧍",c:"Drei Übungen für die Haltung:",d:180,timer:[["Chin Tucks",50],["Wall Angels",60],["Band Pull-Aparts",45]],l:[["Chin Tucks – 10 × 5 Sek.","Kinn gerade zurückschieben, Doppelkinn, Blick bleibt gerade"],["Wall Angels – 10×","Rücken, Hinterkopf und Arme an der Wand, Arme langsam hoch und runter schieben"],["Band Pull-Aparts – 15×","Band schulterbreit vor der Brust, mit gestreckten Armen auseinanderziehen"],["Cue für heute: Kopf über die Schultern, Brustbein leicht hoch, Schulterblätter in die Gesäßtaschen","den ganzen Tag immer wieder kurz einnehmen"]]},
   haltungFoto:{n:"Haltungsfoto",e:"📸",c:"Monatsanfang – immer gleich:",d:90,l:[["Handy auf Hüfthöhe abstellen, immer dieselbe Stelle","gleicher Abstand, gleiches Licht"],["Selbstauslöser 10 Sek., seitlich hinstellen","T-Shirt oder oben ohne"],["Normal stehen, nicht korrigieren","so wie im Alltag"],["Foto ins Album „Haltung“"]]},
   verspannung:{n:"Verspannung diese Woche",e:"📊",c:"Wie verspannt waren Nacken und oberer Rücken diese Woche im Schnitt?",d:30,r:3,skala:1},
   outfit:{n:"Outfit vom Herrendiener",e:"👔",c:"Anziehen und los in den Tag.",d:90}
@@ -783,7 +784,7 @@ function enter(i){
   $("barFill").style.width=(i/steps.length*100)+"%";
   const nx=steps[i+1];
   $("next").textContent=nx?"Nächste: "+(nx.k==="ex"?EX[nx.id].n+(nx.side?" · "+nx.side:""):nx.k==="timer"?TIMER[nx.id].n:nx.k==="schritt"?SCHRITT[nx.id].t:CHECK[nx.id].n):"Danach: fertig";
-  $("stepView").classList.add("hidden"); miniStop();
+  $("stepView").classList.add("hidden"); miniStop(); cminiStop(); $("cmini").classList.add("hidden");
   const phAkt=st.k==="schritt"?SCHRITT[st.id].ph:st.ph;
   $("phasen").classList.toggle("hidden",!phAkt);
   if(phAkt){const ai=PHASEN.findIndex(p=>p[0]===phAkt);$("phasen").innerHTML=PHASEN.map((p,k)=>`<div class="${k===ai?"akt":k<ai?"done":""}"><span>${k<ai?"✓":p[1]}</span>${p[2]}</div>`).join("")}
@@ -838,6 +839,7 @@ function enter(i){
     $("liste").innerHTML=(c.l?`<li class="kopf">${c.c}</li>`:"")+(c.l||[]).map((x,i)=>`<li class="${x[2]?"kauf":""}"><span class="n">${i+1}</span><span>${x[0]}${x[1]?`<small>${x[1]}</small>`:""}</span></li>`).join("");
     $("repFig").classList.toggle("hidden",!c.r||!!c.skala); $("repsBox").classList.toggle("hidden",!c.r);
     repMax=c.skala?10:99; if(c.r){ $("repFig").innerHTML=c.skala?"":svgFig(st.id); repN=c.skala&&S.reps&&S.reps[st.id]!=null&&S.reps[st.id]!==""?S.reps[st.id]:(S.reps&&S.reps[st.id])||c.r; $("repNum").textContent=repN; $("side").textContent=c.skala?"0 = locker · 10 = stark verspannt":c.r+" Wiederholungen"; }
+    cminiShow(c.timer);
     $("exCtrl").classList.add("hidden"); $("checkCtrl").classList.remove("hidden");
     say(c.n+". "+(c.l?c.l.filter(x=>!x[2]).map(x=>x[0]).join(", "):c.c));
   } else {
@@ -862,8 +864,18 @@ function miniStop(){miniEnd=0;$("mini").classList.remove("laeuft")}
 function miniTick(){if(!miniEnd)return;const r_=Math.ceil((miniEnd-Date.now())/1000);
   if(r_<=0){miniStop();$("miniZeit").textContent="✓";beep(660,.2);setTimeout(()=>beep(990,.3),200);say(steps[S.idx]&&steps[S.idx].id==="reinigen"?"Fertig. Abspülen.":"Fertig.");$("miniBtn").textContent="↺ Nochmal";return}
   $("miniZeit").textContent=`${r_/60|0}:${pad(r_%60)}`}
+// Segment-Timer für Checklisten (z. B. Haltungs-Block)
+let cm=null;
+function cminiStop(){cm=null;$("cmini").classList.remove("laeuft")}
+function cminiShow(seg){$("cmini").classList.toggle("hidden",!seg);if(!seg)return;const tot=seg.reduce((a,x)=>a+x[1],0);
+  $("cminiZeit").textContent=`${tot/60|0}:${pad(tot%60)}`;$("cminiTxt").textContent=seg.map(x=>x[0]).join(" · ");$("cminiBtn").textContent="▶ Timer"}
+function cminiStart(seg,i){cm={seg,i,end:Date.now()+seg[i][1]*1000};$("cmini").classList.add("laeuft");$("cminiBtn").textContent="läuft …";
+  $("cminiTxt").textContent=`${i+1}/${seg.length} · ${seg[i][0]}`;beep(880);say(seg[i][0])}
+function cminiTick(){if(!cm)return;const r_=Math.ceil((cm.end-Date.now())/1000);
+  if(r_<=0){if(cm.i+1<cm.seg.length){cminiStart(cm.seg,cm.i+1)}else{cminiStop();$("cminiZeit").textContent="✓";$("cminiTxt").textContent="geschafft";beep(660,.2);setTimeout(()=>beep(990,.3),200);say("Fertig.");$("cminiBtn").textContent="↺ Nochmal"}return}
+  $("cminiZeit").textContent=`${r_/60|0}:${pad(r_%60)}`}
 function tick(){
-  $("clock").textContent=hm(new Date()); miniTick();
+  $("clock").textContent=hm(new Date()); miniTick(); cminiTick();
   if(phase!=="prep"&&phase!=="hold") return;
   const rem=paused?pausedRem:Math.max(0,phaseEnd-performance.now());
   const sec=Math.ceil(rem/1000);
@@ -1147,6 +1159,7 @@ $("btnDiscard").onclick=()=>{ store.del("sitzung"); initStart(); };
 
 /* ---------- Lauf-Steuerung ---------- */
 $("btnPause").onclick=togglePause;
+$("cminiBtn").onclick=()=>{audioInit();const c=CHECK[steps[S.idx]&&steps[S.idx].id];if(c&&c.timer)cminiStart(c.timer,0)};
 $("miniBtn").onclick=()=>{audioInit();miniEnd=Date.now()+miniSek*1000;$("mini").classList.add("laeuft");$("miniBtn").textContent="läuft …";miniTick()};
 $("btnSkip").onclick=()=>{ try{speechSynthesis.cancel()}catch(e){} enter(S.idx+1); };
 $("btnBack").onclick=()=>{ try{speechSynthesis.cancel()}catch(e){} enter(Math.max(0,S.idx-1)); };
