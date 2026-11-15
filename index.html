@@ -293,6 +293,7 @@ pre{background:var(--surface);border-radius:12px}
   <div class="woche" id="woche"></div><div class="wochetxt" id="wochetxt"></div>
   <div class="hero" id="hero"></div>
   <div class="card hidden" id="befehlCard"></div>
+  <div class="card hidden" id="pjCard"></div>
   <div class="card hidden" id="putzCard"></div>
   <div class="card hidden" id="termineCard"></div>
   <div class="card hidden" id="heuteCard"></div>
@@ -949,6 +950,7 @@ function finish(){
     `outfit_ids=${r("outfit")&&outfitFuer(isoLocal(new Date()).slice(0,10))?outfitFuer(isoLocal(new Date()).slice(0,10)).ids||"":""}`
   ].join("; ")+";";
   S.log=log; S.fertig=isoLocal(end); save();
+  tagStatus({haut_m:r("haut")}, S.start.slice(0,10));
   const z=(l,v)=>`<div><span class="muted">${l}</span><b>${v}</b></div>`;
   $("endSub").textContent=`${hm(start)}–${hm(end)} · ${min} Min. · ${S.v==="kurz"?"Kurz":"Lang"}`;
   $("sum").innerHTML=z("Gewicht",S.kg?S.kg.replace(".",",")+" kg":"–")+z("Wasser",r("wasser")?"✓":"–")+
@@ -983,6 +985,7 @@ function finishAbend(){
     `outfit=${outfit}`,`haut_abends=${haut}`,`zaehne_abends=${r("zaehneAbend")}`,`zahnseide=${r("zahnseide")}`,`wochencheck=${r("wochencheck")}`,`gymtasche=${r("gymAbend")}`,`supplements=${r("magnesium")}`,`dehnen=${fd}/${flow.length}`,`waerme=${r("waerme")}`,`massage=${r("massage")}`,`fecht_ausgleich=${steps.some(x=>x.id==="fechtAusgleich")?r("fechtAusgleich"):""}`,`verspannung=${steps.some(x=>x.id==="verspannung")&&S.res.verspannung?S.reps.verspannung:""}`,
     `sleepcycle=${r("sleep")}`,`lesen_min=${lesen}`].join("; ")+";";
   S.log=log; S.fertig=isoLocal(end); save();
+  tagStatus({haut_a:haut, hd:outfit}, datum);
   const z=(l,v)=>`<div><span class="muted">${l}</span><b>${v}</b></div>`;
   $("endSub").textContent=`${hm(start)}–${hm(end)} · ${min} Min. · Abend`;
   $("sum").innerHTML=z("👔 Outfit am Herrendiener",outfit?"✓":"–")+z("🪥 Zähne",r("zaehneAbend")?"✓":"–")+z("🦷 Zahnseide",r("zahnseide")?"✓":"–")+(steps.some(x=>x.id==="wochencheck")?z("🧳 Spender & Bag",r("wochencheck")?"✓":"–"):"")+z("🧴 Hautpflege abends",haut?"✓":"–")+z("💊 Magnesium",r("magnesium")?"✓":"–")+
@@ -1003,7 +1006,7 @@ function heroRender(){
     <div class="chips">${chips.map(c=>`<span>${(c==="flow"?"Rücken-Flow":BAUSTEIN[c]).replace(/^\S+\s/,"")}</span>`).join("")}</div>`;
   document.body.classList.toggle("abend",ab);document.body.classList.toggle("morgen",!ab);
   $("btnStart").textContent=ab?"Abendroutine starten":"Morgenroutine starten";
-  befehlRender(); heuteRender(); gewichtRender();
+  befehlRender(); heuteRender(); gewichtRender(); pjRender();
 }
 function wocheRender(){
   const h=store.get("verlauf",[])||[],d=new Date(),mo=new Date(d);mo.setDate(d.getDate()-((d.getDay()+6)%7));
@@ -1064,18 +1067,48 @@ async function termineLaden(){
   termineRender();
 }
 const tKey=()=>"tstatus-"+isoLocal(new Date()).slice(0,10);
+const PUTZ_CHECK={"Küche":"Arbeitsflächen|Herd und Backrohr außen|Spüle|Fronten|Kühlschrank auswischen|Müll raus|Boden wischen",
+  "Bad":"Dusche/Wanne|Waschbecken|Spiegel|Armaturen entkalken|Handtücher wechseln|Boden wischen",
+  "Schlafzimmer":"Bettwäsche wechseln|Staub wischen|Unter dem Bett saugen|Boden wischen|Lüften",
+  "Flur":"Schuhe ordnen|Staub wischen|Boden saugen und wischen","WC":"WC innen und außen|Waschbecken|Boden wischen",
+  "Arbeitszimmer":"Schreibtisch freiräumen|Staub und Bildschirm|Boden saugen","Abstellkammer":"Ausmisten und ordnen|Boden saugen",
+  "Balkon":"Kehren|Geländer und Möbel abwischen|Pflanzen/Deko prüfen"};
+function tagStatus(o,d){const k="pjtag-"+(d||isoLocal(new Date()).slice(0,10));store.set(k,Object.assign(store.get(k)||{},o))}
+function pjRender(){
+  const el=$("pjCard"); if(!el) return;
+  const heute=isoLocal(new Date()).slice(0,10), p=TERMINE&&TERMINE.pj;
+  if(!p||TERMINE.datum!==heute||heute>"2027-01-15"){el.classList.add("hidden");return}
+  const lok=store.get("pjtag-"+heute)||{}, log=p.log||{}, wd=new Date().getDay(), tr=p.training||[];
+  const ja=v=>v===true||v===1||v==="1"||/^(ja|true|✓)/i.test(String(v||""));
+  const z=(l,ok,txt)=>`<div class="orow"><span>${ok===true?"✅":ok===false?"⬜️":"▫️"} ${l}</span><b>${txt||""}</b></div>`;
+  const ew=p.eiweiss||0, kc=p.kcal||0;
+  let r=z("Eiweiß",ew>=165,`${ew} / 165 g`)+z("Kalorien",kc?kc<=2400:null,kc?`${kc} / max. 2.400`:"noch nichts erfasst");
+  if([1,2,5].includes(wd)) r+=z("Krafttraining",tr.some(a=>/kraft|cardio/i.test(a))||ja(log.training));
+  if([3,4].includes(wd)) r+=z("Fechten",tr.some(a=>/fecht/i.test(a))||ja(log.fechten),tr.some(a=>/ausfall/i.test(a))?"Ausfall gemeldet":"");
+  r+=z("Haut morgens",!!(p.haut_morgens||lok.haut_m||ja(log.haut_morgens)))+z("Haut abends",!!(lok.haut_a||ja(log.haut_abends)))+z("Outfit am Herrendiener",!!(lok.hd||ja(log.herrendiener)));
+  if(p.schritte_gestern!=null) r+=z("Schritte gestern",p.schritte_gestern>=6500,`${Number(p.schritte_gestern).toLocaleString("de-AT")} / 6.500`);
+  el.innerHTML=`<div class="ckopf">🏁 Heute für PJ<span>Stand ${esc(TERMINE.stand||"")}</span></div>${r}`;
+  el.classList.remove("hidden");
+}
 function putzRender(){
   const el=$("putzCard"); if(!el) return;
   const g=TERMINE&&TERMINE.putzen; if(!g){el.classList.add("hidden");return}
   const h=new Date(isoLocal(new Date()).slice(0,10)), p=new Date(g.datum), diff=Math.round((p-h)/864e5);
-  if(diff<1||diff>2){el.classList.add("hidden");return}
+  if(diff<0||diff>2){el.classList.add("hidden");return}
   const zeit=g.slot==="vm"?"Vormittag, 9–12 Uhr":"Nachmittag, 14–17 Uhr";
+  if(diff===0){const k="putz-"+g.datum,done=store.get(k)||[];let n=0,ges=0;
+    const rows=(g.raeume||[]).map(r=>`<div class="small muted" style="margin:10px 0 2px;font-weight:700">${esc(r)}</div>`+(PUTZ_CHECK[r]||"").split("|").filter(Boolean).map((x,i)=>{const id=r+"|"+i,ok=done.includes(id);ges++;if(ok)n++;
+      return `<div class="orow" data-pz="${esc(id)}" style="cursor:pointer"><span>${ok?"✅":"⬜️"} ${esc(x)}</span></div>`}).join("")).join("");
+    el.innerHTML=`<div class="ckopf">🧹 Heute putzen<span>${n}/${ges}${n===ges&&ges?" · fertig 💪":""}</span></div><div class="orow"><span>${zeit}</span><b>${esc((g.raeume||[]).join(", "))}</b></div>${rows}`;
+    el.onclick=e=>{const z=e.target.closest("[data-pz]");if(!z)return;const d=store.get(k)||[],id=z.dataset.pz,j=d.indexOf(id);if(j>=0)d.splice(j,1);else d.push(id);store.set(k,d);try{tonOk()}catch(_){}putzRender()};
+    el.classList.remove("hidden");return}
+  el.onclick=null;
   el.innerHTML=`<div class="ckopf">🧹 ${diff===1?"Morgen putzen":"In 2 Tagen putzen"}<span>${p.toLocaleDateString("de-AT",{weekday:"long",day:"numeric",month:"numeric"})}</span></div><div class="orow"><span>${zeit}</span><b>${esc((g.raeume||[]).join(", "))}</b></div>`;
   el.classList.remove("hidden");
 }
 function termineRender(){
   const el=$("termineCard"); if(!el) return;
-  putzRender();
+  putzRender(); pjRender();
   if(!TERMINE||!TERMINE.termine.length){el.classList.add("hidden");return}
   const s=store.get(tKey())||{};
   el.innerHTML=`<div class="ckopf">Heute<span>Stand ${esc(TERMINE.stand||"")}</span></div>`+TERMINE.termine.map(t=>`<div class="trow"><div class="tt"><i>${esc(t.zeit)}</i><b>${esc(t.titel)}</b></div><div class="tbtn">${[["hin","Ich gehe hin"],["nein","Egal"],["aus","Fällt aus"]].map(([k,l])=>`<button data-tid="${t.id}" data-st="${k}" class="${s[t.id]===k?"on "+k:""}">${l}</button>`).join("")}</div></div>`).join("")+`<button class="tsend" id="tSend">An Jarvis senden</button>`;
