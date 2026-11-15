@@ -294,6 +294,9 @@ pre{background:var(--surface);border-radius:12px}
   <div class="hero" id="hero"></div>
   <div class="card hidden" id="befehlCard"></div>
   <div class="card hidden" id="pjCard"></div>
+  <div class="card hidden" id="wocheCard"></div>
+  <div class="card" id="glowCard"></div>
+  <input type="file" id="fotoIn" accept="image/*" capture="user" style="display:none">
   <div class="card hidden" id="putzCard"></div>
   <div class="card hidden" id="termineCard"></div>
   <div class="card hidden" id="heuteCard"></div>
@@ -492,6 +495,8 @@ const SCHRITT={
   reinigen:{ph:"pflege",i:"🫧",t:"Gesicht reinigen",x:"Gesicht mit lauwarmem Wasser anfeuchten, Reiniger 30 Sekunden einmassieren, gründlich abspülen, trocken tupfen.",timer:30,d:90},
   creme:{ph:"pflege",i:"🧴",t:"Feuchtigkeitscreme",x:"Eine erbsengroße Menge – abends ruhig etwas großzügiger – auf Gesicht und Hals verteilen.",d:45},
   gymAbend:{ph:"vorbereiten",i:"🎒",t:"Gymtasche packen",x:"Morgen ist Krafttraining. Pack jetzt die Gymtasche:\n• Trainingskleidung und Schuhe\n• Handtuch, Trinkflasche\n• Duschzeug",d:120},
+  wirkstoff:{ph:"pflege",i:"🧪",get t(){return WIRK().t},get x(){return WIRK().x},d:60},
+  pflegecheck:{ph:"vorbereiten",i:"💅",t:"Sonntag: Pflege-Check",x:"Einmal pro Woche:\n• Fingernägel kürzen und feilen\n• Fußnägel kürzen\n• Nasen- und Ohrhaare trimmen\n• Augenbrauen: Mitte zupfen, lange Haare kürzen\n• Hornhaut an den Füßen mit Feile oder Bimsstein\n• Lippen pflegen",d:300},
   wochencheck:{ph:"vorbereiten",i:"🧳",t:"Sonntag: Spender & Essential Bag",x:"Tablettenspender für die Woche befüllen:\n• Morgen: D3 (2 Softgels), K2 (1), Omega-3 (2)\n• Abend: Magnesium\n• Kreatin: 7 Portionen à 5 g abfüllen\n\nEssential Bag prüfen und auffüllen:\n• Zahnpasta, Zahnseide\n• Duschgel, Shampoo\n• Rasiergel, Ersatzklingen\n• Reiniger, Feuchtigkeitscreme, LSF\n• Deo-Stick, Kamm, Lippenpflege\n• Duft-Shots № 600 und № 602\n• Trimmer und Zahnbürste laden",tipp:"Nur sonntags – dauert ca. 10 Minuten.",d:600},
   waerme:{ph:"vorbereiten",i:"♨️",t:"Wärme auflegen",x:"Kirschkernkissen oder Wärmepflaster auf oberen Rücken und Nacken – ca. 5 Minuten. Währenddessen das Outfit vorbereiten.",tipp:"Wärme lockert die Muskeln vor Massage und Dehnen.",d:30},
   massage:{ph:"dehnen",i:"💆",t:"Massage: Nacken & oberer Rücken",x:"Massagepistole auf niedriger Stufe oder Ball an der Wand, je 45–60 Sek.:\n• oberer Trapez (zwischen Hals und Schultergelenk)\n• Nackenansatz seitlich\n• zwischen den Schulterblättern, neben der Wirbelsäule\n\nNicht auf die Wirbelsäule, nicht im versteiften Bereich T2/T3 (Nackenansatz bis oberer Schulterblattrand), nicht vorne am Hals.",tipp:"Nach der Sauna besonders wirksam.",timer:240,d:270},
@@ -685,7 +690,7 @@ function flowSteps(v){
 }
 function build(v){
   if(v==="buero") return flowSteps("buero");
-  if(v==="abend") return [...["waerme","kleidung","schuhe","accessoires",...([0,1,4].includes(new Date(Date.now()-4*3600e3).getDay())?["gymAbend"]:[]),...(new Date(Date.now()-4*3600e3).getDay()===0?["wochencheck"]:[])].map(id=>({k:"schritt",id})),...(new Date(Date.now()-4*3600e3).getDay()===0?[{k:"check",id:"verspannung",ph:"vorbereiten"}]:[]),{k:"timer",id:"zaehneAbend",ph:"pflege"},...["zahnseide","reinigen","creme","magnesium"].map(id=>({k:"schritt",id})),...([3,4].includes(new Date(Date.now()-4*3600e3).getDay())?[{k:"schritt",id:"fechtAusgleich"}]:[]),{k:"schritt",id:"massage"},...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
+  if(v==="abend") return [...["waerme","kleidung","schuhe","accessoires",...([0,1,4].includes(new Date(Date.now()-4*3600e3).getDay())?["gymAbend"]:[]),...(new Date(Date.now()-4*3600e3).getDay()===0?["wochencheck","pflegecheck"]:[])].map(id=>({k:"schritt",id})),...(new Date(Date.now()-4*3600e3).getDay()===0?[{k:"check",id:"verspannung",ph:"vorbereiten"}]:[]),{k:"timer",id:"zaehneAbend",ph:"pflege"},...["zahnseide","reinigen","wirkstoff","creme","magnesium"].map(id=>({k:"schritt",id})),...([3,4].includes(new Date(Date.now()-4*3600e3).getDay())?[{k:"schritt",id:"fechtAusgleich"}]:[]),{k:"schritt",id:"massage"},...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
   const st=[];
   st.push({k:"check",id:"bett"},{k:"check",id:"gewicht"},{k:"check",id:"wasser"});
   FLOW[v].forEach(id=>{
@@ -982,7 +987,7 @@ function finishAbend(){
   const datum=isoLocal(new Date(start.getTime()-4*3600e3)).slice(0,10);
   const lesen=S.res.lesen?15:0, outfit=r("kleidung")&&r("schuhe")?1:0, haut=r("reinigen")&&r("creme")?1:0;
   const log=["Abendroutine",`datum=${datum}`,`start=${S.start}`,`ende=${isoLocal(end)}`,`dauer_min=${min}`,
-    `outfit=${outfit}`,`haut_abends=${haut}`,`zaehne_abends=${r("zaehneAbend")}`,`zahnseide=${r("zahnseide")}`,`wochencheck=${r("wochencheck")}`,`gymtasche=${r("gymAbend")}`,`supplements=${r("magnesium")}`,`dehnen=${fd}/${flow.length}`,`waerme=${r("waerme")}`,`massage=${r("massage")}`,`fecht_ausgleich=${steps.some(x=>x.id==="fechtAusgleich")?r("fechtAusgleich"):""}`,`verspannung=${steps.some(x=>x.id==="verspannung")&&S.res.verspannung?S.reps.verspannung:""}`,
+    `outfit=${outfit}`,...(glowTag("sauna",datum)?["sauna=1"]:[]),...(glowTag("friseur",datum)?["friseur=1"]:[]),`haut_abends=${haut}`,`zaehne_abends=${r("zaehneAbend")}`,`zahnseide=${r("zahnseide")}`,`wochencheck=${r("wochencheck")}`,`gymtasche=${r("gymAbend")}`,`supplements=${r("magnesium")}`,`dehnen=${fd}/${flow.length}`,`waerme=${r("waerme")}`,`massage=${r("massage")}`,`fecht_ausgleich=${steps.some(x=>x.id==="fechtAusgleich")?r("fechtAusgleich"):""}`,`verspannung=${steps.some(x=>x.id==="verspannung")&&S.res.verspannung?S.reps.verspannung:""}`,
     `sleepcycle=${r("sleep")}`,`lesen_min=${lesen}`].join("; ")+";";
   S.log=log; S.fertig=isoLocal(end); save();
   tagStatus({haut_a:haut, hd:outfit}, datum);
@@ -1006,7 +1011,7 @@ function heroRender(){
     <div class="chips">${chips.map(c=>`<span>${(c==="flow"?"Rücken-Flow":BAUSTEIN[c]).replace(/^\S+\s/,"")}</span>`).join("")}</div>`;
   document.body.classList.toggle("abend",ab);document.body.classList.toggle("morgen",!ab);
   $("btnStart").textContent=ab?"Abendroutine starten":"Morgenroutine starten";
-  befehlRender(); heuteRender(); gewichtRender(); pjRender();
+  befehlRender(); heuteRender(); gewichtRender(); pjRender(); glowRender(); wocheRender2();
 }
 function wocheRender(){
   const h=store.get("verlauf",[])||[],d=new Date(),mo=new Date(d);mo.setDate(d.getDate()-((d.getDay()+6)%7));
@@ -1074,20 +1079,121 @@ const PUTZ_CHECK={"Küche":"Arbeitsflächen|Herd und Backrohr außen|Spüle|Fron
   "Arbeitszimmer":"Schreibtisch freiräumen|Staub und Bildschirm|Boden saugen","Abstellkammer":"Ausmisten und ordnen|Boden saugen",
   "Balkon":"Kehren|Geländer und Möbel abwischen|Pflanzen/Deko prüfen"};
 function tagStatus(o,d){const k="pjtag-"+(d||isoLocal(new Date()).slice(0,10));store.set(k,Object.assign(store.get(k)||{},o))}
+const EW=[["Skyr 500 g",55],["Hühnerbrust 200 g",46],["Magertopfen 250 g",30],["Thunfisch (1 Dose)",25],["Whey-Shake",24],["3 Eier",19]];
+function ewVorschlag(rest){if(rest<=0)return"";let best=null;
+  function cand(c){const s=c.reduce((x,y)=>x+y[1],0);if(s<rest)return;const sc=(s-rest)+c.length*8;if(!best||sc<best.sc)best={c,s,sc}}
+  for(let a=0;a<EW.length;a++){cand([EW[a]]);for(let b=a+1;b<EW.length;b++){cand([EW[a],EW[b]]);for(let c=b+1;c<EW.length;c++)cand([EW[a],EW[b],EW[c]])}}
+  if(!best)best={c:EW.slice(0,3),s:131};return `${best.c.map(x=>x[0]).join(" + ")} (≈ ${best.s} g)`}
+function trainHeute(h){return (store.get("noah:hist")||[]).filter(x=>x.datum===h&&!x.nicht)}
 function pjRender(){
   const el=$("pjCard"); if(!el) return;
-  const heute=isoLocal(new Date()).slice(0,10), p=TERMINE&&TERMINE.pj;
-  if(!p||TERMINE.datum!==heute||heute>"2027-01-15"){el.classList.add("hidden");return}
-  const lok=store.get("pjtag-"+heute)||{}, log=p.log||{}, wd=new Date().getDay(), tr=p.training||[];
+  const heute=isoLocal(new Date()).slice(0,10), abend=new Date().getHours()>=20;
+  const p=(TERMINE&&TERMINE.pj&&TERMINE.datum===heute)?TERMINE.pj:null;
+  if((!p&&!abend)||heute>"2027-01-15"){el.classList.add("hidden");return}
+  const lok=store.get("pjtag-"+heute)||{}, log=(p&&p.log)||{}, wd=new Date().getDay(), tr=(p&&p.training)||[], th=trainHeute(heute);
   const ja=v=>v===true||v===1||v==="1"||/^(ja|true|✓)/i.test(String(v||""));
-  const z=(l,ok,txt)=>`<div class="orow"><span>${ok===true?"✅":ok===false?"⬜️":"▫️"} ${l}</span><b>${txt||""}</b></div>`;
-  const ew=p.eiweiss||0, kc=p.kcal||0;
-  let r=z("Eiweiß",ew>=165,`${ew} / 165 g`)+z("Kalorien",kc?kc<=2400:null,kc?`${kc} / max. 2.400`:"noch nichts erfasst");
-  if([1,2,5].includes(wd)) r+=z("Krafttraining",tr.some(a=>/kraft|cardio/i.test(a))||ja(log.training));
-  if([3,4].includes(wd)) r+=z("Fechten",tr.some(a=>/fecht/i.test(a))||ja(log.fechten),tr.some(a=>/ausfall/i.test(a))?"Ausfall gemeldet":"");
-  r+=z("Haut morgens",!!(p.haut_morgens||lok.haut_m||ja(log.haut_morgens)))+z("Haut abends",!!(lok.haut_a||ja(log.haut_abends)))+z("Outfit am Herrendiener",!!(lok.hd||ja(log.herrendiener)));
-  if(p.schritte_gestern!=null) r+=z("Schritte gestern",p.schritte_gestern>=6500,`${Number(p.schritte_gestern).toLocaleString("de-AT")} / 6.500`);
-  el.innerHTML=`<div class="ckopf">🏁 Heute für PJ<span>Stand ${esc(TERMINE.stand||"")}</span></div>${r}`;
+  const R=[]; const z=(l,ok,txt)=>R.push({ok,h:`<div class="orow"><span>${ok===true?"✅":ok===false?"⬜️":"▫️"} ${l}</span><b>${txt||""}</b></div>`});
+  if(p){const ew=p.eiweiss||0, kc=p.kcal||0;
+    z("Eiweiß",ew>=165,`${ew} / 165 g`); if(ew<165) R.push({ok:false,h:`<div class="orow"><span class="small muted">↳ noch ${165-ew} g: ${esc(ewVorschlag(165-ew))}</span></div>`});
+    z("Kalorien",kc?kc<=2400:null,kc?`${kc} / max. 2.400`:"noch nichts erfasst");}
+  if([1,2,5].includes(wd)) z("Krafttraining",tr.some(a=>/kraft|cardio/i.test(a))||th.some(x=>/kraft|cardio/i.test(x.art))||ja(log.training));
+  if([3,4].includes(wd)) z("Fechten",tr.some(a=>/fecht/i.test(a))||th.some(x=>/fecht/i.test(x.art))||ja(log.fechten),(tr.some(a=>/ausfall/i.test(a))||(store.get("noah:hist")||[]).some(x=>x.datum===heute&&x.nicht))?"Ausfall gemeldet":"");
+  z("Haut morgens",!!((p&&p.haut_morgens)||lok.haut_m||ja(log.haut_morgens)));z("Haut abends",!!(lok.haut_a||ja(log.haut_abends)));z("Outfit am Herrendiener",!!(lok.hd||ja(log.herrendiener)));
+  if(p&&p.schritte_gestern!=null&&!abend) z("Schritte gestern",p.schritte_gestern>=6500,`${Number(p.schritte_gestern).toLocaleString("de-AT")} / 6.500`);
+  const sc=glowScore();
+  const zeilen=abend?R.filter(x=>x.ok!==true):R;
+  el.innerHTML=`<div class="ckopf">${abend?"🌙 Heute noch offen":"🏁 Heute für PJ"}<span>${p?"Stand "+esc(TERMINE.stand||""):""}</span></div>${zeilen.length?zeilen.map(x=>x.h).join(""):'<div class="orow"><span>✅ Alles erledigt – stark.</span></div>'}<div class="orow"><span>✨ Glow-up-Score diese Woche</span><b>${sc} %</b></div>`;
+  el.classList.remove("hidden");
+}
+/* ---------- Glow-up ---------- */
+const GLOW_FRISEUR=21, GLOW_PEDI=49, PJ_MESS=["2026-11-22","2026-12-20","2027-01-15"];
+const BASICS=["Gürtel navy (zu den navy Bootsschuhen)","Schuhe für Stufe 5 (Oxford SH05 bestellt)","Fliege (Ball)","Smokinghemd (Ball)","Sonnenschutz LSF 30–50 fürs Gesicht","BHA-Peeling 2 % Salicylsäure","Retinol 0,2–0,3 %"];
+function WIRK(){const w=new Date(Date.now()-4*3600e3).getDay();
+  if(w===1||w===4) return {t:"Wirkstoff: BHA-Peeling",x:"Nach dem Reinigen BHA (2 % Salicylsäure) mit einem Wattepad auftragen, nicht abwaschen. 1 Minute einziehen lassen, dann Creme.\n\nNoch nicht gekauft? Auslassen."};
+  if(w===2||w===5) return {t:"Wirkstoff: Retinol",x:"Erbsengroße Menge Retinol (0,2–0,3 %) auf die trockene Haut, Augenpartie aussparen. Danach Creme. Am Anfang kann die Haut leicht schälen – normal. Morgens unbedingt LSF.\n\nNoch nicht gekauft? Auslassen."};
+  return {t:"Wirkstoff-Pause",x:"Heute kein Wirkstoff – die Haut regeneriert. Direkt weiter zur Creme."}}
+function gGet(){return store.get("glow")||{}}
+function gSet(o){store.set("glow",Object.assign(gGet(),o))}
+function isoTag(off){const d=new Date();d.setDate(d.getDate()+(off||0));return isoLocal(d).slice(0,10)}
+function tageSeit(d){return d?Math.round((new Date(isoTag())-new Date(d))/864e5):null}
+function glowTag(k,d){const g=gGet();return k==="sauna"?((g.sauna||[]).includes(d)?1:0):(g[k]===d?1:0)}
+function wocheVon(off){const d=new Date(isoTag());d.setDate(d.getDate()-((d.getDay()+6)%7)+(off||0)*7);return d.toISOString().slice(0,10)}
+function tageBereich(von,bis){const r=[];for(let d=new Date(von);d.toISOString().slice(0,10)<=bis;d.setDate(d.getDate()+1))r.push(d.toISOString().slice(0,10));return r}
+function glowScore(){const g=gGet(),ws=wocheVon(0),h=isoTag(),gestern=isoTag(-1);
+  const tage=tageBereich(ws,gestern<ws?h:gestern), lok=d=>store.get("pjtag-"+d)||{};
+  const haut=tage.filter(d=>lok(d).haut_m&&lok(d).haut_a).length/tage.length, hd=tage.filter(d=>lok(d).hd).length/tage.length;
+  const fr=tageSeit(g.friseur), hf=tageSeit(g.hautfoto);
+  const werte=[haut,hd,(g.sauna||[]).some(d=>d>=ws)?1:0,fr!==null&&fr<=GLOW_FRISEUR?1:0,hf!==null&&hf<14?1:0,g.koerperfoto&&g.koerperfoto.slice(0,7)===h.slice(0,7)?1:0];
+  return Math.round(werte.reduce((a,b)=>a+b,0)/werte.length*100)}
+let fotoArt="", fotoReihe=[];
+function glowRender(){
+  const el=$("glowCard"); if(!el) return;
+  const g=gGet(), h=isoTag(), ws=wocheVon(0), fr=tageSeit(g.friseur), pe=tageSeit(g.pedi), hf=tageSeit(g.hautfoto);
+  const mess=PJ_MESS.some(d=>{const x=tageSeit(d);return x!==null&&x>=-1&&x<=0})||((TERMINE&&TERMINE.termine)||[]).some(t=>/innvibe|inbody|messung/i.test(t.titel||""));
+  const cd=(tg,max)=>tg===null?"Datum fehlt":max-tg>0?`in ${max-tg} Tagen`+(max-tg<=7?" · Termin ausmachen":""):"fällig";
+  const B=(k,l)=>`<button class="ghost small" data-g="${k}" style="margin-left:8px;white-space:nowrap">${l}</button>`;
+  const row=(l,txt,btn)=>`<div class="orow" style="display:flex;align-items:center"><span style="flex:1">${l}<br><small class="muted">${txt}</small></span>${btn||""}</div>`;
+  const saunaW=(g.sauna||[]).some(d=>d>=ws), kfOk=g.koerperfoto&&g.koerperfoto.slice(0,7)===h.slice(0,7), offen=BASICS.filter((x,i)=>!(g.kauf||[]).includes(i)).length;
+  el.innerHTML=`<div class="ckopf">✨ Glow-up<span>${glowScore()} % diese Woche</span></div>`
+   +row("✂️ Friseur (alle 3 Wochen)",cd(fr,GLOW_FRISEUR),fr===null?B("friseur-datum","Datum"):B("friseur","War heute"))
+   +row("🦶 Pediküre (alle 7 Wochen)",cd(pe,GLOW_PEDI),pe===null?B("pedi-datum","Datum"):B("pedi","War heute"))
+   +row("🧖 Sauna (1× pro Woche)",(saunaW?"✅ diese Woche erledigt":"⬜️ diese Woche offen")+(mess?" · ⚠️ keine Sauna: Messung innerhalb 24 h":""),B("sauna",(g.sauna||[]).includes(h)?"Heute ✓":"Heute"))
+   +row("📸 Hautfoto (alle 2 Wochen)",hf===null||hf>=14?"fällig":`nächstes in ${14-hf} Tagen`,B("hautfoto","Foto"))
+   +row("📸 Fortschrittsfotos (monatlich)",kfOk?"diesen Monat erledigt":"fällig: vorne, seitlich, hinten",B("koerper",fotoReihe.length?"Foto "+fotoReihe[0]:"Fotos"))
+   +`<div class="orow"><button class="ghost small" data-g="galerie" style="width:100%">Fotos ansehen &amp; in Fotos sichern</button></div>`
+   +`<details style="margin-top:8px"><summary class="small" style="font-weight:600">👔 Stilprofil &amp; fehlende Basics (${offen} offen)</summary>
+     <div class="small muted" style="margin:8px 0">Klassisch-britischer „Old Money“-Stil, ruhig und hochwertig, Tracht als eigene Säule.<br>Basis: Navy, Weiß, Stein, Khaki, Grau · Akzente: Flaschengrün, Oliv, Salbei, Hellblau, Bordeaux, Cognac.</div>
+     ${BASICS.map((x,i)=>{const ok=(g.kauf||[]).includes(i);return `<div class="orow" data-kauf="${i}" style="cursor:pointer"><span>${ok?"✅":"⬜️"} ${esc(x)}</span></div>`}).join("")}
+     <div class="small muted" style="margin-top:6px">Gekauft? Abhaken und Jarvis schreiben: „Gekauft: …“ – dann steht es auch in der Garderobe.</div></details>`;
+}
+function fdb(){return new Promise((ok,no)=>{const r=indexedDB.open("glowfotos",1);r.onupgradeneeded=()=>r.result.createObjectStore("f",{keyPath:"id"});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+async function fPut(o){const db=await fdb();return new Promise((ok,no)=>{const tx=db.transaction("f","readwrite");tx.objectStore("f").put(o);tx.oncomplete=ok;tx.onerror=()=>no(tx.error)})}
+async function fAll(){const db=await fdb();return new Promise((ok,no)=>{const r=db.transaction("f").objectStore("f").getAll();r.onsuccess=()=>ok(r.result||[]);r.onerror=()=>no(r.error)})}
+async function fotoSichern(f,name){try{const file=new File([f.blob],name,{type:f.blob.type||"image/jpeg"});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});return true}}catch(e){}return false}
+async function galerie(){
+  const o=document.createElement("div");o.style.cssText="position:fixed;inset:0;z-index:50;background:var(--bg,#000);overflow:auto;padding:max(env(safe-area-inset-top),16px) 16px 24px";
+  let l=[];try{l=(await fAll()).sort((a,b)=>b.id-a.id)}catch(e){}
+  const urls=[];o.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Glow-up-Fotos</h2><button class="ghost small" data-x="1">Schließen</button></div>
+   <div class="small muted" style="margin:6px 0 12px">Die Fotos liegen nur in dieser App auf deinem iPhone. „Sichern“ legt eine Kopie in deine Fotos-App.</div>
+   ${l.length?l.map(f=>{const u=URL.createObjectURL(f.blob);urls.push(u);return `<div class="card" style="margin-bottom:10px"><img src="${u}" style="width:100%;border-radius:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><span class="small">${esc(f.art)} · ${f.datum.slice(8,10)}.${f.datum.slice(5,7)}.${f.datum.slice(0,4)}</span><button class="ghost small" data-s="${f.id}">Sichern</button></div></div>`}).join(""):'<div class="muted">Noch keine Fotos.</div>'}`;
+  document.body.appendChild(o);
+  o.onclick=async e=>{const d=e.target.dataset;if(d.x){urls.forEach(u=>URL.revokeObjectURL(u));o.remove();return}
+    if(d.s){const f=l.find(x=>String(x.id)===d.s);if(f&&!(await fotoSichern(f,`glowup-${f.art}-${f.datum}.jpg`)))alert("Sichern hier nicht möglich – Foto lange drücken und „Zu Fotos hinzufügen“.")}};
+}
+$("glowCard").onclick=e=>{
+  const k=e.target.dataset.g, ki=e.target.closest("[data-kauf]");
+  if(ki){const g=gGet(),i=+ki.dataset.kauf,l=g.kauf||[];const j=l.indexOf(i);if(j>=0)l.splice(j,1);else l.push(i);gSet({kauf:l});try{tonOk()}catch(_){}glowRender();return}
+  if(!k) return; const h=isoTag(), g=gGet();
+  if(k==="friseur"||k==="pedi"){gSet({[k]:h});try{tonOk()}catch(_){}}
+  else if(k==="friseur-datum"||k==="pedi-datum"){const v=prompt("Wann warst du zuletzt? (TT.MM.JJJJ)","");const m=v&&v.match(/(\d{1,2})\.(\d{1,2})\.(\d{2,4})/);if(m){const y=m[3].length===2?"20"+m[3]:m[3];gSet({[k.split("-")[0]]:`${y}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`})}}
+  else if(k==="sauna"){const s=g.sauna||[];const j=s.indexOf(h);if(j>=0)s.splice(j,1);else s.push(h);gSet({sauna:s.slice(-30)});try{tonOk()}catch(_){}}
+  else if(k==="hautfoto"){fotoArt="haut";$("fotoIn").click();return}
+  else if(k==="koerper"){if(!fotoReihe.length)fotoReihe=["vorne","seitlich","hinten"];fotoArt=fotoReihe[0];$("fotoIn").click();return}
+  else if(k==="galerie"){galerie();return}
+  glowRender();pjRender();
+};
+$("fotoIn").onchange=async e=>{const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;const h=isoTag();
+  try{await fPut({id:Date.now(),art:fotoArt==="haut"?"Haut":"Körper "+fotoArt,datum:h,blob:f})}catch(err){alert("Foto konnte nicht gespeichert werden.");return}
+  if(fotoArt==="haut")gSet({hautfoto:h});else{fotoReihe.shift();if(!fotoReihe.length)gSet({koerperfoto:h})}
+  try{tonOk()}catch(_){}glowRender();pjRender();
+  fotoSichern({blob:f},`glowup-${fotoArt}-${h}.jpg`);
+};
+function wocheRender2(){
+  const el=$("wocheCard"); if(!el) return; const wd=new Date().getDay();
+  if(wd!==0&&wd!==1){el.classList.add("hidden");return}
+  const off=wd===1?-1:0, von=wocheVon(off), bis=new Date(new Date(von).getTime()+6*864e5).toISOString().slice(0,10), tage=tageBereich(von,bis);
+  const v=(store.get("verlauf")||[]).filter(x=>x.d>=von&&x.d<=bis), hist=(store.get("noah:hist")||[]).filter(x=>x.datum>=von&&x.datum<=bis&&!x.nicht);
+  const kg=v.filter(x=>x.kg).sort((a,b)=>a.d<b.d?-1:1), dk=kg.length>1?Math.round((kg[kg.length-1].kg-kg[0].kg)*10)/10:null;
+  const lok=d=>store.get("pjtag-"+d)||{}, g=gGet();
+  const z=(l,w)=>`<div class="orow"><span>${l}</span><b>${w}</b></div>`;
+  el.innerHTML=`<div class="ckopf">📊 ${off?"Letzte Woche":"Deine Woche"}<span>${von.slice(8,10)}.${von.slice(5,7)}.–${bis.slice(8,10)}.${bis.slice(5,7)}.</span></div>`
+   +z("☀️ Morgenroutine",`${new Set(v.filter(x=>x.v==="kurz"||x.v==="lang").map(x=>x.d)).size} / 7`)
+   +z("🌙 Abendroutine",`${new Set(v.filter(x=>x.v==="abend").map(x=>x.d)).size} / 7`)
+   +z("🏋️ Krafttraining",`${hist.filter(x=>/kraft/i.test(x.art)).length} / 3`)
+   +z("🤺 Fechten",`${hist.filter(x=>/fecht/i.test(x.art)).length} / 2`)
+   +z("🧴 Haut 2× täglich",`${tage.filter(d=>lok(d).haut_m&&lok(d).haut_a).length} / 7`)
+   +z("🧖 Sauna",(g.sauna||[]).some(d=>d>=von&&d<=bis)?"✓":"–")
+   +z("⚖️ Gewicht",kg.length?`${String(kg[kg.length-1].kg).replace(".",",")} kg${dk!==null?` (${dk>0?"+":""}${String(dk).replace(".",",")})`:""}`:"–");
   el.classList.remove("hidden");
 }
 function putzRender(){
