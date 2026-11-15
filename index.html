@@ -822,7 +822,7 @@ function enter(i){
     $("exCtrl").classList.remove("hidden"); $("checkCtrl").classList.add("hidden");
     $("name").textContent=tm.n; $("side").textContent=""; $("cue").textContent=tm.c;
     $("fig").innerHTML=`<div class="emoji" style="margin:18px auto">${tm.e}</div>`; $("btnPause").textContent="Pause";
-    startPhase("hold",tm.t); setPhase("hold",tm.n); say(st.id==="lesen"?"Jetzt lesen. Fünfzehn Minuten.":tm.n+". Zwei Minuten.");
+    startPhase("hold",tm.t); if(S.tIdx===S.idx&&S.tEnd) phaseEnd=S.tEnd; else {S.tIdx=S.idx;S.tEnd=phaseEnd;save();} setPhase("hold",tm.n); say(st.id==="lesen"?"Jetzt lesen. Fünfzehn Minuten.":tm.n+". Zwei Minuten.");
     return;
   }
   if(st.k==="check"){
@@ -855,7 +855,7 @@ function enter(i){
 }
 function setPhase(cls,txt){ const p=$("phase"); p.className="phase "+cls; p.textContent=txt; }
 function startPhase(p,sec){
-  phase=p; phaseLen=sec*1000; phaseEnd=performance.now()+phaseLen; lastSec=-1;
+  phase=p; phaseLen=sec*1000; phaseEnd=Date.now()+phaseLen; lastSec=-1;
   setPhase(p, p==="prep"?"Einnehmen":"Halten");
   $("ring").style.stroke=p==="prep"?"var(--prep)":"var(--hold)";
 }
@@ -877,7 +877,7 @@ function cminiTick(){if(!cm)return;const r_=Math.ceil((cm.end-Date.now())/1000);
 function tick(){
   $("clock").textContent=hm(new Date()); miniTick(); cminiTick();
   if(phase!=="prep"&&phase!=="hold") return;
-  const rem=paused?pausedRem:Math.max(0,phaseEnd-performance.now());
+  const rem=paused?pausedRem:Math.max(0,phaseEnd-Date.now());
   const sec=Math.ceil(rem/1000);
   $("num").textContent=steps[S.idx]&&steps[S.idx].k==="timer"?`${Math.floor(sec/60)}:${pad(sec%60)}`:sec;
   $("num").style.fontSize=steps[S.idx]&&steps[S.idx].k==="timer"?"40px":"";
@@ -894,8 +894,8 @@ function tick(){
 }
 function togglePause(){
   if(phase!=="prep"&&phase!=="hold") return;
-  if(!paused){ paused=true; pausedRem=Math.max(0,phaseEnd-performance.now()); setPhase("pause","Pause"); $("btnPause").textContent="Weiter"; try{speechSynthesis.cancel()}catch(e){} }
-  else { paused=false; phaseEnd=performance.now()+pausedRem; setPhase(phase,phase==="prep"?"Einnehmen":steps[S.idx].k==="timer"?TIMER[steps[S.idx].id].n:"Halten"); $("btnPause").textContent="Pause"; }
+  if(!paused){ paused=true; pausedRem=Math.max(0,phaseEnd-Date.now()); if(steps[S.idx].k==="timer"){S.tEnd=0;save();} setPhase("pause","Pause"); $("btnPause").textContent="Weiter"; try{speechSynthesis.cancel()}catch(e){} }
+  else { paused=false; phaseEnd=Date.now()+pausedRem; if(steps[S.idx].k==="timer"){S.tIdx=S.idx;S.tEnd=phaseEnd;save();} setPhase(phase,phase==="prep"?"Einnehmen":steps[S.idx].k==="timer"?TIMER[steps[S.idx].id].n:"Halten"); $("btnPause").textContent="Pause"; }
 }
 function checkDone(ok){
   const st=steps[S.idx];
@@ -1170,7 +1170,7 @@ $("btnDone").onclick=()=>{tonOk();checkDone(true)};
 $("btnNo").onclick=()=>{tonAus();checkDone(false)};
 $("btnAbort").onclick=()=>{ if(confirm("Routine jetzt beenden? Erledigtes wird gespeichert.")) finish(); };
 document.addEventListener("visibilitychange",()=>{
-  if(document.hidden){ if((phase==="prep"||phase==="hold")&&!paused) togglePause(); }
+  if(document.hidden){ if((phase==="prep"||phase==="hold")&&!paused&&!(steps[S.idx]&&steps[S.idx].k==="timer")) togglePause(); }  // Timer (Zähne, Lesen) laufen im Hintergrund weiter
   else if(phase) wakeOn();
 });
 
