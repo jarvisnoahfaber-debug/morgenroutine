@@ -482,6 +482,11 @@ details.card summary{color:var(--text)}
       <div class="muted small">Gewicht in kg</div>
       <input id="kg" class="kg" inputmode="decimal" placeholder="z. B. 94,6" autocomplete="off">
     </div>
+    <div class="card hidden" id="bauchBox">
+      <div class="muted small">Bauchumfang in cm – 3 Messungen</div>
+      <div style="display:flex;gap:8px"><input id="b1" class="kg" style="width:33%;font-size:26px" inputmode="decimal" placeholder="1." autocomplete="off"><input id="b2" class="kg" style="width:33%;font-size:26px" inputmode="decimal" placeholder="2." autocomplete="off"><input id="b3" class="kg" style="width:33%;font-size:26px" inputmode="decimal" placeholder="3." autocomplete="off"></div>
+      <div class="muted small" id="bauchMittel" style="text-align:center;margin-top:8px"></div>
+    </div>
   </div>
 
   <div class="cue" id="cue" style="text-align:center"></div>
@@ -611,6 +616,7 @@ const CHECK = {
   deoHaare:{n:"Deo, Duft & Haare",e:"💈",c:"Letzter Schliff vor dem Anziehen:",d:120,l:[["Deo","№ 600 Stick"],["Duft","2 Sprühstöße – Hals und Handgelenk"],["Haare kämmen und stylen"],["Lippenpflege"]]},
   rasieren:{n:"Rasieren",e:"🪒",c:"Nach dem Duschen – die Haut ist jetzt weich:",d:240,l:[["Konturen trimmen","Wangen, Hals, Übergänge"],["Rasieren","mit dem Strich, ohne Druck"],["Kalt abspülen, trocken tupfen"]]},
   gewicht:{n:"Wiegen",e:"⚖️",c:"Nach dem WC, vor dem Trinken. Gewicht eingeben.",kg:1,d:45},
+  bauch:{n:"Bauchumfang",e:"📏",c:"Sonntag: stehend, nüchtern nach dem WC, Maßband waagrecht auf Nabelhöhe. Dreimal messen.",bauch:1,d:90},
   wasser:{n:"Wasser trinken",e:"💧",c:"Ein großes Glas, etwa ein halber Liter.",d:45},
   liegestuetze:{n:"Liegestütze",r:10,c:"Körper gerade wie ein Brett, Brust bis knapp über den Boden.",d:60},
   klimmzuege:{n:"Klimmzüge",r:10,c:"Aus dem Hang, Kinn über die Stange, kontrolliert ablassen.",d:90},
@@ -788,7 +794,7 @@ function build(v){
   if(v==="buero") return flowSteps("buero");
   if(v==="abend") return [...["waerme","kleidung","schuhe","accessoires",...([0,1,4].includes(new Date(Date.now()-4*3600e3).getDay())?["gymAbend"]:[]),...(new Date(Date.now()-4*3600e3).getDay()===0?["wochencheck","pflegecheck"]:[])].map(id=>({k:"schritt",id})),...(new Date(Date.now()-4*3600e3).getDay()===0?[{k:"check",id:"verspannung",ph:"vorbereiten"}]:[]),{k:"timer",id:"zaehneAbend",ph:"pflege"},...["zahnseide","reinigen","wirkstoff","creme","magnesium"].map(id=>({k:"schritt",id})),...([3,4].includes(new Date(Date.now()-4*3600e3).getDay())?[{k:"schritt",id:"fechtAusgleich"}]:[]),{k:"schritt",id:"massage"},...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
   const st=[];
-  st.push({k:"check",id:"bett"},{k:"check",id:"gewicht"},{k:"check",id:"wasser"});
+  st.push({k:"check",id:"bett"},{k:"check",id:"gewicht"}); if(new Date().getDay()===0) st.push({k:"check",id:"bauch"}); st.push({k:"check",id:"wasser"});
   FLOW[v].forEach(id=>{
     const e=EX[id];
     if(e.s){
@@ -935,6 +941,7 @@ function enter(i){
     $("name").textContent=c.n; $("side").textContent=""; $("cue").textContent=c.c;
     $("exView").classList.add("hidden"); $("checkView").classList.remove("hidden");
     $("kgBox").classList.toggle("hidden",!c.kg); if(c.kg) $("kg").value=S.kg||"";
+    $("bauchBox").classList.toggle("hidden",!c.bauch); if(c.bauch){["b1","b2","b3"].forEach((b,i)=>{$(b).value=(S.bauchM||[])[i]||"";$(b).oninput=bauchZeig;}); bauchZeig();}
     $("emoji").textContent=c.e||""; $("emoji").classList.toggle("hidden",!c.e||!!c.l);
     $("liste").classList.toggle("hidden",!c.l);
     if(c.l)$("cue").textContent="";
@@ -999,6 +1006,8 @@ function togglePause(){
   if(!paused){ paused=true; pausedRem=Math.max(0,phaseEnd-Date.now()); if(steps[S.idx].k==="timer"){S.tEnd=0;save();} setPhase("pause","Pause"); $("btnPause").textContent="Weiter"; try{speechSynthesis.cancel()}catch(e){} }
   else { paused=false; phaseEnd=Date.now()+pausedRem; if(steps[S.idx].k==="timer"){S.tIdx=S.idx;S.tEnd=phaseEnd;save();} setPhase(phase,phase==="prep"?"Einnehmen":steps[S.idx].k==="timer"?TIMER[steps[S.idx].id].n:"Halten"); $("btnPause").textContent="Pause"; }
 }
+function bauchWerte(){return ["b1","b2","b3"].map(b=>parseFloat($(b).value.trim().replace(",","."))).filter(n=>n>=50&&n<=200);}
+function bauchZeig(){const m=bauchWerte();$("bauchMittel").textContent=m.length===3?"Mittelwert: "+(m.reduce((a,b)=>a+b,0)/3).toFixed(1).replace(".",",")+" cm":"";}
 function checkDone(ok){
   const st=steps[S.idx];
   if(st.id==="gewicht"){
@@ -1006,6 +1015,11 @@ function checkDone(ok){
     const n=parseFloat(v);
     if(ok&&!(n>30&&n<250)){ $("kg").focus(); $("cue").textContent="Bitte ein gültiges Gewicht eingeben – oder „Auslassen“."; return; }
     S.kg=ok?n.toFixed(1):"";
+  }
+  if(st.id==="bauch"){
+    const m=bauchWerte();
+    if(ok&&m.length<3){ $("b1").focus(); $("cue").textContent="Bitte alle 3 Messungen eingeben (50–200 cm) – oder „Auslassen“."; return; }
+    S.bauchM=ok?m.map(x=>x.toFixed(1)):[]; S.bauch=ok?(m.reduce((a,b)=>a+b,0)/3).toFixed(1):"";
   }
   if(st.k==="check"&&CHECK[st.id].r){ S.reps=S.reps||{}; S.reps[st.id]=ok?repN:(CHECK[st.id].skala?"":0); }
   S.res[st.id]=ok?1:0; save(); enter(S.idx+1);
@@ -1029,6 +1043,8 @@ function finish(){
     `dauer_min=${min}`,
     `bett=${r("bett")}`,
     `gewicht=${S.kg||""}`,
+    `bauch=${S.bauch||""}`,
+    `bauch_einzel=${(S.bauchM||[]).join("/")}`,
     `wasser=${r("wasser")}`,
     `flow=${exDone}/${exSteps.length}`,
     `haltung=${r("haltung")}`,
@@ -1054,7 +1070,7 @@ function finish(){
   tagStatus({haut_m:r("haut")}, S.start.slice(0,10));
   const z=(l,v)=>`<div><span class="muted">${l}</span><b>${v}</b></div>`;
   $("endSub").textContent=`${hm(start)}–${hm(end)} · ${min} Min. · ${S.v==="kurz"?"Kurz":"Lang"}`;
-  $("sum").innerHTML=z("Gewicht",S.kg?S.kg.replace(".",",")+" kg":"–")+z("Wasser",r("wasser")?"✓":"–")+
+  $("sum").innerHTML=z("Gewicht",S.kg?S.kg.replace(".",",")+" kg":"–")+(S.bauch?z("Bauchumfang",S.bauch.replace(".",",")+" cm"):"")+z("Wasser",r("wasser")?"✓":"–")+
     z("Bett gebaut",r("bett")?"✓":"–")+z("Rücken-Flow",`${exDone}/${exSteps.length} Übungen`)+z("Haltungs-Block",r("haltung")?"✓":"–")+z("Drill: Step-Jacks / Kniebeugen / Burpees",`${rp("hampelmann")} / ${rp("kniebeugen")} / ${rp("burpees")}`)+
     z("Liegestütze / Klimmzüge / Sit-ups",`${rp("liegestuetze")} / ${rp("klimmzuege")} / ${rp("situps")}`)+
     z("Duschen",r("dusche")?"✓":"–")+z("Rasieren",r("rasieren")?"✓":"–")+z("Deo, Duft & Haare",r("deoHaare")?"✓ (№ "+duftHeute().nr+")":"–")+z("Hautpflege",r("haut")?"✓":"–")+
