@@ -378,6 +378,17 @@ details.card summary{color:var(--text)}
 .fig .hd{fill:var(--text)}
 .fig line.fl{stroke:var(--sep)}
 .fig line.st{stroke:var(--muted)}
+/* v28 */
+.kal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;margin-top:8px}
+.kal .kh{font-style:normal;font-size:11px;color:var(--muted)}
+.kal div{padding:2px 0}.kal b{display:block;font-size:14px;font-weight:500;width:28px;height:28px;line-height:28px;margin:0 auto;border-radius:50%}
+.kal .heute b{background:var(--accent);color:#fff;font-weight:600}
+.kal span{display:flex;gap:3px;justify-content:center;height:6px}.kal em{width:5px;height:5px;border-radius:50%;background:transparent}
+.kal em.m{background:var(--accent)}.kal em.a{background:var(--text)}
+#kalCard .ckopf a{text-decoration:none;font-size:18px;color:var(--accent)}
+.orow.pack{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.orow.pack span{display:flex;align-items:center;gap:8px}.orow.pack input{width:20px;height:20px}
+#setAus label.row{margin:4px 0;font-size:14px}
 </style>
 </head>
 <body>
@@ -388,6 +399,7 @@ details.card summary{color:var(--text)}
   <div class="muted" id="today"></div>
   <div class="woche" id="woche"></div><div class="wochetxt" id="wochetxt"></div>
   <div class="hero" id="hero"></div>
+  <div class="card hidden" id="losCard"></div>
   <div class="card hidden" id="befehlCard"></div>
   <div class="card hidden" id="pjCard"></div>
   <div class="card hidden" id="wocheCard"></div>
@@ -395,8 +407,10 @@ details.card summary{color:var(--text)}
   <input type="file" id="fotoIn" accept="image/*" capture="user" style="display:none">
   <div class="card hidden" id="putzCard"></div>
   <div class="card hidden" id="termineCard"></div>
+  <div class="card hidden" id="reiseCard"></div>
   <div class="card hidden" id="heuteCard"></div>
   <div class="card hidden" id="gewCard"></div>
+  <div class="card hidden" id="kalCard"></div>
 
   <div class="card" id="resume" style="display:none">
     <div>Angefangene Routine von <b id="resumeTime"></b> gefunden.</div>
@@ -414,11 +428,15 @@ details.card summary{color:var(--text)}
   <button class="ghost" id="btnBuero" style="width:100%;margin-top:10px">🪑 Büro-Pause · Stuhl &amp; Stehen <span id="durBuero"></span></button>
 
   <details class="card">
-    <summary>⚙︎ Stimme &amp; Töne</summary>
+    <summary>⚙︎ Einstellungen</summary>
     <label class="row"><span>Stimme</span><input type="checkbox" id="optVoice" checked></label>
     <select id="voiceSel"></select>
     <label class="row"><span>Signaltöne</span><input type="checkbox" id="optBeep" checked></label>
     <button class="ghost small" id="btnTest" style="width:100%">Stimme &amp; Ton testen</button>
+    <label class="row" style="margin-top:14px"><span>Wegzeit zum 1. Termin (Min.)</span><input id="setWeg" type="number" inputmode="numeric" min="0" max="240" style="width:80px"></label>
+    <label class="row"><span>Puffer (Min.)</span><input id="setPuffer" type="number" inputmode="numeric" min="0" max="120" style="width:80px"></label>
+    <label class="row"><span>Wetter-Ort (ohne Reise)</span><select id="setOrt" style="width:auto"><option>Innsbruck</option><option>Kufstein</option><option>Wien</option></select></label>
+    <div class="muted small" style="margin-top:14px">Schritte ausblenden (✓ = weg)</div><div id="setAus"></div>
     <label class="row" style="margin-top:14px"><span>Termin-Schlüssel</span></label>
     <input id="tkey" type="password" placeholder="einfügen" autocomplete="off">
   </details>
@@ -790,7 +808,8 @@ function flowSteps(v){
     else st.push({k:"ex",id,side:"",prep:PREP,t:e.t})});
   return st;
 }
-function build(v){
+function build(v){return build0(v).filter(s=>s.k==="ex"||!(einst().aus||[]).includes(s.id))}
+function build0(v){
   if(v==="buero") return flowSteps("buero");
   if(v==="abend") return [...["waerme","kleidung","schuhe","accessoires",...([0,1,4].includes(new Date(Date.now()-4*3600e3).getDay())?["gymAbend"]:[]),...(new Date(Date.now()-4*3600e3).getDay()===0?["wochencheck","pflegecheck"]:[])].map(id=>({k:"schritt",id})),...(new Date(Date.now()-4*3600e3).getDay()===0?[{k:"check",id:"verspannung",ph:"vorbereiten"}]:[]),{k:"timer",id:"zaehneAbend",ph:"pflege"},...["zahnseide","reinigen","wirkstoff","creme","magnesium"].map(id=>({k:"schritt",id})),...([3,4].includes(new Date(Date.now()-4*3600e3).getDay())?[{k:"schritt",id:"fechtAusgleich"}]:[]),{k:"schritt",id:"massage"},...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
   const st=[];
@@ -918,6 +937,7 @@ function enter(i){
           +`<div class="olist">${(teil.length?teil:[["–","nichts vorgesehen"]]).map(x=>`<div class="orow"><span>${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join("")}</div>`
           +abendBlock(o,st.id)
           +(st.id==="kleidung"?[o.ersatz&&"Ersatz: "+o.ersatz,o.begruendung,o.wetter&&"Wetter: "+o.wetter].filter(Boolean).map(t=>`<div class="onote">${esc(t)}</div>`).join(""):"");}}
+    if(st.id==="kleidung"){try{const pk=packBlock(); if(pk){$("sText").innerHTML+=pk; packBind($("sText"));}}catch(e){}}
     $("sTipp").classList.toggle("hidden",!stp&&!link);
     $("sTipp").innerHTML=(stp?esc(stp):"")+(link?`${stp?"<br>":""}<a href="${JARVIS_LINK}">Anders? Jarvis fragen</a>`:"");
     $("mini").classList.toggle("hidden",!sc.timer); if(sc.timer){miniSek=sc.timer;$("miniZeit").textContent=`${sc.timer/60|0}:${pad(sc.timer%60)}`;$("miniBtn").textContent="▶ Timer"}
@@ -1123,7 +1143,7 @@ function heroRender(){
     <div class="chips">${chips.map(c=>`<span>${(c==="flow"?"Rücken-Flow":BAUSTEIN[c]).replace(/^\S+\s/,"")}</span>`).join("")}</div>`;
   document.body.classList.toggle("abend",ab);document.body.classList.toggle("morgen",!ab);
   $("btnStart").textContent=ab?"Abendroutine starten":"Morgenroutine starten";
-  befehlRender(); heuteRender(); gewichtRender(); pjRender(); glowRender(); wocheRender2();
+  befehlRender(); heuteRender(); gewichtRender(); pjRender(); glowRender(); wocheRender2(); try{reiseRender();losRender();kalRender()}catch(e){}
 }
 function wocheRender(){
   const h=store.get("verlauf",[])||[],d=new Date(),mo=new Date(d);mo.setDate(d.getDate()-((d.getDay()+6)%7));
@@ -1326,7 +1346,7 @@ function putzRender(){
 }
 function termineRender(){
   const el=$("termineCard"); if(!el) return;
-  putzRender(); pjRender();
+  putzRender(); pjRender(); try{reiseRender();losRender()}catch(e){}
   if(!TERMINE||!TERMINE.termine.length){el.classList.add("hidden");return}
   const s=store.get(tKey())||{};
   el.innerHTML=`<div class="ckopf">Heute<span>Stand ${esc(TERMINE.stand||"")}</span></div>`+TERMINE.termine.map(t=>`<div class="trow"><div class="tt"><i>${esc(t.zeit)}</i><b>${esc(t.titel)}</b></div><div class="tbtn">${[["hin","Ich gehe hin"],["nein","Egal"],["aus","Fällt aus"]].map(([k,l])=>`<button data-tid="${t.id}" data-st="${k}" class="${s[t.id]===k?"on "+k:""}">${l}</button>`).join("")}</div></div>`).join("")+`<button class="tsend" id="tSend">An Jarvis senden</button>`;
@@ -1360,6 +1380,7 @@ function heuteRender(){
   if(!o){el.classList.add("hidden");return}
   const z=outfitZeilen(o).filter(x=>!/Ersatz/.test(x[0])).map(x=>[x[0].replace(/^\S+\s/,""),x[1].replace(/\s*\([A-Z]{2}\d{2}\)/g,"")]);
   if(o.abend_oberteil) z.push(["Abends umziehen",[o.abend_oberteil,o.abend_hose].filter(Boolean).join(", ").replace(/\s*\([A-Z]{2}\d{2}\)/g,"")]);
+  try{const wt=wetterText(ab?tagMorgen():isoLocal(new Date()).slice(0,10)); if(wt) z.push(["Wetter",wt]);}catch(e){}
   const d=ab?null:duftHeute(); if(d) z.push(["Duft",`№ ${d.nr} ${d.name}`+(d.abend?` · abends № ${d.abend}`:"")]);
   el.innerHTML=`<div class="ckopf">${ab?"Morgen anziehen":"Heute anziehen"}<span>Stufe ${esc(o.stufe)}</span></div>`+z.map(x=>`<div class="orow"><span>${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join("");
   el.classList.remove("hidden");
@@ -1437,6 +1458,103 @@ $("btnHome").onclick=()=>{ initStart(); show("s-start"); };
 if("speechSynthesis" in window){ loadVoices(); speechSynthesis.onvoiceschanged=loadVoices; }
 if("serviceWorker" in navigator && location.protocol==="https:"){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
 initStart();
+/* ---------- v28: Einstellungen, Wetter, Los-in, Reise, Kalender ---------- */
+var WETTER=null, kalOff=0, ORTE={Innsbruck:[47.2692,11.4041],Kufstein:[47.5833,12.1667],Wien:[48.2082,16.3738]};
+function einst(){return Object.assign({weg:30,puffer:10,ort:"Innsbruck",aus:[]},store.get("einst")||{})}
+function einstSet(o){store.set("einst",Object.assign(einst(),o))}
+function schrittName(id){return (CHECK[id]&&CHECK[id].n)||(SCHRITT[id]&&SCHRITT[id].t)||(TIMER[id]&&TIMER[id].n)||id}
+function einstInit(){
+  const e=einst(), w=$("setWeg"), p=$("setPuffer"), o=$("setOrt"), a=$("setAus"); if(!w) return;
+  w.value=e.weg; p.value=e.puffer; o.value=e.ort;
+  w.onchange=()=>{einstSet({weg:Math.max(0,+w.value||0)});losRender()};
+  p.onchange=()=>{einstSet({puffer:Math.max(0,+p.value||0)});losRender()};
+  o.onchange=()=>{einstSet({ort:o.value});wetterLaden(true)};
+  const ids=[];["lang","kurz","abend"].forEach(v=>build0(v).forEach(s=>{if(s.k!=="ex"&&!ids.includes(s.id))ids.push(s.id)}));
+  a.innerHTML=ids.map(id=>`<label class="row"><span>${esc(schrittName(id))}</span><input type="checkbox" data-aus="${id}" ${e.aus.includes(id)?"checked":""}></label>`).join("");
+  a.querySelectorAll("input").forEach(c=>c.onchange=()=>{const x=einst().aus.filter(i=>i!==c.dataset.aus); if(c.checked)x.push(c.dataset.aus); einstSet({aus:x}); heroRender();});
+}
+/* Reise */
+function reiseKand(){return (TERMINE&&TERMINE.reise)||[]}
+function reiseAntw(){return store.get("reiseAntw")||{}}
+function reisePlan(){try{const p=OUTFIT&&OUTFIT.reise?JSON.parse(OUTFIT.reise):null;return p&&p.tage&&p.bis>=isoLocal(new Date()).slice(0,10)?p:null}catch(e){return null}}
+const dkurz=t=>new Date(t+"T12:00").toLocaleDateString("de-AT",{weekday:"short",day:"numeric",month:"numeric"});
+function packStuecke(p){const m=new Map();p.tage.forEach(t=>["oberteil","hose","schuhe","jacke","accessoires"].forEach(k=>{if(!t[k])return;
+  String(t[k]).split(/\s*[,+]\s*(?![^()]*\))/).forEach(s=>{s=s.trim();if(!s)return;const id=(s.match(/[A-Z]{2}\d{2}/)||[s])[0];
+    if(!m.has(id))m.set(id,{id,txt:s.replace(/\s*\([A-Z]{2}\d{2}\)/g,""),tage:[]});m.get(id).tage.push(t.datum)})}));return [...m.values()]}
+function packBlock(){const p=reisePlan(); if(!p) return ""; const ab=variante==="abend"?tagMorgen():isoLocal(new Date()).slice(0,10);
+  const st=packStuecke(p).filter(x=>x.tage.some(d=>d>ab)); if(!st.length) return "";
+  const ok=store.get("pack-"+p.id)||{};
+  return `<div class="onote" style="margin:14px 0 6px;color:var(--accent)">🧳 Für ${esc(p.ort||"die Reise")} einpacken (${st.filter(x=>ok[x.id]).length}/${st.length})</div><div class="olist">`
+    +st.map(x=>`<label class="orow pack"><span><input type="checkbox" data-pack="${esc(x.id)}" ${ok[x.id]?"checked":""}>${esc(x.txt)}</span><b>${x.tage.filter(d=>d>ab).map(d=>dkurz(d).split(",")[0]).join(" ")}</b></label>`).join("")+`</div>`}
+function packBind(root){root.querySelectorAll("input[data-pack]").forEach(c=>c.onchange=()=>{const p=reisePlan();if(!p)return;const ok=store.get("pack-"+p.id)||{};ok[c.dataset.pack]=c.checked;store.set("pack-"+p.id,ok);reiseRender()})}
+function reiseRender(){
+  const el=$("reiseCard"); if(!el) return; const heute=isoLocal(new Date()).slice(0,10), an=reiseAntw(), p=reisePlan(); let h="";
+  reiseKand().filter(r=>r.bis>=heute&&r.status==="offen"&&!an[r.id]&&!(p&&p.id===r.id)).forEach(r=>{
+    h+=`<div class="ckopf">🧳 Reise erkannt<span>${dkurz(r.von)} – ${dkurz(r.bis)}</span></div><div class="orow"><span>${esc(r.ort)}</span><b>${esc(r.titel)}</b></div>`
+     +`<div class="onote">Bist du da mehrere Tage weg? Dann plant Jarvis ein Outfit pro Tag und eine Packliste.</div>`
+     +`<div class="seg" style="margin:10px 0 6px"><button class="primary" data-reise="${r.id}" data-ok="ja">Ja, stimmt</button><button class="ghost" data-reise="${r.id}" data-ok="nein">Nein</button></div>`});
+  reiseKand().filter(r=>r.bis>=heute&&(an[r.id]==="ja"||r.status==="ja")&&!(p&&p.id===r.id)).forEach(r=>{
+    h+=`<div class="ckopf">🧳 ${esc(r.ort)} bestätigt<span>${dkurz(r.von)} – ${dkurz(r.bis)}</span></div><div class="onote">${r.status==="ja"?"Jarvis plant die Outfits beim nächsten Outfit-Lauf (19:00).":"Antwort ist unterwegs zu Jarvis."} Sofort: „Reise planen“ an Jarvis.</div>`});
+  if(p) h+=`<div class="ckopf">🧳 ${esc(p.ort||"Reise")}<span>${dkurz(p.von)} – ${dkurz(p.bis)}</span></div>`
+    +p.tage.filter(t=>t.datum>=heute).map(t=>`<div class="orow"><span>${dkurz(t.datum)}${t.stufe?" · St. "+esc(t.stufe):""}</span><b>${esc([t.oberteil,t.hose,t.schuhe].filter(Boolean).join(" · ").replace(/\s*\([A-Z]{2}\d{2}\)/g,""))}</b></div>`).join("")+packBlock();
+  if(!h){el.classList.add("hidden");return}
+  el.innerHTML=h; el.classList.remove("hidden"); packBind(el);
+  el.querySelectorAll("button[data-reise]").forEach(b=>b.onclick=()=>{const a=reiseAntw();a[b.dataset.reise]=b.dataset.ok;store.set("reiseAntw",a);reiseRender();wetterLaden(true);
+    location.href="shortcuts://run-shortcut?name="+encodeURIComponent("Morgen an Jarvis")+"&input=text&text="+encodeURIComponent(`Reise; id=${b.dataset.reise}; ok=${b.dataset.ok};`);});
+}
+/* Wetter */
+function reiseOrt(tag){try{const p=reisePlan(); if(p&&p.tage.some(t=>t.datum===tag)) return p.ort||null;
+  const k=reiseKand().find(r=>(r.status==="ja"||reiseAntw()[r.id]==="ja")&&(r.tage||[]).includes(tag)); return k?k.ort:null}catch(e){return null}}
+function wetterOrt(tag){return reiseOrt(tag)||einst().ort}
+async function geo(ort){ if(ORTE[ort]) return ORTE[ort]; const c=store.get("geo")||{}; if(c[ort]) return c[ort];
+  const r=await (await fetch("https://geocoding-api.open-meteo.com/v1/search?count=1&language=de&name="+encodeURIComponent(ort))).json();
+  const x=r.results&&r.results[0]; if(!x) return null; c[ort]=[x.latitude,x.longitude]; store.set("geo",c); return c[ort];}
+async function wetterLaden(force){
+  WETTER=WETTER||store.get("wetter2")||{}; let neu=false;
+  for(const tag of [isoLocal(new Date()).slice(0,10),tagMorgen()]){const ort=wetterOrt(tag), k=ort+"|"+tag, alt=WETTER[k];
+    if(!force&&alt&&Date.now()-alt.ts<3*3600e3) continue;
+    try{const g=await geo(ort); if(!g) continue;
+      const r=await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${g[0]}&longitude=${g[1]}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&timezone=Europe%2FVienna&start_date=${tag}&end_date=${tag}`)).json();
+      const d=r.daily; WETTER[k]={ts:Date.now(),ort,max:d.temperature_2m_max[0],min:d.temperature_2m_min[0],regen:d.precipitation_probability_max[0]||0,code:d.weather_code[0]}; neu=true;}catch(e){}}
+  if(neu){const h=Date.now()-2*864e5; Object.keys(WETTER).forEach(k=>{if(WETTER[k].ts<h)delete WETTER[k]}); store.set("wetter2",WETTER); heuteRender();}
+}
+function wetterText(tag){const W=WETTER||store.get("wetter2")||{}, w=W[wetterOrt(tag)+"|"+tag]; if(!w) return "";
+  const h=[]; if([71,73,75,77,85,86].includes(w.code)) h.push("Schnee – feste Schuhe"); else if(w.regen>=50) h.push("Schirm einpacken");
+  if(w.max<8) h.push("Mantel"); else if(w.max<15) h.push("Jacke");
+  return `${w.ort} ${Math.round(w.min)}–${Math.round(w.max)} °C · Regen ${w.regen} %`+(h.length?" → "+h.join(", "):"");}
+/* Los in … */
+function losRender(){
+  const el=$("losCard"); if(!el) return;
+  if(variante==="abend"||!TERMINE||!TERMINE.termine){el.classList.add("hidden");return}
+  const e=einst(), now=new Date(), st=store.get(tKey())||{};
+  const t=TERMINE.termine.filter(x=>/^\d\d:\d\d/.test(x.zeit)&&st[x.id]!=="nein"&&st[x.id]!=="aus").map(x=>{const [h,m]=x.zeit.split(":").map(Number),d=new Date();d.setHours(h,m,0,0);return {x,d}}).filter(o=>o.d>now).sort((a,b)=>a.d-b.d)[0];
+  if(!t){el.classList.add("hidden");return}
+  const los=new Date(t.d.getTime()-(e.weg+e.puffer)*60000), min=Math.round((los-now)/60000);
+  if(min>240){el.classList.add("hidden");return}
+  el.innerHTML=`<div class="ckopf">🚪 ${min<=0?"Jetzt los!":"Los in "+(min>=60?`${min/60|0} h ${min%60} Min.`:min+" Min.")}<span>${hm(los)} Uhr</span></div><div class="orow"><span>${esc(t.x.zeit)}</span><b>${esc(t.x.titel)}</b></div>`
+    +(min>0&&variante==="lang"&&min<dauerMin("lang")+5?`<div class="onote">Knapp für die lange Variante (${dauerMin("lang")} Min.) – <a href="#" id="losKurz">kurz nehmen</a></div>`:"")
+    +(min>0&&min<dauerMin("kurz")+5?`<div class="onote">Auch die kurze Variante (${dauerMin("kurz")} Min.) wird eng.</div>`:"")
+    +`<div class="onote muted">Weg ${e.weg} + Puffer ${e.puffer} Min. · ändern unter ⚙︎ Einstellungen</div>`;
+  el.classList.remove("hidden"); const k=$("losKurz"); if(k) k.onclick=ev=>{ev.preventDefault();variante="kurz";markV()};
+}
+/* Serien-Kalender */
+function kalRender(){
+  const el=$("kalCard"); if(!el) return; const v=store.get("verlauf")||[];
+  const M=new Set(v.filter(x=>x.v!=="abend").map(x=>x.d)), A=new Set(v.filter(x=>x.v==="abend").map(x=>x.d));
+  const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const serie=s=>{let n=0;const d=new Date(Date.now()-4*3600e3); if(!s.has(iso(d))) d.setDate(d.getDate()-1); while(s.has(iso(d))){n++;d.setDate(d.getDate()-1)} return n};
+  const b=new Date(); b.setDate(1); b.setMonth(b.getMonth()+kalOff); const mon=b.getMonth(), heute=iso(new Date(Date.now()-4*3600e3)), ym=iso(b).slice(0,7);
+  let g=["Mo","Di","Mi","Do","Fr","Sa","So"].map(t=>`<i class="kh">${t}</i>`).join("")+"<i></i>".repeat((b.getDay()+6)%7);
+  for(let i=1;i<=new Date(b.getFullYear(),mon+1,0).getDate();i++){const d=iso(new Date(b.getFullYear(),mon,i));
+    g+=`<div class="${d===heute?"heute":""}"><b>${i}</b><span><em class="${M.has(d)?"m":""}"></em><em class="${A.has(d)?"a":""}"></em></span></div>`}
+  el.innerHTML=`<div class="ckopf">📅 ${b.toLocaleDateString("de-AT",{month:"long",year:"numeric"})}<span><a href="#" id="kalZ">‹</a>&nbsp;&nbsp;&nbsp;<a href="#" id="kalV">›</a></span></div>`
+    +`<div class="onote">🔥 Serie: ${serie(M)} Tage Morgen · ${serie(A)} Tage Abend</div><div class="kal">${g}</div>`
+    +`<div class="onote muted">Im Monat: ${[...M].filter(d=>d.startsWith(ym)).length}× Morgen · ${[...A].filter(d=>d.startsWith(ym)).length}× Abend</div>`;
+  el.classList.remove("hidden"); $("kalZ").onclick=e=>{e.preventDefault();kalOff--;kalRender()}; $("kalV").onclick=e=>{e.preventDefault();if(kalOff<0){kalOff++;kalRender()}};
+}
+setTimeout(()=>{try{einstInit();wetterLaden();reiseRender();losRender();kalRender()}catch(e){}},60);
+setInterval(()=>{try{if($("s-start").classList.contains("on"))losRender()}catch(e){}},60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){try{wetterLaden();losRender();reiseRender()}catch(e){}}});
 </script>
 </body>
 </html>
