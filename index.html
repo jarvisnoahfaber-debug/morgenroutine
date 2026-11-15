@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Morgen">
-<meta name="theme-color" content="#0f1115">
+<meta name="theme-color" content="#f5f5f7">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
 <title>Morgenroutine</title>
@@ -282,6 +282,102 @@ pre{background:var(--surface);border-radius:12px}
 .tbtn button.on.hin{background:var(--green);color:#fff}.tbtn button.on.nein{background:#636366;color:#fff}.tbtn button.on.aus{background:var(--red);color:#fff}
 .tsend{width:100%;margin-top:12px;min-height:44px;background:var(--fill);color:var(--accent);font-weight:600}
 #s-start .bottom{position:sticky;bottom:0;padding:24px 0 calc(12px + env(safe-area-inset-bottom));background:linear-gradient(rgba(0,0,0,0),#000 40%)}
+/* ===== Apple Design System (hell tagsüber, Abend dunkel) ===== */
+:root{
+  --bg:#f5f5f7; --surface:#ffffff; --surface2:#f5f5f7; --fill:#f5f5f7;
+  --text:#1d1d1f; --muted:#7a7a7a; --muted2:#a1a1a6; --sep:#e0e0e0; --soft:#f0f0f0;
+  --accent:#0066cc; --focus:#0071e3; --blue:#0066cc;
+  --green:#34c759; --orange:#ff9500; --red:#ff3b30; --indigo:#0066cc;
+  --prep:#ff9500; --hold:#34c759; --danger:#ff3b30;
+  --ink80:#333333; --onacc:#ffffff;
+}
+body.abend{
+  --bg:#000000; --surface:#272729; --surface2:#2a2a2c; --fill:#252527;
+  --text:#ffffff; --muted:#cccccc; --muted2:rgba(255,255,255,.6); --sep:rgba(255,255,255,.12); --soft:rgba(255,255,255,.08);
+  --accent:#2997ff; --focus:#2997ff; --blue:#2997ff; --indigo:#2997ff; --ink80:#cccccc;
+}
+html,body{font:17px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Helvetica Neue",sans-serif;letter-spacing:0;color:var(--text)}
+body,body.morgen{background:var(--bg)}
+body.abend{background:#000}
+h1{font-size:40px;font-weight:700;letter-spacing:-.8px;margin:24px 0 2px;color:var(--text)}
+.muted,#today{color:var(--muted)}
+.card,.hero,.hero.abend,.stepcard,.liste,.fig,.tile,.tile.a,.tile.b,.tile.c,.tile.d,pre,.emoji,body.abend .emoji{
+  background:var(--surface);border:1px solid var(--sep);border-radius:14px;box-shadow:none}
+.card{padding:20px}
+.hero,.hero.abend{padding:20px}
+/* Schriftgewichte nur 400/600/700 */
+button,.orow b,.brow b,.tt b,.vtiles button b,.phasen div,.woche div b,.tbtn button,.ckopf span,.liste li .n,.stepcard .stipp a{font-weight:400}
+.ckopf,.hero .lbl,.stepcard .snr,.vtiles button b,.kg{font-weight:600}
+.ckopf{color:var(--accent);font-size:13px}
+.ckopf span{color:var(--muted)}
+/* Buttons: Pills, eine Akzentfarbe, keine Schatten */
+button{background:var(--fill);color:var(--text);border-radius:999px;box-shadow:none;transition:transform .15s ease-out}
+button:active{transform:scale(.95)}
+button.primary,#btnStart,body.abend #btnStart{background:var(--accent);color:#fff;border-radius:999px;font-size:17px;font-weight:400;box-shadow:none}
+button.ok{background:var(--accent);color:#fff;border-radius:999px;font-weight:400}
+button.ghost,.mini button,.reps button,.tsend{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+#btnAbort{color:var(--muted);border-color:var(--sep)}
+button:disabled{opacity:.5}
+select,input{background:var(--surface);color:var(--text);border:1px solid var(--sep);border-radius:10px;padding:12px 16px}
+input:focus,select:focus{outline:0;border-color:var(--accent)}
+/* Woche */
+.woche div{color:var(--muted)}
+.woche .heute b{background:var(--accent);color:#fff;font-weight:600}
+.woche div i{background:var(--sep)}
+.woche div i.m{background:var(--accent)}.woche div i.a{background:var(--text)}
+/* Hero */
+.hero .lbl{color:var(--accent)}
+.hero .ttl{font-size:28px;font-weight:700;color:var(--text)}
+.hero .meta{color:var(--muted)}
+.hero .chips span{background:var(--fill);color:var(--text);border-radius:999px;padding:4px 10px;font-size:13px}
+/* Segmented Control */
+.vtiles,.phasen{background:var(--fill);border-radius:999px;padding:3px}
+.vtiles button,.vtiles button.sel,body.abend .vtiles button.sel{border-radius:999px;border:0}
+.vtiles button.sel,body.abend .vtiles button.sel,.phasen div.akt{background:var(--surface);color:var(--text);box-shadow:none;outline:1px solid var(--sep)}
+.vtiles button span{color:var(--muted)}
+.phasen div{border-radius:999px;color:var(--muted)}
+/* Lauf */
+.bar{background:var(--sep);height:6px;border-radius:3px}
+.bar i,body.abend .bar i{background:var(--accent)}
+.phase.check{color:var(--accent)}
+.name,.stepcard .stitel{color:var(--text);font-weight:700}
+.stepcard .sicon{background:var(--fill)}
+.stepcard .snr{color:var(--accent)}
+.stepcard .stext{color:var(--ink80)}
+.stepcard .stipp{border-top:1px solid var(--sep);color:var(--muted)}
+.stepcard .stipp a{color:var(--accent)!important}
+.mini .zeit{font-weight:600;color:var(--text)}
+.mini.laeuft .zeit{color:var(--accent)}
+.side{color:var(--accent)}
+/* Listen & Zeilen: 1px Haarlinien */
+.olist{background:var(--surface);border:1px solid var(--sep);border-radius:14px}
+.orow,.liste li,.sum div,.brow,.trow{border-bottom:1px solid var(--soft)}
+.orow span{color:var(--muted)}
+.orow b{color:var(--text)}
+.liste li{color:var(--text)}
+.liste li .n,body.abend .liste li .n{color:var(--muted)}
+.liste li.kopf,.cue,.next,.tile .l{color:var(--muted)}
+.emoji,body.abend .emoji{background:var(--surface)}
+.fig path.ar{stroke:var(--accent)}.fig text{fill:var(--accent)}
+.ringwrap circle:first-child{stroke:var(--sep)}
+.tile.a .v,.tile.b .v,.tile.c .v,.tile.d .v{color:var(--text)}
+.tile.b .v{color:var(--green)}
+/* Grafik */
+.gchart .kurve{stroke:var(--accent)}
+.gchart .punkt{fill:var(--accent);stroke:var(--surface)}
+.gchart .ziel{stroke:var(--sep)}
+.gchart .zl{fill:var(--muted)}
+.brow i{color:var(--accent)}
+.tt i{color:var(--muted)}
+.tbtn button{background:var(--fill);color:var(--ink80);border-radius:999px}
+.tbtn button.on.hin{background:var(--green);color:#fff}.tbtn button.on.nein{background:var(--muted);color:#fff}.tbtn button.on.aus{background:var(--red);color:#fff}
+#s-start .bottom{background:linear-gradient(rgba(245,245,247,0),var(--bg) 40%)}
+body.abend #s-start .bottom{background:linear-gradient(rgba(0,0,0,0),#000 40%)}
+details.card summary{color:var(--text)}
+.fig polyline,.fig line,.fig path.ln{stroke:var(--text)}
+.fig .hd{fill:var(--text)}
+.fig line.fl{stroke:var(--sep)}
+.fig line.st{stroke:var(--muted)}
 </style>
 </head>
 <body>
