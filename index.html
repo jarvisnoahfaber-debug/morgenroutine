@@ -560,6 +560,32 @@ button.ghost,.mini button,.reps button,.tsend{color:var(--accent);border-color:v
 #pjCard .orow>span.muted,#pjCard .orow>span.small{font-size:13px;color:var(--muted);display:block}
 #pjCard .orow>b,#wocheCard .orow>b,#schritteCard .orow>b,#glowCard .orow>b{text-align:right;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
 </style>
+<style id="v36css">
+/* ===== v36 ===== */
+.v36in{animation:v36in .32s cubic-bezier(.2,.8,.2,1) both}
+@keyframes v36in{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
+#v36flash{position:fixed;left:50%;top:42%;width:96px;height:96px;margin:-48px 0 0 -48px;pointer-events:none;z-index:90;opacity:0}
+#v36flash svg{width:100%;height:100%;fill:none;stroke-linecap:round;stroke-linejoin:round}
+#v36flash circle{stroke-width:3;opacity:.25}#v36flash path{stroke-width:4.5;stroke-dasharray:40;stroke-dashoffset:40}
+#v36flash.ok svg{stroke:#30d158}#v36flash.aus svg{stroke:var(--muted)}
+#v36flash.an{animation:v36fl .7s ease both}#v36flash.an path{animation:v36hk .35s .05s ease forwards}
+@keyframes v36fl{0%{opacity:0;transform:scale(.6)}25%{opacity:1;transform:scale(1.05)}70%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}
+@keyframes v36hk{to{stroke-dashoffset:0}}
+.jd .meta .v36serie{background:color-mix(in srgb,#ff9500 16%,var(--surface));color:#c46a00}
+body.abend .jd .meta .v36serie,html[data-theme=premium] .jd .meta .v36serie{color:#ffb340}
+.gbig{display:flex;align-items:baseline;gap:6px;margin:2px 0 6px}
+.gbig b{font-size:34px;font-weight:700;letter-spacing:-.8px;font-variant-numeric:tabular-nums}
+.gbig small{font-size:15px;color:var(--muted)}
+.gbig em{margin-left:auto;font-style:normal;font-size:13px;font-weight:600;padding:4px 9px;border-radius:999px;background:var(--fill)}
+.gbig em.gut,.gstat b.gut{color:#248a3d}.gbig em.schlecht{color:#d70015}
+body.abend .gbig em.gut,body.abend .gstat b.gut{color:#30d158}body.abend .gbig em.schlecht{color:#ff453a}
+.v36g .gl{stroke:var(--soft);stroke-width:1}.v36g .gl.heute{stroke:var(--sep);stroke-dasharray:2 3}
+.v36g .roh{stroke-width:1;opacity:.35}.v36g .trend{stroke-width:2.6}
+.v36g .pz{fill:var(--surface);stroke:var(--accent);stroke-width:2}
+.gstat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;padding-top:12px;border-top:1px solid var(--soft)}
+.gstat div{display:flex;flex-direction:column;gap:2px}.gstat span{font-size:12px;color:var(--muted)}.gstat b{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.v36in,#v36flash.an{animation:none!important}}
+</style>
 </head>
 <body>
 
@@ -1961,6 +1987,59 @@ function v35Init(){
   setInterval(()=>{try{if(V35_TAB==="heute"&&$("s-start").classList.contains("on")){jdRender();v35Iconize()}}catch(e){}},60000);
 }
 try{v35Init()}catch(e){console.error("v35",e)}
+/* ---------- v36: Gewichtskurve, Lauf-Animationen, Häkchen, Serie, Wischen ---------- */
+var _v36enter=enter;
+enter=function(i){_v36enter(i); try{["stepView","checkView","exView"].forEach(id=>{const e=$(id); if(e&&!e.classList.contains("hidden")){e.classList.remove("v36in"); void e.offsetWidth; e.classList.add("v36in")}});
+  const n=$("name"); if(n){n.classList.remove("v36in"); void n.offsetWidth; n.classList.add("v36in")}}catch(e){}};
+var _v36cd=checkDone;
+checkDone=function(ok){const vor=S&&S.idx; _v36cd(ok); try{if(S&&S.idx!==vor) v36Flash(ok)}catch(e){}};
+function v36Flash(ok){let f=$("v36flash"); if(!f){f=document.createElement("div"); f.id="v36flash"; document.body.appendChild(f)}
+  f.className=""; f.innerHTML=ok?`<svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg>`:`<svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M18 26h16"/></svg>`;
+  void f.offsetWidth; f.className=ok?"an ok":"an aus"; clearTimeout(f._t); f._t=setTimeout(()=>f.className="",700)}
+function v36Serie(){const v=store.get("verlauf")||[], s=new Set(v.filter(x=>x.v!=="abend").map(x=>x.d)), iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  let n=0; const d=new Date(Date.now()-4*3600e3); if(!s.has(iso(d))) d.setDate(d.getDate()-1); while(s.has(iso(d))){n++; d.setDate(d.getDate()-1)} return n}
+var _v36jd=jdRender;
+jdRender=function(){_v36jd(); try{const n=v36Serie(), m=document.querySelector("#jdCard .meta"); if(n>=2){const h=`<span class="v36serie">${ICO("fire")}${n} Tage Serie</span>`;
+  if(m) m.insertAdjacentHTML("beforeend",h); else {const s=document.querySelector("#jdCard .s"); if(s) s.insertAdjacentHTML("afterend",`<div class="meta">${h}</div>`)}}}catch(e){}};
+gewichtRender=function(){
+  const el=$("gewCard"); if(!el) return;
+  const h=(store.get("verlauf")||[]).filter(x=>x.kg).slice(-60);
+  el.classList.remove("hidden");
+  if(!h.length){el.innerHTML=`<div class="ckopf">Gewicht</div><div class="onote" style="margin:2px 0 0">Die Kurve startet mit deiner nächsten Messung in der Morgenroutine.</div>`;return}
+  const T=d=>new Date(d+"T12:00").getTime(), ZIEL=90, ZD="2026-12-24", last=h[h.length-1];
+  const sicht=h.filter(x=>T(x.d)>=T(last.d)-35*864e5), first=sicht[0];
+  const r=h.filter(x=>T(x.d)>=T(last.d)-21*864e5); let slope=null, prog=null;
+  if(r.length>=3){const xs=r.map(x=>(T(x.d)-T(last.d))/864e5), ys=r.map(x=>x.kg), mx=xs.reduce((a,b)=>a+b)/xs.length, my=ys.reduce((a,b)=>a+b)/ys.length;
+    const sxx=xs.reduce((a,x)=>a+(x-mx)**2,0); if(sxx>0){slope=xs.reduce((a,x,i)=>a+(x-mx)*(ys[i]-my),0)/sxx; prog=my-slope*mx+slope*(T(ZD)-T(last.d))/864e5;}}
+  const avg=sicht.map(x=>{const w=h.filter(y=>T(y.d)<=T(x.d)&&T(y.d)>T(x.d)-7*864e5);return {d:x.d,kg:w.reduce((a,y)=>a+y.kg,0)/w.length}});
+  const zp=prog!=null&&T(ZD)>T(last.d), W=320, H=150, L=30, R=8, pt=14, pb=20, G=zp?0.7:1;
+  const t0=T(first.d), t1=Math.max(T(last.d),t0+7*864e5);
+  const X=d=>{const t=T(d); if(t<=t1) return L+(t-t0)/(t1-t0)*(W-L-R)*G; return L+(W-L-R)*G+(t-t1)/(T(ZD)-t1)*(W-L-R)*(1-G)};
+  const ks=sicht.map(x=>x.kg).concat([ZIEL],zp?[prog]:[]), lo=Math.floor(Math.min(...ks)-.3), hi=Math.ceil(Math.max(...ks)+.3);
+  const Y=k=>pt+(hi-k)/(hi-lo)*(H-pt-pb), pl=a=>a.map(x=>`${X(x.d).toFixed(1)},${Y(x.kg).toFixed(1)}`).join(" ");
+  const al=avg[avg.length-1], wo=h.filter(x=>T(x.d)<=T(last.d)-7*864e5).pop(), d7=wo?last.kg-wo.kg:null;
+  const ticks=[]; for(let k=hi;k>=lo;k-=Math.max(1,Math.round((hi-lo)/4))) ticks.push(k);
+  const fl=a=>`${a.map(x=>`${X(x.d).toFixed(1)},${Y(x.kg).toFixed(1)}`).join(" ")} ${X(a[a.length-1].d).toFixed(1)},${H-pb} ${X(a[0].d).toFixed(1)},${H-pb}`;
+  const dm=d=>new Date(d+"T12:00").toLocaleDateString("de-AT",{day:"numeric",month:"numeric"});
+  el.innerHTML=`<div class="ckopf">Gewicht<span>${dm(last.d)}</span></div>
+    <div class="gbig"><b>${fmtKg(last.kg)}</b><small>kg</small>${d7!=null?`<em class="${d7<=0?"gut":"schlecht"}">${d7<=0?"−":"+"}${fmtKg(Math.abs(d7))} kg / 7 Tage</em>`:""}</div>
+    <svg viewBox="0 0 ${W} ${H}" class="gchart v36g" aria-hidden="true"><defs><linearGradient id="v36gf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".22"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>`
+    +ticks.map(k=>`<line x1="${L}" x2="${W-R}" y1="${Y(k).toFixed(1)}" y2="${Y(k).toFixed(1)}" class="gl"/><text x="${L-6}" y="${(Y(k)+4).toFixed(1)}" text-anchor="end" class="zl">${k}</text>`).join("")
+    +`<line x1="${L}" x2="${W-R}" y1="${Y(ZIEL)}" y2="${Y(ZIEL)}" class="ziel"/><text x="${W-R}" y="${Y(ZIEL)-4}" text-anchor="end" class="zl">Ziel ${ZIEL}</text>`
+    +(avg.length>1?`<polygon points="${fl(avg)}" fill="url(#v36gf)"/>`:"")
+    +(sicht.length>1?`<polyline points="${pl(sicht)}" class="roh"/>`:"")+sicht.map(x=>`<circle cx="${X(x.d).toFixed(1)}" cy="${Y(x.kg).toFixed(1)}" r="2.2" class="pkt"/>`).join("")
+    +(avg.length>1?`<polyline points="${pl(avg)}" class="trend"/>`:"")
+    +(zp?`<line x1="${X(last.d).toFixed(1)}" x2="${X(last.d).toFixed(1)}" y1="${pt}" y2="${H-pb}" class="gl heute"/><line x1="${X(al.d).toFixed(1)}" y1="${Y(al.kg).toFixed(1)}" x2="${X(ZD).toFixed(1)}" y2="${Y(prog).toFixed(1)}" class="prog"/><circle cx="${X(ZD).toFixed(1)}" cy="${Y(prog).toFixed(1)}" r="3.5" class="pz"/>`:"")
+    +`<circle cx="${X(last.d)}" cy="${Y(last.kg)}" r="4.5" class="punkt"/>`
+    +`<text x="${L}" y="${H-5}" class="zl">${dm(first.d)}</text>`+(zp?`<text x="${X(last.d)}" y="${H-5}" text-anchor="middle" class="zl">heute</text><text x="${W-R}" y="${H-5}" text-anchor="end" class="zl">24.12.</text>`:`<text x="${W-R}" y="${H-5}" text-anchor="end" class="zl">${dm(last.d)}</text>`)
+    +`</svg>`
+    +`<div class="gstat"><div><span>Trend</span><b>${slope!=null?(slope<=0?"−":"+")+fmtKg(Math.abs(slope*7))+" kg/Wo.":"ab 3 Messungen"}</b></div><div><span>Prognose 24.12.</span><b class="${zp&&prog<=ZIEL?"gut":""}">${zp?fmtKg(prog)+" kg":"–"}</b></div><div><span>Bis ${ZIEL} kg</span><b>${last.kg>ZIEL?fmtKg(last.kg-ZIEL)+" kg":"erreicht ✓"}</b></div></div>`;
+};
+function v36Wisch(){const S0=$("s-start"), T=["heute","routine","fort","mehr"]; let x0=null,y0=0,t0=0;
+  S0.addEventListener("touchstart",e=>{if(e.touches.length!==1||e.target.closest("input,select,textarea,.sbars,.kal,svg.gchart,.ewk")){x0=null;return} x0=e.touches[0].clientX; y0=e.touches[0].clientY; t0=Date.now()},{passive:true});
+  S0.addEventListener("touchend",e=>{if(x0==null) return; const t=e.changedTouches[0], dx=t.clientX-x0, dy=t.clientY-y0; x0=null;
+    if(Math.abs(dx)<70||Math.abs(dy)>45||Date.now()-t0>600) return; const i=T.indexOf(V35_TAB)+(dx<0?1:-1); if(i>=0&&i<T.length) v35Tab(T[i]);},{passive:true});}
+try{v36Wisch(); const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Morgen-App v36"; gewichtRender(); jdRender()}catch(e){console.error("v36",e)}
 </script>
 </body>
 </html>
