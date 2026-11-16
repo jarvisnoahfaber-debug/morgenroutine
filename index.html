@@ -435,6 +435,7 @@ details.card summary{color:var(--text)}
   <div class="card hidden" id="putzCard"></div>
   <div class="card hidden" id="termineCard"></div>
   <div class="card hidden" id="reiseCard"></div>
+  <div class="card hidden" id="fechtCard"></div>
   <div class="card hidden" id="heuteCard"></div>
   <div class="card hidden" id="gewCard"></div>
   <div class="card hidden" id="kalCard"></div>
@@ -1174,7 +1175,7 @@ function heroRender(){
     <div class="chips">${chips.map(c=>`<span>${(c==="flow"?"Rücken-Flow":BAUSTEIN[c]).replace(/^\S+\s/,"")}</span>`).join("")}</div>`;
   document.body.classList.toggle("abend",ab);document.body.classList.toggle("morgen",!ab);
   $("btnStart").textContent=ab?"Abendroutine starten":"Morgenroutine starten";
-  befehlRender(); heuteRender(); gewichtRender(); pjRender(); glowRender(); wocheRender2(); try{reiseRender();losRender();kalRender()}catch(e){} try{ringeRender();ordnen()}catch(e){}
+  befehlRender(); heuteRender(); gewichtRender(); pjRender(); glowRender(); wocheRender2(); try{reiseRender();losRender();kalRender()}catch(e){} try{fechtRender();ringeRender();ordnen()}catch(e){}
 }
 function wocheRender(){
   const h=store.get("verlauf",[])||[],d=new Date(),mo=new Date(d);mo.setDate(d.getDate()-((d.getDay()+6)%7));
@@ -1623,7 +1624,7 @@ function ringeRender(){const el=$("ringeCard"); if(!el) return; const heute=isoL
   el.classList.remove("hidden");}
 var ORDNUNG={morgen:["losCard","befehlCard","termineCard","heuteCard","reiseCard","pjCard","putzCard"],
   tag:["termineCard","pjCard","reiseCard","heuteCard","putzCard","losCard","befehlCard"],
-  abend:["pjCard","heuteCard","reiseCard","putzCard","termineCard","befehlCard","losCard"]};
+  abend:["fechtCard","pjCard","heuteCard","reiseCard","putzCard","termineCard","befehlCard","losCard"]};
 var MEHR=["gewCard","wocheCard","glowCard","kalCard"];
 function ordnen(){const j=$("jetzt"), m=$("mehr"); if(!j||!m) return; const h=new Date().getHours(), k=variante==="abend"||h>=17?"abend":h<12?"morgen":"tag";
   ORDNUNG[k].forEach(id=>{const e=$(id); if(e) j.appendChild(e)}); MEHR.forEach(id=>{const e=$(id); if(e) m.appendChild(e)});
@@ -1647,6 +1648,34 @@ function endRing(){const el=$("endRing"); if(!el) return;
   el.innerHTML=`<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="${r}" class="rb"/><circle cx="60" cy="60" r="${r}" class="rv" style="stroke-dasharray:${c.toFixed(1)};stroke-dashoffset:${c.toFixed(1)}"/></svg><b>${Math.round(p*100)} %</b>`;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{const v=el.querySelector(".rv"); if(v) v.style.strokeDashoffset=(c*(1-p)).toFixed(1)}));}
 setTimeout(()=>{try{heroRender()}catch(e){}},80);
+/* ---------- v31: Fechten-Frage Mi/Do abends (direkt ans PJ-Formular wie die Trainings-App) ---------- */
+var FORM_PJ={url:"https://docs.google.com/forms/d/e/1FAIpQLSdGyDFhIPCHd2BL6E9S0PTPPMuvTFmj2JbOnjP-9yEOecsQww/formResponse",teilnehmer:"entry.1649059925",datum:"entry.657147385",art:"entry.2009718183",dauer:"entry.1562701684",text:"entry.1956673251",daten:"entry.1062304338"};
+var fechtNein=false;
+function fechtHeute(){const d=isoLocal(new Date()).slice(0,10);return (store.get("noah:hist")||[]).find(x=>x.datum===d&&(/fecht/i.test(x.art)||x.nicht))}
+function fechtRender(){const el=$("fechtCard"); if(!el) return; const wd=new Date().getDay(), h=new Date().getHours();
+  if(![3,4].includes(wd)||(h<17&&variante!=="abend")){el.classList.add("hidden");return}
+  const f=fechtHeute();
+  if(f){el.innerHTML=`<div class="ckopf">🤺 Fechten heute<span>${f.gesendet?"beim Schiri ✓":"wird gesendet"}</span></div><div class="orow"><span>${f.nicht?"Nicht stattgefunden":"Erledigt"}</span><b>${esc(f.nicht?String(f.name).split(" – ").slice(1).join(" – "):f.dauer+" Min.")}</b></div>`;el.classList.remove("hidden");return}
+  el.innerHTML=`<div class="ckopf">🤺 Warst du heute fechten?<span>${wd===3?"Mittwoch":"Donnerstag"}</span></div>`+(fechtNein
+    ?`<div class="onote">Warum nicht? Geht als Ausfall an den Schiri.</div><div class="ewk">${["Kein Fechtbetrieb","Auswärts","Krank","Termin"].map(g=>`<button data-fg="${g}">${g}</button>`).join("")}<button data-fg="">‹ Zurück</button></div>`
+    :`<div class="ewk">${[60,90,120].map(m=>`<button data-fm="${m}">✓ ${m} Min.</button>`).join("")}<button data-fn="1">✗ Nein</button></div>`);
+  el.classList.remove("hidden");
+  el.querySelectorAll("button[data-fm]").forEach(b=>b.onclick=()=>fechtMelden(+b.dataset.fm,""));
+  el.querySelectorAll("button[data-fn]").forEach(b=>b.onclick=()=>{fechtNein=true;fechtRender()});
+  el.querySelectorAll("button[data-fg]").forEach(b=>b.onclick=()=>{if(!b.dataset.fg){fechtNein=false;fechtRender();return} fechtMelden(0,b.dataset.fg)});}
+async function fechtMelden(min,grund){
+  const j=new Date(), d=isoLocal(j).slice(0,10), sd=new Date(j.getTime()-min*60000), start=isoLocal(sd), name="Fechten (Skalden)";
+  const z=grund?{teilnehmer:"noah",datum:d,start:isoLocal(j),ende:isoLocal(j),dauer:0,art:"Ausfall",name,vorlage:"fe",ex:[],cardio:null,volumen:0,notiz:grund,grund,text:`Ausfall: ${name} – ${grund}`,id:isoLocal(j)+":noah:ausfall"}
+    :{teilnehmer:"noah",datum:d,start,ende:isoLocal(j),dauer:min,art:"Fechten",name,vorlage:"fe",ex:[],cardio:null,volumen:0,notiz:"über Morgen-App",text:`Fechten: ${name}, ${min} Min. (${hm(sd)}–${hm(j)})`,id:start+":noah"};
+  const hist=(store.get("noah:hist")||[]).filter(x=>!(x.datum===d&&(x.nicht||/fecht/i.test(x.art))));
+  hist.push(grund?{id:z.id,name:name+" – "+grund,art:"Fechten",datum:d,dauer:0,saetze:0,gesendet:false,nicht:true}:{id:z.id,name,art:"Fechten",datum:d,dauer:min,saetze:0,gesendet:false});
+  store.set("noah:hist",hist.slice(-60)); const q=store.get("noah:queue")||[]; q.push(z); store.set("noah:queue",q);
+  fechtNein=false; fechtRender(); try{pjRender()}catch(e){}
+  try{const b=new URLSearchParams(); b.append(FORM_PJ.teilnehmer,"noah");b.append(FORM_PJ.datum,z.datum);b.append(FORM_PJ.art,z.art);b.append(FORM_PJ.dauer,String(z.dauer));b.append(FORM_PJ.text,z.text);b.append(FORM_PJ.daten,JSON.stringify(z));
+    await fetch(FORM_PJ.url,{method:"POST",mode:"no-cors",body:b});
+    store.set("noah:queue",(store.get("noah:queue")||[]).filter(x=>x.id!==z.id));
+    const h2=store.get("noah:hist")||[]; h2.forEach(x=>{if(x.id===z.id)x.gesendet=true}); store.set("noah:hist",h2); fechtRender();
+  }catch(e){}}
 </script>
 </body>
 </html>
