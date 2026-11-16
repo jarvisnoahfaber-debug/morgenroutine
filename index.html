@@ -586,6 +586,41 @@ body.abend .gbig em.gut,body.abend .gstat b.gut{color:#30d158}body.abend .gbig e
 .gstat div{display:flex;flex-direction:column;gap:2px}.gstat span{font-size:12px;color:var(--muted)}.gstat b{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){.v36in,#v36flash.an{animation:none!important}}
 </style>
+<style id="v37css">
+/* ===== v37 ===== */
+#v37toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;z-index:95;pointer-events:none;
+  background:color-mix(in srgb,var(--text) 92%,transparent);color:var(--bg);font-size:14px;font-weight:600;padding:10px 16px;border-radius:999px;transition:all .25s;white-space:nowrap}
+#v37toast.an{opacity:1;transform:translate(-50%,0)}#v37toast.warn{background:#ff9500;color:#fff}
+#v37fab{position:fixed;right:max(16px,calc(50% - 244px));bottom:calc(76px + env(safe-area-inset-bottom));z-index:61;width:54px;height:54px;min-height:0;padding:0;border-radius:50%;
+  background:var(--accent)!important;color:var(--onacc)!important;border:0!important;box-shadow:0 6px 20px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center}
+#v37fab .ic{width:24px;height:24px;stroke-width:1.9}
+.v37sheet{position:fixed;inset:0;z-index:100;pointer-events:none}
+.v37sheet .v37bg{position:absolute;inset:0;background:rgba(0,0,0,.35);opacity:0;transition:opacity .25s}
+.v37sheet .v37box{position:absolute;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;background:var(--surface);border-radius:22px 22px 0 0;
+  padding:10px 18px calc(18px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);display:grid;gap:10px}
+.v37sheet.auf{pointer-events:auto}.v37sheet.auf .v37bg{opacity:1}.v37sheet.auf .v37box{transform:none}
+.v37griff{width:38px;height:5px;border-radius:3px;background:var(--sep);margin:0 auto 4px}
+.v37box .ckopf{display:flex;align-items:center;gap:8px;font-weight:600}.v37box .ckopf .ic{color:var(--accent)}.v37box .ckopf span{margin-left:auto;font-size:13px;color:var(--muted);font-weight:400}
+#v37txt{font:inherit;font-size:17px;color:var(--text);background:var(--fill);border:0;border-radius:14px;padding:12px 14px;resize:none;width:100%}
+#v37txt:focus{outline:2px solid var(--accent)}
+.v37chips{display:flex;gap:6px;flex-wrap:wrap}
+.v37chips button{min-height:32px;padding:5px 12px;font-size:13px;background:var(--fill);border:0;color:var(--ink80)}
+.v37box .ghost{border:0!important}
+.v37z b.gut{color:#248a3d}.v37z b.schlecht{color:#d70015}
+body.abend .v37z b.gut{color:#30d158}body.abend .v37z b.schlecht{color:#ff453a}
+#v37stat .orow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0}
+#v37stat .orow span{font-size:15px;color:var(--text)}#v37stat .orow b{font-size:15px;font-weight:600;text-align:right}
+.jd .meta .v37warn{background:color-mix(in srgb,#ff3b30 14%,var(--surface));color:#d70015;cursor:pointer}
+body.abend .jd .meta .v37warn{color:#ff6961}
+.v37zr{display:grid!important;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0 9px 10px!important;border-left:3px solid transparent}
+.v37zr.best{border-left-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,transparent);border-radius:0 8px 8px 0}
+.v37zr.aus{opacity:.45;text-decoration:line-through}
+.v37zr span{font-size:17px!important;color:var(--text)!important;display:flex!important;align-items:baseline;gap:4px}.v37zr span b{font-weight:700;font-variant-numeric:tabular-nums}
+.v37zr>b{font-size:15px!important;font-weight:400!important;color:var(--muted);align-self:center}
+.v37zr i{grid-column:1/-1;font-style:normal;font-size:12px;color:var(--muted)}
+.v37zr em{font-style:normal;font-size:12px;font-weight:600;margin-left:4px}.v37zr em.spaet{color:#d70015}.v37zr em.pünkt{color:#248a3d}
+body.abend .v37zr em.spaet{color:#ff453a}body.abend .v37zr em.pünkt{color:#30d158}
+</style>
 </head>
 <body>
 
@@ -1559,7 +1594,7 @@ function termineRender(){
   el.classList.remove("hidden");
   el.querySelectorAll("button[data-tid]").forEach(b=>b.onclick=()=>{const s=store.get(tKey())||{}; if(s[b.dataset.tid]===b.dataset.st) delete s[b.dataset.tid]; else s[b.dataset.tid]=b.dataset.st; store.set(tKey(),s); termineRender();});
   $("tSend").onclick=()=>{const s=store.get(tKey())||{}, kv=Object.entries(s).map(([k,v])=>`${k}=${v}`); if(!kv.length) return;
-    location.href="shortcuts://run-shortcut?name="+encodeURIComponent("Morgen an Jarvis")+"&input=text&text="+encodeURIComponent(["Termine",`datum=${TERMINE.datum}`,...kv].join("; ")+";");};
+    jarvisSend(["Termine",`datum=${TERMINE.datum}`,...kv].join("; ")+";");};
 }
 function abendBlock(o,id){ if(!o||!o.abend_oberteil) return "";
   const m={kleidung:[["Oberteil",o.abend_oberteil],["Hose",o.abend_hose],["Jacke",o.abend_jacke]],schuhe:[["Schuhe + Gürtel",o.abend_schuhe]],accessoires:[["Accessoires",o.abend_accessoires]]}[id]||[];
@@ -1714,7 +1749,7 @@ function reiseRender(){
   if(!h){el.classList.add("hidden");return}
   el.innerHTML=h; el.classList.remove("hidden"); packBind(el);
   el.querySelectorAll("button[data-reise]").forEach(b=>b.onclick=()=>{const a=reiseAntw();a[b.dataset.reise]=b.dataset.ok;store.set("reiseAntw",a);reiseRender();wetterLaden(true);
-    location.href="shortcuts://run-shortcut?name="+encodeURIComponent("Morgen an Jarvis")+"&input=text&text="+encodeURIComponent(`Reise; id=${b.dataset.reise}; ok=${b.dataset.ok};`);});
+    jarvisSend(`Reise; id=${b.dataset.reise}; ok=${b.dataset.ok};`);});
 }
 /* Wetter */
 function reiseOrt(tag){try{const p=reisePlan(); if(p&&p.tage.some(t=>t.datum===tag)) return p.ort||null;
@@ -1782,7 +1817,7 @@ function ewBind(root){root.querySelectorAll("button[data-ew]").forEach(b=>b.oncl
   if(ewArm!==k){ewArm=k;clearTimeout(ewArmT);ewArmT=setTimeout(()=>{ewArm=null;pjRender()},4000);pjRender();return}
   ewArm=null;clearTimeout(ewArmT); const x=EWK.find(y=>y.k===k), now=new Date(), tag=ewTag(), t=Date.now().toString(36);
   const l=store.get("ewlok-"+tag)||[]; l.push({t,k,e:x.e,kc:x.kc}); store.set("ewlok-"+tag,l); pjRender();
-  location.href="shortcuts://run-shortcut?name="+encodeURIComponent("Morgen an Jarvis")+"&input=text&text="+encodeURIComponent(`Essen; key=${k}; t=${t}; datum=${tag}; zeit=${hm(now)};`);})}
+  jarvisSend(`Essen; key=${k}; t=${t}; datum=${tag}; zeit=${hm(now)};`);})}
 /* ---------- v30: Ringe, Ordnung/Einklappen, Farbpunkte, Morgen-Phasen, Abschluss-Ring ---------- */
 var PJSTAT=null;
 function ring(p,farbe,lbl,wert){const r=26,c=2*Math.PI*r,o=c*(1-Math.min(1,Math.max(0,p||0)));
@@ -2040,6 +2075,99 @@ function v36Wisch(){const S0=$("s-start"), T=["heute","routine","fort","mehr"]; 
   S0.addEventListener("touchend",e=>{if(x0==null) return; const t=e.changedTouches[0], dx=t.clientX-x0, dy=t.clientY-y0; x0=null;
     if(Math.abs(dx)<70||Math.abs(dy)>45||Date.now()-t0>600) return; const i=T.indexOf(V35_TAB)+(dx<0?1:-1); if(i>=0&&i<T.length) v35Tab(T[i]);},{passive:true});}
 try{v36Wisch(); const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Morgen-App v36"; gewichtRender(); jdRender()}catch(e){console.error("v36",e)}
+/* ---------- v37: Direktversand, Notiz an Jarvis, Systemstatus, Zugzeiten, Auto-Kurz ---------- */
+var EINGANG={url:"https://docs.google.com/forms/d/1kK8sn6-qlQvTZytQ3Dpuv3YA4mlFUZ07WJL-QET26aQ/formResponse",feld:"entry.1429201399"};
+function v37Toast(t,warn){let e=$("v37toast"); if(!e){e=document.createElement("div"); e.id="v37toast"; document.body.appendChild(e)}
+  e.textContent=t; e.className="an"+(warn?" warn":""); clearTimeout(e._t); e._t=setTimeout(()=>e.className="",2400)}
+async function v37Post(z){const b=new URLSearchParams(); b.append(EINGANG.feld,z); await fetch(EINGANG.url,{method:"POST",mode:"no-cors",body:b})}
+function jarvisSend(z){const q=store.get("eingang:queue")||[]; q.push({z,ts:Date.now()}); store.set("eingang:queue",q); v37Flush(true)}
+var v37Busy=false;
+async function v37Flush(laut){if(v37Busy) return; v37Busy=true; let ok=0;
+  try{let q=store.get("eingang:queue")||[];
+    while(q.length){try{await v37Post(q[0].z); q.shift(); store.set("eingang:queue",q); ok++}catch(e){break}}
+    if(laut) v37Toast(q.length?`Kein Netz – ${q.length} wartet, wird nachgesendet`:"✓ An Jarvis gesendet",!!q.length);
+  }finally{v37Busy=false; try{v37Status()}catch(e){}}
+  return ok}
+window.addEventListener("online",()=>v37Flush(false));
+document.addEventListener("visibilitychange",()=>{if(!document.hidden) v37Flush(false)});
+/* Notiz an Jarvis */
+function v37NotizUI(){
+  document.body.insertAdjacentHTML("beforeend",`<button id="v37fab" aria-label="Notiz an Jarvis">${ICO("note")}</button>
+  <div id="v37sheet" class="v37sheet"><div class="v37bg"></div><div class="v37box"><div class="v37griff"></div>
+  <div class="ckopf">${ICO("note")}Notiz an Jarvis<span id="v37zahl"></span></div>
+  <textarea id="v37txt" rows="4" placeholder="z. B. Morgen 8 Uhr an Spesen erinnern · Idee für PA Südtirol · Christofer wegen Videodreh fragen"></textarea>
+  <div class="v37chips">${["Erinnere mich ","Termin: ","To-do: ","Idee: "].map(c=>`<button data-c="${c}">${c.trim()}</button>`).join("")}</div>
+  <button id="v37go" class="primary">An Jarvis senden</button><button id="v37zu" class="ghost">Abbrechen</button></div></div>`);
+  const sh=$("v37sheet"), tx=$("v37txt"), auf=()=>{sh.classList.add("auf"); setTimeout(()=>tx.focus(),250)}, zu=()=>{sh.classList.remove("auf"); tx.blur()};
+  $("v37fab").onclick=auf; $("v37zu").onclick=zu; sh.querySelector(".v37bg").onclick=zu;
+  sh.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{tx.value=b.dataset.c+tx.value.replace(/^(Erinnere mich |Termin: |To-do: |Idee: )/,""); tx.focus()});
+  tx.oninput=()=>{$("v37zahl").textContent=tx.value.length?tx.value.length+" Zeichen":""};
+  $("v37go").onclick=()=>{const t=tx.value.trim().replace(/\s*\n\s*/g," · "); if(!t){tx.focus();return} jarvisSend("Notiz: "+t); tx.value=""; tx.oninput(); zu()};
+  const tb=()=>$("v37fab").classList.toggle("hidden",!$("s-start").classList.contains("on")||!["heute","fort"].includes(V35_TAB));
+  const _t=v35Tab; v35Tab=function(t){_t(t); tb()}; const _s=show; show=function(id){_s(id); tb()}; tb();}
+/* Systemstatus */
+function v37Status(){let el=$("v37stat"); const p=$("tabMehr"); if(!p) return;
+  if(!el){p.insertAdjacentHTML("afterbegin",`<div class="card" id="v37stat"></div>`); el=$("v37stat")}
+  const s=TERMINE&&TERMINE.status, q=(store.get("eingang:queue")||[]).length, z=[];
+  const zl=(l,w,k)=>z.push(`<div class="orow v37z"><span>${l}</span><b class="${k||""}">${w}</b></div>`);
+  if(!s){zl("Server","noch keine Daten","")}
+  else{zl("Jarvis-Server",s.gateway==="active"?"läuft":"⚠︎ "+esc(s.gateway||"unbekannt"),s.gateway==="active"?"gut":"schlecht");
+    zl("Claude-Login",s.login==="ok"?"ok":"⚠︎ abgelaufen – /login",s.login==="ok"?"gut":"schlecht");
+    zl("Jobs",s.jobs==null?"–":(s.fehler&&s.fehler.length?`⚠︎ ${s.fehler.length} mit Fehler`:`${s.jobs} ohne Fehler`),s.fehler&&s.fehler.length?"schlecht":"gut");
+    if(s.fehler&&s.fehler.length) z.push(`<div class="onote" style="margin:0 0 6px">${s.fehler.map(esc).join(" · ")}</div>`);
+    zl("Rückmeldungen gelesen",s.eingang?new Date(s.eingang).toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"})+" Uhr":(s.eingang_fehler?"⚠︎ "+esc(s.eingang_fehler):"–"),s.eingang_fehler?"schlecht":"");
+    zl("Schlaf / Schritte bis",[s.schlaf,s.schritte].map(d=>d?d.slice(8,10)+"."+d.slice(5,7)+".":"–").join(" / "));
+    if(s.ram!=null) zl("Arbeitsspeicher",s.ram+" %",s.ram>85?"schlecht":"");}
+  zl("Wartet auf Netz",q?`${q} Rückmeldung${q>1?"en":""}`:"nichts",q?"schlecht":"gut");
+  el.innerHTML=`<div class="ckopf" data-v35="1">${ICO("pulse")}Systemstatus<span>${s?"Stand "+esc(s.zeit||TERMINE.stand||""):""}</span></div>`+z.join("")
+    +(q?`<button class="tsend" id="v37nach">Jetzt nachsenden</button>`:"");
+  const n=$("v37nach"); if(n) n.onclick=()=>v37Flush(true);}
+function v37Problem(){const s=TERMINE&&TERMINE.status; return !!(s&&(s.login!=="ok"||(s.fehler&&s.fehler.length)||(s.gateway&&s.gateway!=="active")))}
+/* Zug */
+function v37Zug(){const z=TERMINE&&TERMINE.zug; if(!z||TERMINE.datum!==isoLocal(new Date()).slice(0,10)) return null;
+  const bhf=+(einst().bhf??15), now=Date.now();
+  const hin=(Array.isArray(z.hin)?z.hin:[]).filter(x=>!x.ausfall).map(x=>{const ab=new Date(x.ab_iso).getTime()+(x.vsp||0)*60000;return Object.assign({},x,{abT:ab,los:ab-bhf*60000})});
+  const mach=hin.filter(x=>x.los>now-60000), best=mach.length?mach[mach.length-1]:null;
+  return {z,bhf,best,hin,rueck:Array.isArray(z.rueck)?z.rueck:[]}}
+var _v37nae=v35Naechst;
+v35Naechst=function(){const n=_v37nae(), Z=v37Zug(); if(!Z||!Z.best) return n;
+  const b=Z.best, los=new Date(b.los); if(n&&n.d&&n.d.getTime()<new Date(b.an_iso).getTime()-5*60000) return n;
+  return {x:{titel:`Zug ${b.ab}${b.vsp?` (+${b.vsp})`:""} → Kufstein`,zeit:b.ab},d:new Date(b.abT),los,min:Math.round((b.los-Date.now())/60000)}};
+function v37ZugKarte(){let el=$("v37zug"); const j=$("jetzt"); if(!j) return; const Z=v37Zug();
+  if(!Z){if(el) el.classList.add("hidden"); return}
+  if(!el){j.insertAdjacentHTML("afterbegin",`<div class="card" id="v37zug"></div>`); el=$("v37zug")}
+  const hinZeit=Z.hin.length&&Date.now()<new Date(Z.hin[Z.hin.length-1].an_iso).getTime(), L=hinZeit?Z.hin:Z.rueck;
+  if(!L.length&&!Z.z.hin?.fehler&&!Z.z.rueck?.fehler){el.classList.add("hidden"); return}
+  const zr=x=>`<div class="orow v37zr${Z.best&&hinZeit&&x.ab_iso===Z.best.ab_iso?" best":""}${x.ausfall?" aus":""}"><span><b>${esc(x.ab)}</b>${x.vsp?` <em class="spaet">+${x.vsp}</em>`:x.vsp===0?` <em class="pünkt">pünktlich</em>`:""}</span><b>an ${esc(x.an)}</b><i>${esc(x.linie||"")}${x.gleis?" · Gl. "+esc(x.gleis):""}${x.umstiege?" · "+x.umstiege+"× umst.":""}${x.ausfall?" · fällt aus":""}</i></div>`;
+  el.innerHTML=`<div class="ckopf" data-v35="1">${ICO("train")}${hinZeit?"Zug nach Kufstein":"Zurück nach Innsbruck"}<span>${hinZeit?"vor "+esc(Z.z.ziel):"ab 15:00"}</span></div>`
+    +(L.length?L.map(zr).join(""):`<div class="onote">Fahrplan gerade nicht abrufbar.</div>`)
+    +(hinZeit&&Z.best?`<div class="onote">Für den ${esc(Z.best.ab)}er: losgehen um ${hm(new Date(Z.best.los))} (${Z.bhf} Min. zum Bahnhof · ändern unter Mehr)</div>`:"")
+    +(hinZeit&&/Annahme/.test(Z.z.termin||"")?`<div class="onote muted">Kein Kufstein-Termin im Kalender – Annahme Büro ab 9:00.</div>`:"");
+  el.classList.remove("hidden");}
+/* Auto-Kurz + Hinweise in „Jetzt dran“ */
+var v37Manuell=false, v37Auto=false, v37InJd=false;
+document.querySelectorAll(".vbtn").forEach(b=>b.addEventListener("click",()=>{v37Manuell=true; v37Auto=false}));
+var _v37jd=jdRender;
+jdRender=function(){if(v37InJd) return; v37InJd=true;
+  try{const h=new Date().getHours(), d4=isoLocal(new Date(Date.now()-4*3600e3)).slice(0,10), rm=(store.get("verlauf")||[]).some(x=>x.d===d4&&x.v!=="abend"), nt=v35Naechst();
+    if(!v37Manuell&&variante==="lang"&&!rm&&h<14&&nt&&nt.min<dauerMin("lang")+5&&nt.min>=dauerMin("kurz")){variante="kurz"; v37Auto=true; markV()}
+    _v37jd();
+    const m=()=>{let x=document.querySelector("#jdCard .meta"); if(!x){const s=document.querySelector("#jdCard .s"); if(s){s.insertAdjacentHTML("afterend",`<div class="meta"></div>`); x=document.querySelector("#jdCard .meta")}} return x};
+    if(v37Auto&&variante==="kurz"&&/Morgenroutine/.test(($("jdCard").textContent||""))){const x=m(); if(x) x.insertAdjacentHTML("afterbegin",`<span>${ICO("bolt")}automatisch kurz – Zeit knapp</span>`)}
+    if(v37Problem()){const x=m(); if(x) x.insertAdjacentHTML("beforeend",`<span class="v37warn" onclick="v35Tab('mehr')">${ICO("pulse")}System prüfen</span>`)}
+  }finally{v37InJd=false}
+  try{v37ZugKarte()}catch(e){}};
+function v37Einst(){const w=$("setPuffer"); if(!w||$("setBhf")) return; const l=w.closest("label");
+  l.insertAdjacentHTML("afterend",`<label class="row"><span>Weg zum Bahnhof (Min., Zug Kufstein)</span><input id="setBhf" type="number" inputmode="numeric" min="0" max="90" style="width:80px"></label>`);
+  const b=$("setBhf"); b.value=einst().bhf??15; b.onchange=()=>{einstSet({bhf:Math.max(0,+b.value||0)}); jdRender()};}
+var _v37tr=termineRender; termineRender=function(){_v37tr(); try{v37Status(); jdRender()}catch(e){}};
+try{
+  Object.assign(V35_ICONS,{note:'<path d="M5 4.5h10l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 19V6a1.5 1.5 0 0 1 1-1.5zM15 4.5V9h4M8 13h8M8 16.5h5"/>',
+    pulse:'<path d="M3 12h4l2.5-6 4 12 2.5-6H21"/>',train:'<rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 10h14M9 21l1.5-4M15 21l-1.5-4M8.5 13.5h.01M15.5 13.5h.01"/>'});
+  const sp=document.querySelector('svg[aria-hidden="true"][width="0"]'); if(sp) ["note","pulse","train"].forEach(n=>{if(!sp.querySelector("#i-"+n)) sp.insertAdjacentHTML("beforeend",`<symbol id="i-${n}" viewBox="0 0 24 24">${V35_ICONS[n]}</symbol>`)});
+  v37NotizUI(); v37Einst(); v37Status(); jdRender(); v37Flush(false);
+  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Morgen-App v37";
+}catch(e){console.error("v37",e)}
 </script>
 </body>
 </html>
