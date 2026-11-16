@@ -414,6 +414,13 @@ details.card summary{color:var(--text)}
 #endRing{position:relative;width:150px;height:150px;margin:18px auto 4px}
 #endRing svg{width:150px;height:150px;transform:rotate(-90deg)}#endRing .rb,#endRing .rv{stroke-width:10}#endRing .rv{stroke:var(--accent)}
 #endRing b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700}
+/* v33 */
+.sbars{position:relative;display:flex;gap:6px;height:64px;margin:12px 0 24px}
+.sbars div{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;position:relative}
+.sbars i{display:block;width:100%;background:var(--accent);opacity:.35;border-radius:4px 4px 2px 2px}
+.sbars i.ok{background:#30d158;opacity:1}
+.sbars span{position:absolute;bottom:-18px;font-size:11px;color:var(--muted)}
+.sbars b{position:absolute;left:0;right:0;border-top:1px dashed var(--muted);opacity:.7}
 </style>
 </head>
 <body>
@@ -436,6 +443,7 @@ details.card summary{color:var(--text)}
   <div class="card hidden" id="termineCard"></div>
   <div class="card hidden" id="reiseCard"></div>
   <div class="card hidden" id="fechtCard"></div>
+  <div class="card hidden" id="schritteCard"></div>
   <div class="card hidden" id="heuteCard"></div>
   <div class="card hidden" id="gewCard"></div>
   <div class="card hidden" id="kalCard"></div>
@@ -1175,7 +1183,7 @@ function heroRender(){
     <div class="chips">${chips.map(c=>`<span>${(c==="flow"?"Rücken-Flow":BAUSTEIN[c]).replace(/^\S+\s/,"")}</span>`).join("")}</div>`;
   document.body.classList.toggle("abend",ab);document.body.classList.toggle("morgen",!ab);
   $("btnStart").textContent=ab?"Abendroutine starten":"Morgenroutine starten";
-  befehlRender(); heuteRender(); gewichtRender(); pjRender(); glowRender(); wocheRender2(); try{reiseRender();losRender();kalRender()}catch(e){} try{fechtRender();ringeRender();ordnen()}catch(e){}
+  befehlRender(); heuteRender(); gewichtRender(); pjRender(); glowRender(); wocheRender2(); try{reiseRender();losRender();kalRender()}catch(e){} try{fechtRender();schritteRender();ringeRender();ordnen()}catch(e){}
 }
 function wocheRender(){
   const h=store.get("verlauf",[])||[],d=new Date(),mo=new Date(d);mo.setDate(d.getDate()-((d.getDay()+6)%7));
@@ -1380,7 +1388,7 @@ function putzRender(){
 }
 function termineRender(){
   const el=$("termineCard"); if(!el) return;
-  putzRender(); pjRender(); try{reiseRender();losRender();ringeRender();ordnen()}catch(e){}
+  putzRender(); pjRender(); try{reiseRender();losRender();fechtRender();schritteRender();ringeRender();ordnen()}catch(e){}
   if(!TERMINE||!TERMINE.termine.length){el.classList.add("hidden");return}
   const s=store.get(tKey())||{};
   el.innerHTML=`<div class="ckopf">Heute<span>Stand ${esc(TERMINE.stand||"")}</span></div>`+TERMINE.termine.map(t=>`<div class="trow"><div class="tt"><i>${esc(t.zeit)}</i><b>${esc(t.titel)}</b></div><div class="tbtn">${[["hin","Ich gehe hin"],["nein","Egal"],["aus","Fällt aus"]].map(([k,l])=>`<button data-tid="${t.id}" data-st="${k}" class="${s[t.id]===k?"on "+k:""}">${l}</button>`).join("")}</div></div>`).join("")+`<button class="tsend" id="tSend">An Jarvis senden</button>`;
@@ -1624,7 +1632,7 @@ function ringeRender(){const el=$("ringeCard"); if(!el) return; const heute=isoL
   el.classList.remove("hidden");}
 var ORDNUNG={morgen:["losCard","befehlCard","termineCard","heuteCard","reiseCard","pjCard","putzCard"],
   tag:["termineCard","pjCard","reiseCard","heuteCard","putzCard","losCard","befehlCard"],
-  abend:["fechtCard","pjCard","heuteCard","reiseCard","putzCard","termineCard","befehlCard","losCard"]};
+  abend:["fechtCard","pjCard","schritteCard","heuteCard","reiseCard","putzCard","termineCard","befehlCard","losCard"]};
 var MEHR=["gewCard","wocheCard","glowCard","kalCard"];
 function ordnen(){const j=$("jetzt"), m=$("mehr"); if(!j||!m) return; const h=new Date().getHours(), k=variante==="abend"||h>=17?"abend":h<12?"morgen":"tag";
   ORDNUNG[k].forEach(id=>{const e=$(id); if(e) j.appendChild(e)}); MEHR.forEach(id=>{const e=$(id); if(e) m.appendChild(e)});
@@ -1676,6 +1684,18 @@ async function fechtMelden(min,grund){
     store.set("noah:queue",(store.get("noah:queue")||[]).filter(x=>x.id!==z.id));
     const h2=store.get("noah:hist")||[]; h2.forEach(x=>{if(x.id===z.id)x.gesendet=true}); store.set("noah:hist",h2); fechtRender();
   }catch(e){}}
+/* ---------- v33: Schritte-Hinweis abends ---------- */
+function schritteRender(){const el=$("schritteCard"); if(!el) return; const h=new Date().getHours(), heute=isoLocal(new Date()).slice(0,10);
+  const p=(TERMINE&&TERMINE.pj&&TERMINE.datum===heute)?TERMINE.pj:null, w=(p&&p.schritte_woche)||[];
+  if((h<17&&variante!=="abend")||!w.some(x=>x.s!=null)){el.classList.add("hidden");return}
+  const da=w.filter(x=>x.s!=null), avg=Math.round(da.reduce((a,x)=>a+x.s,0)/da.length), ok=da.filter(x=>x.s>=6500).length, mx=Math.max(8000,...da.map(x=>x.s));
+  const g=w[w.length-1], f=n=>Number(n).toLocaleString("de-DE");
+  el.innerHTML=`<div class="ckopf">👟 Schritte · letzte 7 Tage<span>Ø ${f(avg)}</span></div>`
+    +`<div class="sbars">${w.map(x=>`<div><i style="height:${x.s==null?0:Math.max(3,Math.round(x.s/mx*100))}%" class="${x.s>=6500?"ok":""}"></i><span>${new Date(x.d+"T12:00").toLocaleDateString("de-AT",{weekday:"short"}).slice(0,2)}</span></div>`).join("")}<b style="bottom:${Math.round(6500/mx*100)}%"></b></div>`
+    +`<div class="orow"><span>Tage ≥ 6.500</span><b>${ok} / ${da.length}</b></div>`
+    +(g&&g.s!=null?`<div class="orow"><span>Gestern</span><b>${f(g.s)}${g.s<6500?` · es fehlten ${f(6500-g.s)}`:" ✓"}</b></div>`:"")
+    +`<div class="onote">Heute zählt erst morgen um 11:20. Ein 20-Min.-Spaziergang bringt ca. 2.000–2.500 Schritte.</div>`;
+  el.classList.remove("hidden");}
 </script>
 </body>
 </html>
