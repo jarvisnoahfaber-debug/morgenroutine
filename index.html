@@ -658,6 +658,37 @@ body.abend .v37zr em.spaet{color:#ff453a}body.abend .v37zr em.pünkt{color:#30d1
 .v40mini:active{transform:scale(.94)}
 .jd .k,.jd .t,.jd .s{padding-right:70px}
 </style>
+<style id="v41css">
+/* ===== v41: noch übersichtlicher ===== */
+.v35kopf{margin:12px 0 4px}
+.v35kopf h1{font-size:26px;letter-spacing:-.5px}
+.v35kopf #today{font-size:12px}
+.v41weg{display:none!important}
+/* gruppierte Liste (wie iPhone-Einstellungen) */
+#jetzt>.card.v41g{margin:0!important;border-radius:0!important;box-shadow:none!important;position:relative}
+#jetzt>.card.v41g:not(.v41gl)::after{content:"";position:absolute;left:45px;right:0;bottom:0;height:1px;background:var(--sep)}
+#jetzt>.card.v41gf{margin-top:12px!important;border-top-left-radius:var(--rad)!important;border-top-right-radius:var(--rad)!important}
+#jetzt>.card.v41gl{margin-bottom:12px!important;border-bottom-left-radius:var(--rad)!important;border-bottom-right-radius:var(--rad)!important}
+#jetzt>.card.v41g>.ckopf{font-size:15px}
+#jetzt>.card.v41g .ckopf>span{font-size:12px}
+.v40sum{font-size:13.5px}
+/* Tagesablauf */
+#termineCard:not(.v41alle) .trow.vorbei{display:none!important}
+#termineCard:not(.v41alle) .jetztlinie{display:none}
+.v41vorbei{display:block;width:auto!important;min-height:0;padding:4px 0 8px;margin:0;background:none!important;border:0!important;color:var(--muted)!important;font-size:13px;font-weight:500!important;text-align:left}
+#tSend{display:none!important}
+#termineCard .tst:not(.hin):not(.nein):not(.aus){font-size:0!important}
+#termineCard .tst:not(.hin):not(.nein):not(.aus)::after{content:"⋯";font-size:16px;color:var(--muted2)}
+#termineCard .v40zug{cursor:pointer}
+.v41zugliste{margin:0 0 8px 18px;padding:8px 12px;border-radius:12px;background:var(--fill);font-size:14px;display:grid;gap:4px}
+.v41zugliste .best{font-weight:600;color:var(--accent)}
+.v41zugliste em{font-style:normal;color:#d70015;font-size:12px;font-weight:600}
+.v41zugliste i{font-style:normal;font-size:12px;color:var(--muted)}
+/* Hinweis „einsortiert“ als schmale Leiste */
+#v38neu{padding:10px 16px!important;background:color-mix(in srgb,#30d158 10%,var(--surface))!important}
+#v38neu .ckopf{font-size:14px;margin-bottom:4px}
+#v38neu .v38nz{padding:2px 0;border:0}
+</style>
 </head>
 <body>
 
@@ -2296,6 +2327,36 @@ try{
   v40ZugZeile(); v40Summen(); v40ZuAnwenden(); v40Ringe();
   const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v40";
 }catch(e){console.error("v40",e)}
+/* ---------- v41: noch übersichtlicher – gruppierte Liste, nichts doppelt, Tagesablauf schlank ---------- */
+var V41_WEG=["losCard","v37zug"];
+function v41Gruppen(umsortieren){const j=$("jetzt"); if(!j) return;
+  V41_WEG.forEach(id=>{const e=$(id); if(e) e.classList.add("v41weg")});
+  const karten=[...j.children].filter(c=>c.classList.contains("card")&&!c.classList.contains("v41weg")&&!c.classList.contains("hidden"));
+  if(umsortieren){karten.filter(c=>!c.classList.contains("zu")).forEach(c=>j.appendChild(c)); karten.filter(c=>c.classList.contains("zu")).forEach(c=>j.appendChild(c));}
+  const sicht=[...j.children].filter(c=>c.classList.contains("card")&&!c.classList.contains("v41weg")&&!c.classList.contains("hidden")&&getComputedStyle(c).display!=="none");
+  sicht.forEach((c,i)=>{const z=c.classList.contains("zu"), vz=i>0&&sicht[i-1].classList.contains("zu"), nz=i<sicht.length-1&&sicht[i+1].classList.contains("zu");
+    c.classList.toggle("v41g",z); c.classList.toggle("v41gf",z&&!vz); c.classList.toggle("v41gl",z&&!nz);});}
+document.addEventListener("click",e=>{if(e.target.closest("#jetzt .ckopf, #jetzt .v40sum")) setTimeout(()=>v41Gruppen(false),10)});
+/* Zusammenfassung antippbar wie die Überschrift */
+document.addEventListener("click",e=>{const s=e.target.closest("#jetzt .v40sum"); if(!s) return; const k=s.parentElement.querySelector(".ckopf"); if(k) k.click()});
+var v41SendT=null;
+function v41Termine(){const tc=$("termineCard"); if(!tc||tc.classList.contains("hidden")) return; const now=new Date(); let vorbei=0;
+  tc.querySelectorAll(".trow").forEach(r=>{const m=((r.querySelector(".tt i")||{}).textContent||"").match(/^(\d\d):(\d\d)/); if(!m) return; const d=new Date(); d.setHours(+m[1],+m[2],0,0);
+    const v=d<now&&!r.classList.contains("v40zug"); r.classList.toggle("vorbei",v); if(v) vorbei++;});
+  let t=tc.querySelector(".v41vorbei"); const erst=tc.querySelector(".trow");
+  if(vorbei&&erst){if(!t){erst.insertAdjacentHTML("beforebegin",`<button class="v41vorbei"></button>`); t=tc.querySelector(".v41vorbei"); t.onclick=()=>{tc.classList.toggle("v41alle"); v41Termine()}}
+    t.textContent=tc.classList.contains("v41alle")?"Vergangene ausblenden":`✓ ${vorbei} vorbei – anzeigen`} else if(t) t.remove();
+  tc.querySelectorAll("button[data-tid]").forEach(b=>{if(b.dataset.v41) return; b.dataset.v41=1; b.addEventListener("click",()=>{clearTimeout(v41SendT); v41SendT=setTimeout(()=>{const s=$("tSend"); if(s) s.click()},1200)})});
+  const zr=tc.querySelector(".v40zug"); if(zr&&!zr.dataset.v41){zr.dataset.v41=1; zr.onclick=()=>{let l=tc.querySelector(".v41zugliste"); if(l){l.remove(); return}
+    const Z=v37Zug(); if(!Z) return; const L=Z.hin.length?Z.hin:Z.rueck;
+    zr.insertAdjacentHTML("afterend",`<div class="v41zugliste">${L.map(x=>`<div class="${Z.best&&x.ab_iso===Z.best.ab_iso?"best":""}"><b>${esc(x.ab)}</b>${x.vsp?` <em>+${x.vsp}</em>`:""} → ${esc(x.an)} · ${esc(x.linie||"")}${x.gleis?" · Gl. "+esc(x.gleis):""}</div>`).join("")}<i>Für den markierten Zug ${Z.bhf} Min. Weg zum Bahnhof eingerechnet.</i></div>`)}}}
+var _v41tr=termineRender; termineRender=function(){_v41tr(); try{v41Termine(); v41Gruppen(true)}catch(e){console.error(e)}};
+var _v41ord=ordnen; ordnen=function(){_v41ord(); try{v41Gruppen(true)}catch(e){}};
+try{
+  v41Termine(); v41Gruppen(true);
+  setInterval(()=>{try{if(V35_TAB==="heute"){v41Termine(); v41Gruppen(false)}}catch(e){}},60000);
+  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v41";
+}catch(e){console.error("v41",e)}
 </script>
 </body>
 </html>
