@@ -1580,7 +1580,7 @@ function pjRender(){
 }
 /* ---------- Glow-up ---------- */
 const GLOW_FRISEUR=21, GLOW_PEDI=49, PJ_MESS=["2026-11-22","2026-12-20","2027-01-15"];
-const BASICS=["Gürtel navy (zu den navy Bootsschuhen)","Schuhe für Stufe 5 (Oxford SH05 bestellt)","Fliege (Ball)","Smokinghemd (Ball)","Sonnenschutz LSF 30–50 fürs Gesicht","BHA-Peeling 2 % Salicylsäure","Retinol 0,2–0,3 %"];
+const BASICS=["Gürtel navy (zu den navy Bootsschuhen)","Schuhe für Stufe 5 (Oxford SH05 bestellt)","Fliege (Ball)","Smokinghemd (Ball)","BHA-Peeling 2 % Salicylsäure","Retinol 0,2–0,3 %"];
 function WIRK(){const w=new Date(Date.now()-4*3600e3).getDay();
   if(w===1||w===4) return {t:"Wirkstoff: BHA-Peeling",x:"Nach dem Reinigen BHA (2 % Salicylsäure) mit einem Wattepad auftragen, nicht abwaschen. 1 Minute einziehen lassen, dann Creme.\n\nNoch nicht gekauft? Auslassen."};
   if(w===2||w===5) return {t:"Wirkstoff: Retinol",x:"Erbsengroße Menge Retinol (0,2–0,3 %) auf die trockene Haut, Augenpartie aussparen. Danach Creme. Am Anfang kann die Haut leicht schälen – normal. Morgens unbedingt LSF.\n\nNoch nicht gekauft? Auslassen."};
@@ -2485,7 +2485,7 @@ var _v43tab=v35Tab; v35Tab=function(t){_v43tab(t); if(t==="mehr") try{v43Karte()
 try{
   if(!store.get("nutzung")) store.set("nutzung",{seit:isoLocal(new Date()).slice(0,10),z:{}});
   v43Abend(); v41Gruppen(true); v40Summen(); v43Karte();
-  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v43";
+  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v44";
 }catch(e){console.error("v43",e)}
 </script>
 </body>
