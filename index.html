@@ -714,6 +714,13 @@ body.abend .v37zr em.spaet{color:#ff453a}body.abend .v37zr em.pünkt{color:#30d1
 .v42akt button,.v42akt a{display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:5px 12px;border-radius:999px;background:var(--fill)!important;border:0!important;color:var(--text)!important;font-size:13px;font-weight:500;text-decoration:none;width:auto!important}
 .v42akt .ic{width:15px;height:15px;color:var(--accent)}
 </style>
+<style id="v43css">
+/* ===== v43 ===== */
+#v43nutz summary{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px}
+#v43nutz summary .ic{color:var(--accent)}
+.v43z{display:flex!important;justify-content:space-between;align-items:center;padding:8px 0}
+.v43z span{font-size:14px!important;color:var(--text)!important}.v43z b{font-size:14px!important;font-weight:600!important}
+</style>
 </head>
 <body>
 
@@ -2431,6 +2438,55 @@ try{
   v42Kopf(); v42Schnell(); v42Termine();
   const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v42";
 }catch(e){console.error("v42",e)}
+/* ---------- v43: Abend-Feinschliff + Nutzungsstatistik ---------- */
+/* Zusammenfassungen: Beschriftung und Wert mit Trenner */
+var v43Zeile=r=>{if(!r) return ""; const s=r.querySelector("span"), b=r.querySelector("b"); return s&&b?`${s.textContent.trim()}: ${b.textContent.trim()}`:r.textContent};
+var _v43sum=v40Summen;
+v40Summen=function(){_v43sum(); try{["schritteCard","putzCard","losCard"].forEach(id=>{const c=$(id), s=c&&c.querySelector(":scope>.v40sum"), r=c&&c.querySelector(".orow"); if(s&&r){const t=v40Kurz(v43Zeile(r)); if(s.textContent!==t) s.textContent=t}})}catch(e){}};
+/* Abends: Termine, die noch kommen, bleiben in „Heute“; „Morgen anziehen“ offen */
+function v43Abend(){const h=new Date().getHours(), ab=variante==="abend"||h>=17; if(!ab) return;
+  const tc=$("termineCard"), j=$("jetzt"); if(tc&&j&&TERMINE&&TERMINE.termine){const now=new Date();
+    const rest=TERMINE.termine.filter(t=>{const m=String(t.zeit).match(/^(\d\d):(\d\d)/); if(!m) return false; const d=new Date(); d.setHours(+m[1],+m[2],0,0); return d>now});
+    if(rest.length&&tc.parentElement!==j){j.insertBefore(tc,j.querySelector(".card.zu")||null); tc.classList.remove("zu")}}
+  const z2=store.get("zu2")||{}; const hc=$("heuteCard"); if(hc&&!("heuteCard" in z2)) hc.classList.remove("zu");}
+var _v43za=v40ZuAnwenden; v40ZuAnwenden=function(){_v43za(); try{const h=new Date().getHours(); if(variante==="abend"||h>=17){const z2=store.get("zu2")||{}, hc=$("heuteCard"); if(hc&&!("heuteCard" in z2)) hc.classList.remove("zu")}}catch(e){}};
+var _v43ord=ordnen; ordnen=function(){_v43ord(); try{v43Abend(); v41Gruppen(true); v40Summen()}catch(e){}};
+/* Nutzungsstatistik – bleibt nur auf diesem Gerät */
+function v43Log(k){try{const n=store.get("nutzung")||{seit:isoLocal(new Date()).slice(0,10),z:{}}; n.z[k]=(n.z[k]||0)+1; store.set("nutzung",n)}catch(e){}}
+document.addEventListener("click",e=>{const t=e.target; let k=null;
+  const kopf=t.closest("#jetzt .ckopf,#mehr .ckopf,#jetzt .v40sum"); if(kopf){const c=kopf.closest(".card"); if(c&&c.id) setTimeout(()=>{if(!c.classList.contains("zu")) v43Log("Aufgeklappt: "+v43Name(c))},20)}
+  if(t.closest(".tabbar button")) k="Tab: "+t.closest(".tabbar button").innerText.trim();
+  else if(t.closest(".v42schnell [data-m]")) k="Schnellknopf: "+({ew:"Eiweiß",var:"Routine wählen",notiz:"Notiz"})[t.closest("[data-m]").dataset.m];
+  else if(t.closest("#v42menu button[data-i]")) k="Menü: "+t.closest("button").querySelector("span").firstChild.textContent.trim();
+  else if(t.closest("#jdBtn")) k="Jetzt dran: "+t.closest("#jdBtn").textContent.trim();
+  else if(t.closest("#btnStart")) k="Routine gestartet";
+  else if(t.closest("#v37go")) k="Notiz gesendet";
+  else if(t.closest("#v37fab")) k="Notiz-Knopf";
+  else if(t.closest("button[data-ew]")) k="Eiweiß-Knopf (PJ-Karte)";
+  else if(t.closest("button[data-tid]")) k="Termin-Status gesetzt";
+  else if(t.closest(".v42akt a")) k="Termin: Karte";
+  else if(t.closest(".v40zug")) k="Zug-Alternativen";
+  else if(t.closest(".v40mini")) k="Mini-Ringe";
+  else if(t.closest("[data-reise]")) k="Reise beantwortet";
+  else if(t.closest(".v38chat")) k="Chat: "+t.closest(".v38chat").innerText.trim();
+  if(k) v43Log(k);},true);
+function v43Name(c){const k=c.querySelector(".ckopf"); return k?[...k.childNodes].filter(n=>n.nodeType===3).map(n=>n.nodeValue).join("").trim()||c.id:c.id}
+function v43Karte(){const p=$("tabMehr"); if(!p) return; let el=$("v43nutz"); if(!el){const d=$("v38daten"); (d||p.lastElementChild).insertAdjacentHTML(d?"beforebegin":"beforebegin",`<details class="card" id="v43nutz"></details>`); el=$("v43nutz")}
+  const n=store.get("nutzung")||{seit:isoLocal(new Date()).slice(0,10),z:{}}, L=Object.entries(n.z).sort((a,b)=>b[1]-a[1]);
+  const alle=["Schnellknopf: Eiweiß","Schnellknopf: Routine wählen","Schnellknopf: Notiz","Notiz-Knopf","Zug-Alternativen","Mini-Ringe","Termin: Karte","Termin-Status gesetzt","Tab: Routine","Tab: Fortschritt","Tab: Mehr"];
+  const nie=alle.filter(x=>!n.z[x]), tage=Math.max(1,Math.round((Date.now()-new Date(n.seit+"T00:00").getTime())/864e5));
+  el.innerHTML=`<summary>${ICO("chart")}Meine Nutzung <span style="margin-left:auto;font-size:13px;font-weight:400;color:var(--muted)">seit ${n.seit.slice(8,10)}.${n.seit.slice(5,7)}. · ${tage} Tag${tage>1?"e":""}</span></summary>
+    <div class="onote muted" style="margin:8px 0">Bleibt nur auf diesem Handy. Nach einer Woche zeig mir das – dann räumen wir auf.</div>`
+    +(L.length?L.slice(0,15).map(([k,v])=>`<div class="orow v43z"><span>${esc(k)}</span><b>${v}×</b></div>`).join(""):`<div class="onote">Noch nichts erfasst.</div>`)
+    +(nie.length?`<div class="onote" style="margin-top:10px"><b>Noch nie benutzt:</b> ${nie.map(x=>esc(x.replace(/^.*?: /,""))).join(" · ")}</div>`:"")
+    +`<button class="tsend" id="v43reset" style="margin-top:10px">Zählung neu starten</button>`;
+  $("v43reset").onclick=()=>{if(confirm("Nutzung zurücksetzen?")){store.set("nutzung",{seit:isoLocal(new Date()).slice(0,10),z:{}}); v43Karte()}};}
+var _v43tab=v35Tab; v35Tab=function(t){_v43tab(t); if(t==="mehr") try{v43Karte()}catch(e){}};
+try{
+  if(!store.get("nutzung")) store.set("nutzung",{seit:isoLocal(new Date()).slice(0,10),z:{}});
+  v43Abend(); v41Gruppen(true); v40Summen(); v43Karte();
+  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v43";
+}catch(e){console.error("v43",e)}
 </script>
 </body>
 </html>
