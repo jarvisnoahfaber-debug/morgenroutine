@@ -1521,7 +1521,7 @@ function reiseAntw(){return store.get("reiseAntw")||{}}
 function reisePlan(){try{const p=OUTFIT&&OUTFIT.reise?JSON.parse(OUTFIT.reise):null;return p&&p.tage&&p.bis>=isoLocal(new Date()).slice(0,10)?p:null}catch(e){return null}}
 const dkurz=t=>new Date(t+"T12:00").toLocaleDateString("de-AT",{weekday:"short",day:"numeric",month:"numeric"});
 function packStuecke(p){const m=new Map();p.tage.forEach(t=>["oberteil","hose","schuhe","jacke","accessoires"].forEach(k=>{if(!t[k])return;
-  String(t[k]).split(/\s*[,+]\s*(?![^()]*\))/).forEach(s=>{s=s.trim();if(!s)return;const id=(s.match(/[A-Z]{2}\d{2}/)||[s])[0];
+  String(t[k]).split(/\s*[,+]\s*(?![^()]*\))/).forEach(s=>{s=s.trim();if(!s||/^fehlt/i.test(s))return;const id=(s.match(/[A-Z]{2}\d{2}/)||[s])[0];
     if(!m.has(id))m.set(id,{id,txt:s.replace(/\s*\([A-Z]{2}\d{2}\)/g,""),tage:[]});m.get(id).tage.push(t.datum)})}));return [...m.values()]}
 function packBlock(){const p=reisePlan(); if(!p) return ""; const ab=variante==="abend"?tagMorgen():isoLocal(new Date()).slice(0,10);
   const st=packStuecke(p).filter(x=>x.tage.some(d=>d>ab)); if(!st.length) return "";
@@ -1538,7 +1538,7 @@ function reiseRender(){
   reiseKand().filter(r=>r.bis>=heute&&(an[r.id]==="ja"||r.status==="ja")&&!(p&&p.id===r.id)).forEach(r=>{
     h+=`<div class="ckopf">🧳 ${esc(r.ort)} bestätigt<span>${dkurz(r.von)} – ${dkurz(r.bis)}</span></div><div class="onote">${r.status==="ja"?"Jarvis plant die Outfits beim nächsten Outfit-Lauf (19:00).":"Antwort ist unterwegs zu Jarvis."} Sofort: „Reise planen“ an Jarvis.</div>`});
   if(p) h+=`<div class="ckopf">🧳 ${esc(p.ort||"Reise")}<span>${dkurz(p.von)} – ${dkurz(p.bis)}</span></div>`
-    +p.tage.filter(t=>t.datum>=heute).map(t=>`<div class="orow"><span>${dkurz(t.datum)}${t.stufe?" · St. "+esc(t.stufe):""}</span><b>${esc([t.oberteil,t.hose,t.schuhe].filter(Boolean).join(" · ").replace(/\s*\([A-Z]{2}\d{2}\)/g,""))}</b></div>`).join("")+packBlock();
+    +p.tage.filter(t=>t.datum>=heute).map(t=>`<div class="orow"><span>${dkurz(t.datum)}${t.stufe?" · St. "+esc(t.stufe):""}</span><b>${esc([t.oberteil,t.hose,t.schuhe].filter(Boolean).map(x=>/^fehlt/i.test(x)?"⚠️ fehlt noch":x).join(" · ").replace(/\s*\([A-Z]{2}\d{2}\)/g,""))}</b></div>`).join("")+packBlock();
   if(!h){el.classList.add("hidden");return}
   el.innerHTML=h; el.classList.remove("hidden"); packBind(el);
   el.querySelectorAll("button[data-reise]").forEach(b=>b.onclick=()=>{const a=reiseAntw();a[b.dataset.reise]=b.dataset.ok;store.set("reiseAntw",a);reiseRender();wetterLaden(true);
