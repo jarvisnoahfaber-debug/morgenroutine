@@ -636,6 +636,28 @@ body.abend .v37zr em.spaet{color:#ff453a}body.abend .v37zr em.pünkt{color:#30d1
 .v38ok{min-height:0;padding:3px 12px;font-size:13px;border-radius:999px;background:var(--fill);border:0;color:var(--accent);font-weight:600}
 .v38mini{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 10px}.v38mini span{white-space:nowrap}.v38mini i{font-style:normal}.v38mini i.ok{color:#248a3d}
 </style>
+<style id="v40css">
+/* ===== v40: kompakt & einfach ===== */
+#jetzt>.card.zu{padding:14px 18px!important}
+#jetzt>.card>.ckopf{cursor:pointer;min-height:28px}
+.v40sum{display:none;padding:2px 0 0 27px;font-size:14px;color:var(--muted);line-height:1.35;cursor:pointer}
+.card.zu>.v40sum{display:block!important}
+#jetzt>.card.zu{margin:8px 0!important}
+#jetzt>.card.zu:active{transform:scale(.99)}
+/* Tagesablauf */
+#termineCard .v40zug .tt{display:flex;align-items:baseline;gap:8px;padding:2px 0}
+#termineCard .v40zug b{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--accent)}
+#termineCard .v40zug b .ic{width:16px;height:16px}
+#termineCard .v40zug em{margin-left:auto;font-style:normal;font-size:12px;color:var(--muted)}
+#termineCard .v40zug em.spaet{color:#d70015;font-weight:600}
+#termineCard .v40zug::after{box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent)}
+/* Ringe klein in „Jetzt dran“ */
+#ringeCard.v40weg{display:none!important}
+.jd .v40mini,.v40mini{position:absolute!important;width:62px!important;height:62px!important;margin:0!important;color:inherit!important;right:14px;top:14px;width:62px;height:62px;min-height:0;padding:0;border:0!important;background:none!important;border-radius:50%;z-index:2}
+.v40mini svg{width:62px;height:62px;transform:rotate(-90deg)}
+.v40mini:active{transform:scale(.94)}
+.jd .k,.jd .t,.jd .s{padding-right:70px}
+</style>
 </head>
 <body>
 
@@ -2230,6 +2252,50 @@ try{
   v38Mehr(); v38Heute(); document.title="Helfer";
   const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v39";
 }catch(e){console.error("v38",e)}
+/* ---------- v40: Übersicht – Tagesablauf, kompakte Zeilen, Ringe in „Jetzt dran“ ---------- */
+var V40_ZU={befehlCard:true,heuteCard:true,reiseCard:true,pjCard:true,putzCard:true,v37zug:true,schritteCard:true,losCard:true};
+function v40ZuAnwenden(){const z=Object.assign({},V40_ZU,store.get("zu2")||{});
+  document.querySelectorAll("#jetzt>.card").forEach(c=>{if(!c.id||c.id==="termineCard"&&!(c.id in (store.get("zu2")||{}))) return;
+    let zu=!!z[c.id]; if(c.id==="reiseCard"&&c.querySelector("[data-reise]")) zu=false; /* offene Reise-Frage nie zuklappen */
+    if(c.id==="fechtCard"||c.id==="v38neu") zu=false; c.classList.toggle("zu",zu)})}
+document.addEventListener("click",e=>{const k=e.target.closest("#jetzt .ckopf,#mehr .ckopf"); if(!k||e.target.closest("a,button,input,select,label")) return;
+  const c=k.closest(".card"); if(!c||!c.id) return; setTimeout(()=>{const z=store.get("zu2")||{}; z[c.id]=c.classList.contains("zu"); store.set("zu2",z)},0)});
+var _v40ord=ordnen; ordnen=function(){_v40ord(); try{v40ZuAnwenden()}catch(e){}};
+var v40Kurz=(s,n)=>{s=String(s||"").replace(/\s*\([A-Z]{2}\d{2}\)/g,"").replace(/\s+/g," ").trim(); n=n||64; return s.length>n?s.slice(0,n-1)+"…":s};
+function v40Summen(){
+  const T=(el,sel,i)=>{const x=el.querySelectorAll(sel)[i||0]; return x?x.textContent:""};
+  const F={
+    heuteCard:el=>[T(el,".orow b",0),T(el,".orow b",1)].filter(Boolean).map(x=>v40Kurz(x,30)).join(" · "),
+    befehlCard:el=>v40Kurz((T(el,".brow")||T(el,".orow")).replace(/^\s*\d+\s*/,"")),
+    pjCard:el=>{const off=[...el.querySelectorAll(".orow")].filter(r=>r.querySelector(".ck")&&!r.querySelector(".ck.on")).map(r=>v40Kurz(r.querySelector("span").textContent,22));
+      return (PJSTAT&&PJSTAT.n?`${PJSTAT.ok} von ${PJSTAT.n} erledigt`:"")+(off.length?" · offen: "+off.slice(0,2).join(", "):"")},
+    putzCard:el=>v40Kurz(T(el,".orow")||T(el,".onote")),
+    reiseCard:el=>v40Kurz(T(el,".orow")),
+    v37zug:el=>{const b=el.querySelector(".v37zr.best")||el.querySelector(".v37zr"); return b?v40Kurz(b.querySelector("span").textContent+" → an "+b.querySelector(":scope>b").textContent.replace(/^an /,"")+" · "+(b.querySelector("i")||{}).textContent,70):""},
+    schritteCard:el=>v40Kurz(T(el,".orow")||T(el,".onote")),
+    losCard:el=>v40Kurz(T(el,".onote")||T(el,".orow")),
+    termineCard:el=>{const r=[...el.querySelectorAll(".trow:not(.vorbei)")]; return r.length?`${r.length} offen · als Nächstes ${v40Kurz(r[0].querySelector(".tt").textContent,40)}`:"alles erledigt"}};
+  document.querySelectorAll("#jetzt>.card, #mehr>#termineCard").forEach(c=>{const f=F[c.id]; let s=c.querySelector(":scope>.v40sum");
+    const txt=f?f(c):""; if(!txt){if(s) s.remove(); return}
+    if(!s){s=document.createElement("div"); s.className="v40sum"; const k=c.querySelector(".ckopf"); if(k) k.after(s); else return}
+    if(s.textContent!==txt) s.textContent=txt;});
+  const tk=document.querySelector("#termineCard .ckopf"); if(tk){const t=[...tk.childNodes].find(n=>n.nodeType===3&&/Heute/.test(n.nodeValue)); if(t) t.nodeValue="Tagesablauf"}}
+function v40ZugZeile(){const tc=$("termineCard"); if(!tc||tc.querySelector(".v40zug")) return; const Z=typeof v37Zug==="function"?v37Zug():null; if(!Z||!Z.best) return;
+  const b=Z.best, rows=[...tc.querySelectorAll(".trow")], h=`<div class="trow v40zug"><div class="tt"><i>${esc(b.ab)}</i><b>${ICO("train")} Zug nach Kufstein${b.gleis?" · Gl. "+esc(b.gleis):""}</b><em class="${b.vsp?"spaet":""}">${b.vsp?"+"+b.vsp+" Min.":"los "+hm(new Date(b.los))}</em></div></div>`;
+  const vor=rows.find(r=>((r.querySelector(".tt i")||{}).textContent||"99")>b.ab);
+  if(vor) vor.insertAdjacentHTML("beforebegin",h); else if(rows.length) rows[rows.length-1].insertAdjacentHTML("afterend",h); else return;}
+function v40Ringe(){const jd=$("jdCard"), rc=$("ringeCard"); if(!jd||!rc) return; const sv=rc.querySelector(".rk svg");
+  rc.classList.toggle("v40weg",!store.get("v40ringe"));
+  if(!sv) return; let m=jd.querySelector(".v40mini"); if(!m){const g=jd.querySelector(".gross"); if(g) g.remove(); jd.insertAdjacentHTML("afterbegin",`<button class="v40mini" aria-label="Ringe anzeigen"></button>`); m=jd.querySelector(".v40mini")}
+  m.innerHTML=sv.outerHTML; m.onclick=e=>{e.stopPropagation(); const o=!store.get("v40ringe"); store.set("v40ringe",o); rc.classList.toggle("v40weg",!o)};}
+var _v40tr=termineRender; termineRender=function(){_v40tr(); try{v40ZugZeile(); v40Summen(); v40ZuAnwenden(); v40Ringe()}catch(e){console.error(e)}};
+var _v40jd=jdRender; jdRender=function(){_v40jd(); try{v40Ringe()}catch(e){}};
+var _v40rr=ringeRender; ringeRender=function(){_v40rr(); try{v40Ringe()}catch(e){}};
+try{
+  new MutationObserver(()=>{clearTimeout(window._v40t); window._v40t=setTimeout(()=>{try{v40Summen()}catch(e){}},120)}).observe($("jetzt"),{childList:true,subtree:true,characterData:true});
+  v40ZugZeile(); v40Summen(); v40ZuAnwenden(); v40Ringe();
+  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v40";
+}catch(e){console.error("v40",e)}
 </script>
 </body>
 </html>
