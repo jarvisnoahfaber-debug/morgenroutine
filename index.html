@@ -421,6 +421,21 @@ details.card summary{color:var(--text)}
 .sbars i.ok{background:#30d158;opacity:1}
 .sbars span{position:absolute;bottom:-18px;font-size:11px;color:var(--muted)}
 .sbars b{position:absolute;left:0;right:0;border-top:1px dashed var(--muted);opacity:.7}
+/* v34 Aufräumen */
+#woche,#wochetxt{display:none}
+.sekt{color:var(--text)}
+details.dd{margin:4px 0 0}
+details.dd>summary{list-style:none;cursor:pointer;color:var(--accent);font-size:14px;padding:9px 0;-webkit-tap-highlight-color:transparent}
+details.dd>summary::-webkit-details-marker{display:none}
+details.dd>summary::after{content:" ⌄";color:var(--muted)}
+details.dd[open]>summary::after{content:" ⌃"}
+details.tdd>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;-webkit-tap-highlight-color:transparent}
+details.tdd>summary::-webkit-details-marker{display:none}
+.tst{margin-left:auto;font-style:normal;font-size:13px;color:var(--muted);white-space:nowrap}
+.tst.hin{color:#30d158}.tst.aus{color:#ff453a}
+details.tdd[open] .tst{opacity:.4}
+.linkbtn{background:none!important;border:0!important;box-shadow:none!important;color:var(--accent);font-size:14px;width:100%;padding:12px 0 0;margin:0}
+.chips .mehrchip{background:transparent;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -432,6 +447,12 @@ details.card summary{color:var(--text)}
   <div class="woche" id="woche"></div><div class="wochetxt" id="wochetxt"></div>
   <div class="card hidden" id="ringeCard"></div>
   <div class="hero" id="hero"></div>
+  <div class="vtiles">
+    <button data-v="kurz" class="vbtn"><span class="ic">☀️</span><b>Kurz</b><span id="durKurz"></span></button>
+    <button data-v="lang" class="vbtn"><span class="ic">🌄</span><b>Lang</b><span id="durLang"></span></button>
+    <button data-v="abend" class="vbtn"><span class="ic">🌙</span><b>Abend</b><span id="durAbend"></span></button>
+  </div>
+  <button class="linkbtn" id="btnBuero">🪑 Büro-Pause · Stuhl &amp; Stehen <span id="durBuero"></span></button>
   <div id="jetzt"></div>
   <div class="card hidden" id="losCard"></div>
   <div class="card hidden" id="befehlCard"></div>
@@ -456,12 +477,6 @@ details.card summary{color:var(--text)}
     </div>
   </div>
 
-  <div class="vtiles">
-    <button data-v="kurz" class="vbtn"><span class="ic">☀️</span><b>Kurz</b><span id="durKurz"></span></button>
-    <button data-v="lang" class="vbtn"><span class="ic">🌄</span><b>Lang</b><span id="durLang"></span></button>
-    <button data-v="abend" class="vbtn"><span class="ic">🌙</span><b>Abend</b><span id="durAbend"></span></button>
-  </div>
-  <button class="ghost" id="btnBuero" style="width:100%;margin-top:10px">🪑 Büro-Pause · Stuhl &amp; Stehen <span id="durBuero"></span></button>
   <div class="sekt hidden" id="mehrKopf">Mehr</div>
   <div id="mehr"></div>
 
@@ -1180,7 +1195,7 @@ function heroRender(){
   $("hero").className="hero"+(ab?" abend":"");
   $("hero").innerHTML=`<div class="big">${ab?"🌙":variante==="lang"?"🌄":"☀️"}</div><div class="lbl">${ab?"Abendroutine":"Morgenroutine"} · ${variante==="kurz"?"Kurz":variante==="lang"?"Lang":"Abend"}</div>
     <div class="ttl">ca. ${dauerMin(variante)} Minuten</div><div class="meta">${n} Übungen im Rücken-Flow${ab?" · Lesen zum Schluss":""}</div>
-    <div class="chips">${chips.map(c=>`<span>${(c==="flow"?"Rücken-Flow":BAUSTEIN[c]).replace(/^\S+\s/,"")}</span>`).join("")}</div>`;
+    <div class="chips">${chips.slice(0,6).map(c=>`<span>${(c==="flow"?"Rücken-Flow":BAUSTEIN[c]).replace(/^\S+\s/,"")}</span>`).join("")}${chips.length>6?`<span class="mehrchip">+${chips.length-6} weitere</span>`:""}</div>`;
   document.body.classList.toggle("abend",ab);document.body.classList.toggle("morgen",!ab);
   $("btnStart").textContent=ab?"Abendroutine starten":"Morgenroutine starten";
   befehlRender(); heuteRender(); gewichtRender(); pjRender(); glowRender(); wocheRender2(); try{reiseRender();losRender();kalRender()}catch(e){} try{fechtRender();schritteRender();ringeRender();ordnen()}catch(e){}
@@ -1275,8 +1290,8 @@ function pjRender(){
   if(p&&p.schritte_gestern!=null&&!abend) z("Schritte gestern",p.schritte_gestern>=6500,`${Number(p.schritte_gestern).toLocaleString("de-AT")} / 6.500`);
   const sc=glowScore();
   PJSTAT={ok:R.filter(x=>x.ok===true).length,n:R.filter(x=>x.ok!==null).length};
-  const zeilen=abend?R.filter(x=>x.ok!==true):R;
-  el.innerHTML=`<div class="ckopf">${abend?"🌙 Heute noch offen":"🏁 Heute für PJ"}<span>${p?"Stand "+esc(TERMINE.stand||""):""}</span></div>${zeilen.length?zeilen.map(x=>x.h).join(""):'<div class="orow"><span>✅ Alles erledigt – stark.</span></div>'}<div class="orow"><span>✨ Glow-up-Score diese Woche</span><b>${sc} %</b></div>`;
+  const zeilen=R.filter(x=>x.ok!==true), erl=R.filter(x=>x.ok===true);
+  el.innerHTML=`<div class="ckopf">${abend?"🌙 Heute noch offen":"🏁 Heute für PJ"}<span>${p?"Stand "+esc(TERMINE.stand||""):""}</span></div>${zeilen.length?zeilen.map(x=>x.h).join(""):'<div class="orow"><span>✅ Alles erledigt – stark.</span></div>'}${erl.length?`<details class="dd"><summary>✓ ${erl.length} erledigt</summary>${erl.map(x=>x.h).join("")}</details>`:""}<div class="orow"><span>✨ Glow-up-Score diese Woche</span><b>${sc} %</b></div>`;
   el.classList.remove("hidden"); ewBind(el); try{ringeRender()}catch(e){}
 }
 /* ---------- Glow-up ---------- */
@@ -1391,7 +1406,7 @@ function termineRender(){
   putzRender(); pjRender(); try{reiseRender();losRender();fechtRender();schritteRender();ringeRender();ordnen()}catch(e){}
   if(!TERMINE||!TERMINE.termine.length){el.classList.add("hidden");return}
   const s=store.get(tKey())||{};
-  el.innerHTML=`<div class="ckopf">Heute<span>Stand ${esc(TERMINE.stand||"")}</span></div>`+TERMINE.termine.map(t=>`<div class="trow"><div class="tt"><i>${esc(t.zeit)}</i><b>${esc(t.titel)}</b></div><div class="tbtn">${[["hin","Ich gehe hin"],["nein","Egal"],["aus","Fällt aus"]].map(([k,l])=>`<button data-tid="${t.id}" data-st="${k}" class="${s[t.id]===k?"on "+k:""}">${l}</button>`).join("")}</div></div>`).join("")+`<button class="tsend" id="tSend">An Jarvis senden</button>`;
+  el.innerHTML=`<div class="ckopf">Heute<span>Stand ${esc(TERMINE.stand||"")}</span></div>`+TERMINE.termine.map(t=>`<details class="trow tdd"><summary class="tt"><i>${esc(t.zeit)}</i><b>${esc(t.titel)}</b><em class="tst ${s[t.id]||""}">${({hin:"Gehe hin",nein:"Egal",aus:"Fällt aus"})[s[t.id]]||"Status ⌄"}</em></summary><div class="tbtn">${[["hin","Ich gehe hin"],["nein","Egal"],["aus","Fällt aus"]].map(([k,l])=>`<button data-tid="${t.id}" data-st="${k}" class="${s[t.id]===k?"on "+k:""}">${l}</button>`).join("")}</div></details>`).join("")+`<button class="tsend" id="tSend">An Jarvis senden</button>`;
   el.classList.remove("hidden");
   el.querySelectorAll("button[data-tid]").forEach(b=>b.onclick=()=>{const s=store.get(tKey())||{}; if(s[b.dataset.tid]===b.dataset.st) delete s[b.dataset.tid]; else s[b.dataset.tid]=b.dataset.st; store.set(tKey(),s); termineRender();});
   $("tSend").onclick=()=>{const s=store.get(tKey())||{}, kv=Object.entries(s).map(([k,v])=>`${k}=${v}`); if(!kv.length) return;
@@ -1612,7 +1627,7 @@ function ewTag(){return isoLocal(new Date(Date.now()-4*3600e3)).slice(0,10)}
 function ewLokal(p){const l=store.get("ewlok-"+ewTag())||[], s=(p&&p.schnell)||[], o=l.filter(x=>!s.includes(x.t));
   return {e:o.reduce((a,x)=>a+x.e,0),kc:o.reduce((a,x)=>a+x.kc,0),n:o.length}}
 function ewKnoepfe(){const lk=ewLokal(TERMINE&&TERMINE.pj);
-  return `<div class="ewk">`+EWK.map(x=>`<button data-ew="${x.k}" class="${ewArm===x.k?"arm":""}">${ewArm===x.k?"✓ "+esc(x.n)+" eintragen?":esc(x.n)+" <small>+"+x.e+" g</small>"}</button>`).join("")+`</div>`
+  return `<details class="dd"${ewOffen||ewArm?" open":""} ontoggle="ewOffen=this.open"><summary>＋ Eiweiß schnell eintragen</summary><div class="ewk">`+EWK.map(x=>`<button data-ew="${x.k}" class="${ewArm===x.k?"arm":""}">${ewArm===x.k?"✓ "+esc(x.n)+" eintragen?":esc(x.n)+" <small>+"+x.e+" g</small>"}</button>`).join("")+`</div></details>`
     +(lk.n?`<div class="onote muted">${lk.n} Schnelleintrag${lk.n>1?"e":""} (+${lk.e} g) unterwegs zum Ernährungsbot</div>`:"")}
 function ewBind(root){root.querySelectorAll("button[data-ew]").forEach(b=>b.onclick=()=>{const k=b.dataset.ew;
   if(ewArm!==k){ewArm=k;clearTimeout(ewArmT);ewArmT=setTimeout(()=>{ewArm=null;pjRender()},4000);pjRender();return}
@@ -1636,7 +1651,8 @@ var ORDNUNG={morgen:["losCard","befehlCard","termineCard","heuteCard","reiseCard
 var MEHR=["gewCard","wocheCard","glowCard","kalCard"];
 function ordnen(){const j=$("jetzt"), m=$("mehr"); if(!j||!m) return; const h=new Date().getHours(), k=variante==="abend"||h>=17?"abend":h<12?"morgen":"tag";
   ORDNUNG[k].forEach(id=>{const e=$(id); if(e) j.appendChild(e)}); MEHR.forEach(id=>{const e=$(id); if(e) m.appendChild(e)});
-  const zu=Object.assign({glowCard:true,kalCard:true},store.get("zu")||{}); [...ORDNUNG[k],...MEHR].forEach(id=>{const e=$(id); if(e) e.classList.toggle("zu",!!zu[id])});
+  if(k==="abend"&&$("termineCard")) m.insertBefore($("termineCard"),m.firstChild); try{document.documentElement.style.background=getComputedStyle(document.body).backgroundColor}catch(e){}
+  const zu=Object.assign({glowCard:true,kalCard:true},store.get("zu")||{}); [...ORDNUNG[k],...MEHR].forEach(id=>{const e=$(id); if(e) e.classList.toggle("zu",!!zu[id])}); if(k==="abend"&&$("termineCard")) $("termineCard").classList.add("zu");
   $("mehrKopf").classList.toggle("hidden",!MEHR.some(id=>$(id)&&!$(id).classList.contains("hidden")));}
 document.addEventListener("click",e=>{const k=e.target.closest("#jetzt .ckopf,#mehr .ckopf"); if(!k||e.target.closest("a,button,input,select,label")) return;
   const c=k.closest(".card"); if(!c||!c.id) return; c.classList.toggle("zu"); const z=store.get("zu")||{}; z[c.id]=c.classList.contains("zu"); store.set("zu",z);});
@@ -1696,6 +1712,7 @@ function schritteRender(){const el=$("schritteCard"); if(!el) return; const h=ne
     +(g&&g.s!=null?`<div class="orow"><span>Gestern</span><b>${f(g.s)}${g.s<6500?` · es fehlten ${f(6500-g.s)}`:" ✓"}</b></div>`:"")
     +`<div class="onote">Heute zählt erst morgen um 11:20. Ein 20-Min.-Spaziergang bringt ca. 2.000–2.500 Schritte.</div>`;
   el.classList.remove("hidden");}
+var ewOffen=false;
 </script>
 </body>
 </html>
