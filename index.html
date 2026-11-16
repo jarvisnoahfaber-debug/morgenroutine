@@ -689,6 +689,31 @@ body.abend .v37zr em.spaet{color:#ff453a}body.abend .v37zr em.pünkt{color:#30d1
 #v38neu .ckopf{font-size:14px;margin-bottom:4px}
 #v38neu .v38nz{padding:2px 0;border:0}
 </style>
+<style id="v42css">
+/* ===== v42: Menüs ===== */
+.v42menu{position:fixed;inset:0;z-index:120}
+.v42bg{position:absolute;inset:0;background:rgba(0,0,0,.12);opacity:0;transition:opacity .15s}
+.v42box{position:absolute;background:var(--surface);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.22),0 0 0 1px var(--sep);padding:6px;transform:scale(.94) translateY(-6px);transform-origin:top left;opacity:0;transition:all .16s cubic-bezier(.2,.8,.2,1);max-height:70vh;overflow:auto}
+.v42menu.auf .v42bg{opacity:1}.v42menu.auf .v42box{opacity:1;transform:none}
+.v42t{font-size:12px;font-weight:600;color:var(--muted);padding:8px 10px 6px;text-transform:uppercase;letter-spacing:.4px}
+.v42box button{display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:8px 10px;border:0!important;background:none!important;border-radius:10px;color:var(--text)!important;font-size:16px;font-weight:400!important;text-align:left}
+.v42box button:active{background:var(--fill)!important}
+.v42box button .ic{width:20px;height:20px;color:var(--accent)}
+.v42box button span{flex:1;display:flex;flex-direction:column}
+.v42box button small{font-size:12px;color:var(--muted)}
+.v42box button i{font-style:normal;color:var(--accent);font-weight:700}
+.v42sep{height:1px;background:var(--sep);margin:4px 8px}
+/* Schnellknöpfe in „Jetzt dran“ */
+.v42schnell{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.jd .v42schnell button{width:auto!important;margin:0!important;min-height:40px!important;padding:6px 8px!important;font-size:14px!important;font-weight:500!important;
+  background:color-mix(in srgb,var(--surface) 70%,transparent)!important;color:var(--text)!important;border:1px solid var(--sep)!important;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:5px}
+.jd .v42schnell button .ic{width:16px;height:16px;color:var(--accent)}
+.jd .v42schnell button i{font-style:normal;font-size:11px;color:var(--muted)}
+/* Termin-Aktionen */
+.v42akt{display:flex;gap:8px;margin:8px 0 4px 66px}
+.v42akt button,.v42akt a{display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:5px 12px;border-radius:999px;background:var(--fill)!important;border:0!important;color:var(--text)!important;font-size:13px;font-weight:500;text-decoration:none;width:auto!important}
+.v42akt .ic{width:15px;height:15px;color:var(--accent)}
+</style>
 </head>
 <body>
 
@@ -2357,6 +2382,55 @@ try{
   setInterval(()=>{try{if(V35_TAB==="heute"){v41Termine(); v41Gruppen(false)}}catch(e){}},60000);
   const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v41";
 }catch(e){console.error("v41",e)}
+/* ---------- v42: Aufklapp-Menüs – Schnellknöpfe, Termin-Aktionen, Kopf-Menü ---------- */
+V38_CHATS[0][1]="tg://resolve?domain=noah_faber_jarvis_bot";
+function v42Menu(anker,titel,items){v42Zu(); const r=anker.getBoundingClientRect();
+  const m=document.createElement("div"); m.id="v42menu"; m.className="v42menu";
+  m.innerHTML=`<div class="v42bg"></div><div class="v42box">${titel?`<div class="v42t">${titel}</div>`:""}${items.map((x,i)=>x.trenner?`<div class="v42sep"></div>`:`<button data-i="${i}" class="${x.an?"an":""}">${x.icon?ICO(x.icon):""}<span>${x.label}${x.sub?`<small>${x.sub}</small>`:""}</span>${x.an?`<i>✓</i>`:""}</button>`).join("")}</div>`;
+  document.body.appendChild(m); const box=m.querySelector(".v42box"), w=Math.min(300,innerWidth-24);
+  box.style.width=w+"px"; let x=Math.min(Math.max(12,r.left),innerWidth-w-12), y=r.bottom+6;
+  const h=box.offsetHeight; if(y+h>innerHeight-90) y=Math.max(12,r.top-h-6); box.style.left=x+"px"; box.style.top=y+"px";
+  requestAnimationFrame(()=>m.classList.add("auf"));
+  m.querySelector(".v42bg").onclick=v42Zu;
+  m.querySelectorAll("button[data-i]").forEach(b=>b.onclick=()=>{const it=items[+b.dataset.i]; if(!it.offen) v42Zu(); try{it.tun&&it.tun()}catch(e){console.error(e)}});}
+function v42Zu(){const m=$("v42menu"); if(m) m.remove()}
+document.addEventListener("keydown",e=>{if(e.key==="Escape") v42Zu()});
+/* Eiweiß direkt eintragen (wie Schnellknöpfe) */
+function v42Ew(k){const x=EWK.find(y=>y.k===k); if(!x) return; const now=new Date(), tag=ewTag(), t=Date.now().toString(36);
+  const l=store.get("ewlok-"+tag)||[]; l.push({t,k,e:x.e,kc:x.kc}); store.set("ewlok-"+tag,l);
+  jarvisSend(`Essen; key=${k}; t=${t}; datum=${tag}; zeit=${hm(now)};`); try{pjRender(); ringeRender()}catch(e){} setTimeout(()=>v37Toast(`✓ ${x.n} eingetragen (+${x.e} g)`),300)}
+function v42Schnell(){const jd=$("jdCard"); if(!jd||jd.querySelector(".v42schnell")) return;
+  const vl={kurz:"Kurz",lang:"Lang",abend:"Abend"}[variante]||"Kurz";
+  jd.insertAdjacentHTML("beforeend",`<div class="v42schnell"><button data-m="ew">${ICO("plus")}Eiweiß<i>▾</i></button><button data-m="var">${ICO("list")}${vl}<i>▾</i></button><button data-m="notiz">${ICO("note")}Notiz</button></div>`);
+  jd.querySelector('[data-m="ew"]').onclick=e=>{e.stopPropagation(); const p=TERMINE&&TERMINE.pj, ist=p?(p.eiweiss||0)+ewLokal(p).e:null;
+    v42Menu(e.currentTarget,`Eiweiß eintragen${ist!=null?` · heute ${ist} / 165 g`:""}`,EWK.map(x=>({label:x.n,sub:`+${x.e} g · ${x.kc} kcal`,tun:()=>v42Ew(x.k)})))};
+  jd.querySelector('[data-m="var"]').onclick=e=>{e.stopPropagation();
+    v42Menu(e.currentTarget,"Routine wählen",[["kurz","Morgen kurz","sun"],["lang","Morgen lang","sunrise"],["abend","Abend","moon"]].map(([v,l,i])=>({label:l,sub:`ca. ${dauerMin(v)} Min.`,icon:i,an:variante===v,tun:()=>{v37Manuell=true; v37Auto=false; variante=v; markV(); jdRender()}}))
+      .concat([{trenner:1},{label:"Büro-Pause",sub:"Stuhl & Stehen",icon:"chair",tun:()=>$("btnBuero").click()},{label:"Jetzt starten",icon:"play",tun:()=>$("btnStart").click()}]))};
+  jd.querySelector('[data-m="notiz"]').onclick=e=>{e.stopPropagation(); $("v37fab").click()};}
+var _v42jd=jdRender; jdRender=function(){_v42jd(); try{v42Schnell()}catch(e){}};
+/* Termin-Aktionen im Tagesablauf */
+function v42Termine(){const tc=$("termineCard"); if(!tc||!TERMINE||!TERMINE.termine) return;
+  tc.querySelectorAll("details.tdd").forEach((d,i)=>{const t=TERMINE.termine[i]; if(!t||d.querySelector(".v42akt")) return;
+    const ok=/^\d\d:\d\d$/.test(t.zeit), kurz=String(t.titel).replace(/\s*\(Christofer\)$/,"");
+    d.insertAdjacentHTML("beforeend",`<div class="v42akt">${ok?`<button data-er="${esc(t.zeit)}">${ICO("bell")}Erinnern ▾</button>`:""}<a href="maps://?q=${encodeURIComponent(kurz)}">${ICO("pin")}Karte</a></div>`);
+    const b=d.querySelector("[data-er]"); if(b) b.onclick=e=>{e.preventDefault(); e.stopPropagation(); const [h,m]=t.zeit.split(":").map(Number);
+      v42Menu(b,`Erinnern an „${esc(kurz)}“`,[15,30,60].map(min=>{const z=new Date(); z.setHours(h,m-min,0,0); return {label:`${min} Min. vorher`,sub:`um ${hm(z)} per Telegram`,icon:"bell",
+        tun:()=>{if(z<new Date()){v37Toast("Zeitpunkt ist schon vorbei",true); return} jarvisSend(`Notiz: Erinnere mich heute um ${hm(z)} an „${kurz}“ (Termin ${t.zeit}).`)}}}))};});}
+var _v42tr=termineRender; termineRender=function(){_v42tr(); try{v42Termine(); v42Schnell()}catch(e){console.error(e)}};
+/* Kopf-Menü */
+function v42Kopf(){const b=$("v35Set"); if(!b) return; b.onclick=e=>{e.stopPropagation(); const th=document.documentElement.dataset.theme;
+  v42Menu(b,"Helfer",[{label:"Systemstatus",sub:v37Problem()?"⚠︎ bitte prüfen":"alles in Ordnung",icon:"pulse",tun:()=>{v35Tab("mehr"); setTimeout(()=>$("v37stat")?.scrollIntoView({behavior:"smooth"}),50)}},
+    {label:"Chat mit Jarvis",icon:"chat",tun:()=>location.href=V38_CHATS[0][1]},{label:"Ernährungsbot",icon:"scale",tun:()=>location.href=V38_CHATS[1][1]},{label:"Schiri",icon:"flag",tun:()=>location.href=V38_CHATS[2][1]},
+    {trenner:1},...[["clean","Apple-clean"],["premium","Premium"],["tirol","Tirol"]].map(([k,l])=>({label:"Darstellung: "+l,icon:"sparkle",an:th===k,tun:()=>v35Theme(k)})),
+    {trenner:1},{label:"Daten sichern",icon:"save",tun:()=>v38Sichern()},{label:"Alle Einstellungen",icon:"sliders",tun:()=>v35Tab("mehr")}])}}
+try{
+  Object.assign(V35_ICONS,{plus:'<path d="M12 5v14M5 12h14"/>',bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0"/>',pin:'<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>'});
+  const sp=document.querySelector('svg[aria-hidden="true"][width="0"]'); if(sp) ["plus","bell","pin"].forEach(n=>{if(!sp.querySelector("#i-"+n)) sp.insertAdjacentHTML("beforeend",`<symbol id="i-${n}" viewBox="0 0 24 24">${V35_ICONS[n]}</symbol>`)});
+  const ch=document.querySelector('#v38chats a.v38chat'); if(ch) ch.href=V38_CHATS[0][1];
+  v42Kopf(); v42Schnell(); v42Termine();
+  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v42";
+}catch(e){console.error("v42",e)}
 </script>
 </body>
 </html>
