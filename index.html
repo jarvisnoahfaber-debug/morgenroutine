@@ -437,6 +437,129 @@ details.tdd[open] .tst{opacity:.4}
 .linkbtn{background:none!important;border:0!important;box-shadow:none!important;color:var(--accent);font-size:14px;width:100%;padding:12px 0 0;margin:0}
 .chips .mehrchip{background:transparent;color:var(--muted)}
 </style>
+<style id="v35css">
+/* ===== v35: Design-System (3 Themes), Tabs, Jetzt dran, Icons ===== */
+:root{--rad:20px;--shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05);--onacc:#fff;--r1:#ff375f;--r2:#30d158;--r3:#0a84ff;--tint:14%}
+body.abend{--shadow:none;--r1:#ff375f;--r2:#30d158;--r3:#0a84ff}
+html[data-theme=premium] body,html[data-theme=premium] body.abend{
+  --bg:#0a0a0a;--surface:#151515;--surface2:#1c1c1c;--fill:#202020;--text:#f4f1ea;--muted:#9c978c;--muted2:#6f6b63;
+  --sep:rgba(255,255,255,.08);--soft:rgba(255,255,255,.05);--accent:#c9a45c;--focus:#c9a45c;--blue:#c9a45c;--indigo:#c9a45c;
+  --ink80:#d9d5cb;--onacc:#141107;--shadow:none;--r1:#c9a45c;--r2:#8fb996;--r3:#7d9cc8;--tint:12%}
+html[data-theme=premium] body.abend{--bg:#07090d;--surface:#11151c;--surface2:#171c25;--fill:#1a2029;--accent:#d4b06a}
+html[data-theme=tirol] body{
+  --bg:#f4f1ec;--surface:#fffdf9;--surface2:#f4f1ec;--fill:#ece6dc;--text:#2a2622;--muted:#7d746a;--muted2:#a49a8e;
+  --sep:#e5ddd1;--soft:#efe9df;--accent:#b5121b;--focus:#b5121b;--blue:#b5121b;--indigo:#b5121b;--ink80:#4a433c;--onacc:#fff;
+  --shadow:0 1px 2px rgba(60,40,20,.05),0 6px 20px rgba(60,40,20,.06);--r1:#b5121b;--r2:#4f7a4a;--r3:#2f5d8a;--tint:10%}
+html[data-theme=tirol] body.abend{
+  --bg:#15120f;--surface:#211c18;--surface2:#29231e;--fill:#2d2721;--text:#f3ede4;--muted:#a69b8e;--muted2:#7a7064;
+  --sep:rgba(255,255,255,.09);--soft:rgba(255,255,255,.05);--accent:#e0464c;--focus:#e0464c;--blue:#e0464c;--indigo:#e0464c;--ink80:#d8cfc3;
+  --shadow:none;--r1:#e0464c;--r2:#7fae78;--r3:#6b9bd1}
+html body,html body.abend,html body.morgen{background:var(--bg)!important;color:var(--text)}
+/* Typo: 3 Größen */
+#s-start{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+.v35kopf{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:18px 0 6px}
+.v35kopf #today{font-size:13px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--accent)}
+.v35kopf h1{font-size:32px;font-weight:700;letter-spacing:-.7px;margin:2px 0 0;line-height:1.1}
+.v35kopf .rund{width:40px;height:40px;min-height:0;padding:0;border-radius:50%;background:var(--surface);box-shadow:var(--shadow);color:var(--text);display:flex;align-items:center;justify-content:center;flex:none;border:0}
+.ic{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
+/* Karten: ruhig, ohne Rahmen */
+#s-start .card,#s-start .hero,.v35 .tile,.v35 .stepcard,.v35 .liste,.v35 .fig,.v35 .emoji{border:0!important;border-radius:var(--rad);box-shadow:var(--shadow);background:var(--surface)}
+#s-start .card{padding:18px;margin:12px 0}
+#s-start .ckopf{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--text);margin-bottom:8px;letter-spacing:-.1px}
+#s-start .ckopf .ic{color:var(--accent);width:19px;height:19px}
+#s-start .ckopf>span{margin-left:auto;font-size:13px;font-weight:400;color:var(--muted)}
+#jetzt .ckopf::before,#mehr .ckopf::before{content:none!important}
+#jetzt .ckopf::after,#mehr .ckopf::after{content:"";width:7px;height:7px;border-right:1.6px solid var(--muted2);border-bottom:1.6px solid var(--muted2);transform:rotate(45deg) translateY(-2px);margin-left:4px;transition:transform .25s;flex:none}
+.card.zu .ckopf::after{transform:rotate(-45deg)!important}
+#s-start .orow,#s-start .brow,#s-start .trow{border-bottom:1px solid var(--soft)}
+#s-start .orow:last-child{border:0}
+#s-start .orow span{font-size:13px}
+#s-start .orow b{font-size:16px;font-weight:400}
+.onote{font-size:14px!important}
+/* Jetzt dran */
+.jd{position:relative;overflow:hidden;border-radius:24px!important;padding:20px!important;margin:10px 0 12px!important;
+  background:linear-gradient(155deg,color-mix(in srgb,var(--accent) var(--tint),var(--surface)) 0%,var(--surface) 62%)!important}
+.jd .k{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--accent)}
+.jd .k .ic{width:16px;height:16px}
+.jd .t{font-size:28px;font-weight:700;letter-spacing:-.6px;line-height:1.15;margin:6px 0 2px}
+.jd .s{font-size:15px;color:var(--muted)}
+.jd .gross{position:absolute;right:-14px;top:-14px;width:120px;height:120px;color:var(--accent);opacity:.12;stroke-width:1.3}
+.jd .meta{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0}
+.jd .meta span{display:inline-flex;align-items:center;gap:5px;font-size:13px;background:var(--fill);color:var(--ink80);border-radius:999px;padding:5px 10px}
+.jd .meta .ic{width:14px;height:14px;vertical-align:0}
+.jd button{width:100%;margin-top:16px;background:var(--accent)!important;color:var(--onacc)!important;font-weight:600!important;min-height:50px;border:0!important}
+body.jd-los #losCard{display:none!important}
+/* Ringe konzentrisch */
+.rk{display:flex;align-items:center;gap:20px}
+.rk svg{width:118px;height:118px;flex:none;transform:rotate(-90deg)}
+.rk .rv{fill:none;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)}
+.rk .rb{fill:none;opacity:.16}
+.rl{flex:1;display:grid;gap:10px}
+.rl div{display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:baseline}
+.rl i{width:10px;height:10px;border-radius:50%;align-self:center}
+.rl span{font-size:13px;color:var(--muted)}
+.rl b{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.rl b small{font-size:12px;font-weight:400;color:var(--muted)}
+.rpj{display:flex;align-items:center;justify-content:center;gap:6px;margin:14px 0 0;padding-top:12px;border-top:1px solid var(--soft);font-size:14px;color:var(--muted)}
+.rpj .ic{color:var(--accent);width:15px;height:15px}
+/* Outfit / Reise kompakt */
+#heuteCard .orow,#reiseCard .orow:not(.pack){display:grid;grid-template-columns:92px 1fr;gap:10px;align-items:baseline;padding:9px 0}
+#heuteCard .orow span,#reiseCard .orow:not(.pack) span{font-size:13px;color:var(--muted)}
+#heuteCard .orow b,#reiseCard .orow:not(.pack) b{font-size:15px;line-height:1.35}
+/* Termine als Zeitleiste */
+#termineCard .trow{position:relative;padding:9px 0 9px 18px;border:0!important}
+#termineCard .trow::before{content:"";position:absolute;left:4px;top:0;bottom:0;width:1.5px;background:var(--sep)}
+#termineCard .trow::after{content:"";position:absolute;left:0;top:15px;width:9px;height:9px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 2px var(--accent)}
+#termineCard .trow.vorbei{opacity:.45}
+#termineCard .trow.vorbei::after{background:var(--muted2);box-shadow:none}
+#termineCard .tbtn{padding-left:76px}
+.jetztlinie{display:flex;align-items:center;gap:8px;margin:2px 0 2px -2px;font-size:12px;font-weight:600;color:#ff3b30}
+.jetztlinie::before{content:"";width:13px;height:13px;border-radius:50%;background:#ff3b30;box-shadow:0 0 0 4px rgba(255,59,48,.18);flex:none}
+.jetztlinie::after{content:"";flex:1;height:1.5px;background:#ff3b30;opacity:.6}
+/* PJ-Haken statt Emojis */
+.ck{display:inline-block;width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1.6px var(--muted2);vertical-align:-4px;margin-right:6px;position:relative;flex:none}
+.ck.on{background:var(--r2);box-shadow:none}
+.ck.on::after{content:"";position:absolute;left:6px;top:3px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.ck.na{opacity:.4}
+/* Tabs */
+.tp{display:none}.tp.on{display:block}
+.tp.on>*,.tp.on #jetzt>.card,.tp.on #mehr>.card{animation:v35in .42s cubic-bezier(.2,.8,.2,1) both}
+.tp.on>*:nth-child(2),.tp.on #jetzt>.card:nth-child(1){animation-delay:.04s}
+.tp.on>*:nth-child(3),.tp.on #jetzt>.card:nth-child(2){animation-delay:.08s}
+.tp.on #jetzt>.card:nth-child(3){animation-delay:.12s}.tp.on #jetzt>.card:nth-child(4){animation-delay:.16s}
+.tp.on #jetzt>.card:nth-child(n+5){animation-delay:.2s}
+@keyframes v35in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;justify-content:space-around;max-width:520px;margin:0 auto;
+  padding:6px 6px calc(4px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 82%,transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--sep)}
+.tabbar button{flex:1;background:transparent!important;border:0!important;min-height:0;padding:6px 0 4px;border-radius:12px;color:var(--muted2);
+  display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:500;letter-spacing:.1px}
+.tabbar button .ic{width:24px;height:24px;stroke-width:1.7}
+.tabbar button.on{color:var(--accent)}
+.tabbar button:active{transform:scale(.92)}
+#tabRoutine .bottom{position:sticky;bottom:calc(64px + env(safe-area-inset-bottom));background:none!important;padding:16px 0 8px}
+#tabRoutine .hero{margin-top:6px}
+.v35seg{display:flex;gap:4px;background:var(--fill);border-radius:999px;padding:3px;margin-top:8px}
+.v35seg button{flex:1;min-height:36px;padding:6px;background:transparent;border:0!important;font-size:14px;border-radius:999px;color:var(--text)}
+.v35seg button.on{background:var(--surface);box-shadow:var(--shadow);font-weight:600}
+.v35vers{font-size:12px;color:var(--muted2);text-align:center;margin:18px 0 6px}
+#tabMehr details.card summary{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px}
+/* Lauf & Ende im gleichen System */
+.v35 .card{border:0;border-radius:var(--rad);box-shadow:var(--shadow)}
+button.primary,#btnStart,body.abend #btnStart,button.ok{background:var(--accent)!important;color:var(--onacc)!important;font-weight:600!important}
+button.ghost,.mini button,.reps button,.tsend{color:var(--accent);border-color:var(--accent)}
+.vtiles button.sel{background:var(--surface)!important}
+#endRing b.pop{animation:v35pop .6s cubic-bezier(.2,1.6,.4,1) .9s both}
+@keyframes v35pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.konf{position:fixed;left:50%;top:32%;width:8px;height:12px;border-radius:2px;pointer-events:none;z-index:80;animation:v35konf 1.4s cubic-bezier(.15,.7,.3,1) forwards}
+@keyframes v35konf{from{transform:translate(0,0) rotate(0);opacity:1}to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+@media (prefers-reduced-motion:reduce){.tp.on>*,.tp.on #jetzt>.card,.konf{animation:none!important}.rk .rv{transition:none}}
+#s-start .ckopf{justify-content:flex-start}
+#pjCard .orow,#wocheCard .orow,#schritteCard .orow,#glowCard .orow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0}
+#pjCard .orow>span,#wocheCard .orow>span,#schritteCard .orow>span,#glowCard .orow>span{display:flex;align-items:center;font-size:15px;color:var(--text)}
+#pjCard .orow>span.muted,#pjCard .orow>span.small{font-size:13px;color:var(--muted);display:block}
+#pjCard .orow>b,#wocheCard .orow>b,#schritteCard .orow>b,#glowCard .orow>b{text-align:right;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+</style>
 </head>
 <body>
 
@@ -1713,6 +1836,131 @@ function schritteRender(){const el=$("schritteCard"); if(!el) return; const h=ne
     +`<div class="onote">Heute zählt erst morgen um 11:20. Ein 20-Min.-Spaziergang bringt ca. 2.000–2.500 Schritte.</div>`;
   el.classList.remove("hidden");}
 var ewOffen=false;
+/* ---------- v35: Redesign – Tabs, Jetzt dran, Icons, Ringe, Themes ---------- */
+var V35_ICONS={
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  sunrise:'<path d="M17 18a5 5 0 0 0-10 0M12 3v6M8 7l4-4 4 4M3 18h18M5.6 12.6l1.4 1.4M17 14l1.4-1.4M3 22h18"/>',
+  moon:'<path d="M20.5 13.2A8.5 8.5 0 1 1 10.8 3.5a6.6 6.6 0 0 0 9.7 9.7z"/>',
+  door:'<path d="M4 21h16M6 21V4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21M14.5 12.5h.01"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  calcheck:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M9 15.5l2 2 4-4"/>',
+  shirt:'<path d="M8.5 3 3 6l2 4.5 2.5-1V21h9V9.5l2.5 1L21 6l-5.5-3a3.5 3.5 0 0 1-7 0z"/>',
+  suitcase:'<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.5 7V5.5A1.5 1.5 0 0 1 10 4h4a1.5 1.5 0 0 1 1.5 1.5V7M3 13h18"/>',
+  flag:'<path d="M5 21V4M5 4h12l-2.5 4L17 12H5"/>',
+  broom:'<path d="M15 3l-3.5 9M7 12h9l1.5 9h-12z M9.5 21l.5-4.5M13.5 21l-.3-4.5"/>',
+  sword:'<path d="M14.5 4H20v5.5L9.5 20 4 14.5zM6.5 12l5.5 5.5M3 21l3.2-3.2"/>',
+  walk:'<circle cx="13" cy="4.5" r="1.8"/><path d="M9 21l2.2-6 2.8 2.6V21M7.5 12.5 10 9.5l4 .8 2.5 3M11.2 15l1-5"/>',
+  scale:'<rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><path d="M8.5 9.5a5 5 0 0 1 7 0M12 9.2l1.4-1.6"/>',
+  chart:'<path d="M4 20V11M10 20V5M16 20v-6M3 20h18"/>',
+  sparkle:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
+  bolt:'<path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12z"/>',
+  sliders:'<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+  home:'<path d="M3.5 10.5 12 3.5l8.5 7M5.5 9v11.5h13V9M10 20.5v-6h4v6"/>',
+  list:'<path d="M10 6h10M10 12h10M10 18h10M3.5 6l1.3 1.3L7.5 4.6M3.5 12l1.3 1.3 2.7-2.7M3.5 18l1.3 1.3 2.7-2.7"/>',
+  dots:'<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
+  play:'<path d="M7 4.5v15l12.5-7.5z"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19.5 7"/>',
+  cloud:'<path d="M7 18.5h10a4 4 0 0 0 .6-8A6 6 0 0 0 6 11.2a3.7 3.7 0 0 0 1 7.3z"/>',
+  fire:'<path d="M12 3c1 3.2 4.5 5.2 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2.2 1-3.4 2-4.5.2 2 1.2 3 2.3 3 .2-3-.8-5 .2-8z"/>',
+  chair:'<path d="M7 21v-6M17 21v-6M5.5 15h13M8 15V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v10"/>'
+};
+function ICO(n,c){return `<svg class="ic${c?" "+c:""}" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-${n}"/></svg>`}
+var V35_CARD={losCard:"door",befehlCard:"bolt",termineCard:"calendar",heuteCard:"shirt",reiseCard:"suitcase",pjCard:"flag",putzCard:"broom",fechtCard:"sword",schritteCard:"walk",gewCard:"scale",wocheCard:"chart",glowCard:"sparkle",kalCard:"calcheck"};
+var V35_EMO=/^[\s\p{Extended_Pictographic}\uFE0F\u200D]+/u;
+var V35_TAB="heute", V35_PEND=0, RG_LAST=null;
+function v35Theme(t){t=["clean","premium","tirol"].includes(t)?t:"clean"; document.documentElement.dataset.theme=t; store.set("theme",t);
+  document.querySelectorAll("[data-thm]").forEach(b=>b.classList.toggle("on",b.dataset.thm===t)); v35Meta();}
+function v35Meta(){try{const c=getComputedStyle(document.body).getPropertyValue("--bg").trim()||"#000"; document.querySelector('meta[name="theme-color"]').content=c; document.documentElement.style.background=c}catch(e){}}
+function v35Strip(node){const t=node&&node.firstChild; if(t&&t.nodeType===3){const n=t.nodeValue.replace(V35_EMO,""); if(n!==t.nodeValue){t.nodeValue=n; return true}} return false}
+function v35Iconize(){
+  document.querySelectorAll("#s-start .card .ckopf:not([data-v35])").forEach(k=>{k.dataset.v35=1;
+    const c=k.closest(".card"), raw=(k.firstChild&&k.firstChild.nodeType===3)?k.firstChild.nodeValue:"";
+    let ic=c&&V35_CARD[c.id]; if(c&&c.id==="pjCard"&&/🌙/.test(raw)) ic="moon";
+    v35Strip(k); if(ic) k.insertAdjacentHTML("afterbegin",ICO(ic));});
+  document.querySelectorAll("#s-start .orow>span:not([data-v35])").forEach(s=>{s.dataset.v35=1; const t=s.firstChild; if(!t||t.nodeType!==3) return;
+    const v=t.nodeValue, m=v.match(/^(✅|⬜️?|▫️?)\s*/); if(m){t.nodeValue=v.slice(m[0].length); s.insertAdjacentHTML("afterbegin",`<i class="ck ${m[1]==="✅"?"on":m[1].startsWith("▫")?"na":""}"></i>`)} else v35Strip(s);});
+  document.querySelectorAll("#s-start .onote:not([data-v35])").forEach(o=>{o.dataset.v35=1; if(/^\s*(🧳|🔥|🏁)/u.test(o.textContent)) v35Strip(o);});
+  const tc=$("termineCard"); if(tc&&!tc.classList.contains("hidden")){const now=new Date(), rows=[...tc.querySelectorAll(".trow")]; let erst=null, vorbei=0;
+    rows.forEach(r=>{const z=(r.querySelector(".tt i")||{}).textContent||"", m=z.match(/^(\d\d):(\d\d)/); if(!m) return; const d=new Date(); d.setHours(+m[1],+m[2],0,0);
+      const v=d<now; r.classList.toggle("vorbei",v); if(v) vorbei++; else if(!erst) erst=r;});
+    const alt=tc.querySelector(".jetztlinie"); if(vorbei&&erst){if(!alt||alt.nextElementSibling!==erst){if(alt) alt.remove(); erst.insertAdjacentHTML("beforebegin",`<div class="jetztlinie">jetzt ${hm(now)}</div>`)}} else if(alt) alt.remove();}
+}
+function v35Naechst(){if(!TERMINE||!TERMINE.termine) return null; const e=einst(), now=new Date(), st=store.get(tKey())||{};
+  const t=TERMINE.termine.filter(x=>/^\d\d:\d\d/.test(x.zeit)&&st[x.id]!=="nein"&&st[x.id]!=="aus").map(x=>{const [h,m]=x.zeit.split(":").map(Number),d=new Date();d.setHours(h,m,0,0);return {x,d}}).filter(o=>o.d>now).sort((a,b)=>a.d-b.d)[0];
+  if(!t) return null; const los=new Date(t.d.getTime()-(e.weg+e.puffer)*60000); return {x:t.x,d:t.d,los,min:Math.round((los-now)/60000)}}
+var v35Min=m=>m>=60?`${m/60|0} h ${m%60} Min.`:m+" Min.";
+function v35Wetter(tag){const W=WETTER||store.get("wetter2")||{}, w=W[wetterOrt(tag)+"|"+tag]; if(!w) return "";
+  return `${w.ort} ${Math.round(w.min)}–${Math.round(w.max)}°`+(w.regen>=50?" · Schirm":"")}
+function jdRender(){const el=$("jdCard"); if(!el) return;
+  const now=new Date(), h=now.getHours(), d4=isoLocal(new Date(Date.now()-4*3600e3)).slice(0,10), v=store.get("verlauf")||[];
+  const rm=v.some(x=>x.d===d4&&x.v!=="abend"), ra=v.some(x=>x.d===d4&&x.v==="abend"), ab=variante==="abend", nt=v35Naechst();
+  const alt=store.get("sitzung"), res=alt&&!alt.fertig&&(Date.now()-new Date(alt.start))<3*3600e3;
+  let ic, k, t, s="", btn=null, los=false;
+  if(res){ic="play";k="Angefangen";t="Routine fortsetzen";s=`Seit ${hm(new Date(alt.start))} Uhr`;btn=["Fortsetzen","btnResume"]}
+  else if(!ab&&!rm&&h<14){ic=variante==="lang"?"sunrise":"sun";k="Jetzt dran";t="Morgenroutine "+(variante==="lang"?"lang":"kurz");
+    s=`ca. ${dauerMin(variante)} Min.`+(nt&&nt.min<=240?` · ${nt.min<=0?"jetzt los":"los in "+v35Min(nt.min)}`:"");btn=["Starten","btnStart"]}
+  else if(ab&&!ra){ic="moon";k="Jetzt dran";t="Abendroutine";s=`ca. ${dauerMin("abend")} Min.`;btn=["Starten","btnStart"]}
+  else if(nt&&nt.min<=240&&!ab){ic="door";los=true;k=nt.min<=0?"Jetzt los!":"Los in "+v35Min(nt.min);t=nt.x.titel;s=`${nt.x.zeit} Uhr · losgehen um ${hm(nt.los)}`}
+  else if(nt){ic="calendar";k="Als Nächstes";t=nt.x.titel;s=`${nt.x.zeit} Uhr`}
+  else if(PJSTAT&&PJSTAT.n&&PJSTAT.ok<PJSTAT.n){ic="flag";k="PROJECT JANUARY";t=`Noch ${PJSTAT.n-PJSTAT.ok} offen`;s=`${PJSTAT.ok} von ${PJSTAT.n} erledigt`;btn=["Zur Liste","pj"]}
+  else {ic="check";k="Alles im Plan";t=ab||h>=21?"Gute Nacht, Noah":"Freie Bahn";s=ab?"Morgen geht's weiter.":"Nichts Dringendes offen."}
+  const meta=[], wt=v35Wetter(ab||h>=17?tagMorgen():isoLocal(now).slice(0,10)); if(wt) meta.push(ICO("cloud")+esc((ab||h>=17?"Morgen · ":"")+wt));
+  const o=outfitFuer(ab?tagMorgen():isoLocal(now).slice(0,10)); if(o&&o.stufe) meta.push(ICO("shirt")+"Stufe "+esc(o.stufe));
+  if(PJSTAT&&PJSTAT.n&&ic!=="flag") meta.push(ICO("flag")+`PJ ${PJSTAT.ok}/${PJSTAT.n}`);
+  el.innerHTML=ICO(ic,"gross")+`<div class="k">${ICO(ic)}${esc(k)}</div><div class="t">${esc(t)}</div><div class="s">${esc(s)}</div>`
+    +(meta.length?`<div class="meta">${meta.map(x=>`<span>${x}</span>`).join("")}</div>`:"")+(btn?`<button id="jdBtn">${esc(btn[0])}</button>`:"");
+  document.body.classList.toggle("jd-los",los);
+  const b=$("jdBtn"); if(b) b.onclick=()=>{if(btn[1]==="pj"){const p=$("pjCard"); if(p){p.classList.remove("zu"); p.scrollIntoView({behavior:"smooth",block:"start"})}} else $(btn[1]).click()};}
+ringeRender=function(){const el=$("ringeCard"); if(!el) return; const heute=isoLocal(new Date()).slice(0,10);
+  const p=(TERMINE&&TERMINE.pj&&TERMINE.datum===heute)?TERMINE.pj:null;
+  const ew=p?(p.eiweiss||0)+ewLokal(p).e:null, sg=p&&p.schritte_gestern!=null?+p.schritte_gestern:null;
+  const d4=isoLocal(new Date(Date.now()-4*3600e3)).slice(0,10), v=store.get("verlauf")||[], rn=(v.some(x=>x.d===d4&&x.v!=="abend")?1:0)+(v.some(x=>x.d===d4&&x.v==="abend")?1:0);
+  const R=[[ew==null?0:ew/165,"var(--r1)",52,"Eiweiß",ew==null?"–":ew+"<small> / 165 g</small>"],[sg==null?0:sg/6500,"var(--r2)",39,"Schritte gestern",sg==null?"–":Number(sg).toLocaleString("de-AT")+"<small> / 6.500</small>"],[rn/2,"var(--r3)",26,"Routinen heute",rn+"<small> / 2</small>"]];
+  const ziel=R.map(([q,,r])=>{const c=2*Math.PI*r;return {c,o:c*(1-Math.min(1,Math.max(0,q)))}}), start=RG_LAST||ziel.map(z=>z.c);
+  el.innerHTML=`<div class="rk"><svg viewBox="0 0 120 120">${R.map(([,f,r],i)=>`<circle cx="60" cy="60" r="${r}" class="rb" style="stroke:${f};stroke-width:11"/><circle cx="60" cy="60" r="${r}" class="rv" style="stroke:${f};stroke-width:11;stroke-dasharray:${ziel[i].c.toFixed(1)};stroke-dashoffset:${start[i].toFixed(1)}"/>`).join("")}</svg>`
+    +`<div class="rl">${R.map(([,f,,l,w])=>`<div><i style="background:${f}"></i><span>${l}</span><b>${w}</b></div>`).join("")}</div></div>`
+    +(PJSTAT&&PJSTAT.n?`<div class="rpj">${ICO("flag")}PROJECT JANUARY heute: <b>${PJSTAT.ok} von ${PJSTAT.n}</b></div>`:"");
+  el.classList.remove("hidden"); RG_LAST=ziel.map(z=>z.o);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.querySelectorAll(".rv").forEach((c,i)=>c.style.strokeDashoffset=ziel[i].o.toFixed(1))));};
+var _v35endRing=endRing;
+endRing=function(){_v35endRing(); const b=document.querySelector("#endRing b"); if(!b) return; b.classList.add("pop");
+  if(parseInt(b.textContent,10)>=100){const f=["var(--r1)","var(--r2)","var(--r3)","var(--accent)"]; for(let i=0;i<36;i++){const s=document.createElement("i"); s.className="konf";
+    const a=Math.random()*Math.PI*2, d=120+Math.random()*180; s.style.cssText=`background:${f[i%4]};--x:${(Math.cos(a)*d).toFixed(0)}px;--y:${(Math.sin(a)*d+120).toFixed(0)}px;--r:${(Math.random()*720-360).toFixed(0)}deg;animation-delay:${(.9+Math.random()*.2).toFixed(2)}s`;
+    document.body.appendChild(s); setTimeout(()=>s.remove(),2800)}}};
+function v35Tab(t){V35_TAB=t; document.querySelectorAll(".tp").forEach(p=>p.classList.toggle("on",p.id==="tab"+t[0].toUpperCase()+t.slice(1)));
+  document.querySelectorAll(".tabbar button").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+  const ti={heute:null,routine:"Routine",fort:"Fortschritt",mehr:"Mehr"}[t]; $("gruss").classList.toggle("hidden",!!ti); $("tabTitel").classList.toggle("hidden",!ti); if(ti) $("tabTitel").textContent=ti;
+  window.scrollTo(0,0); if(t==="heute") jdRender();}
+var _v35ordnen=ordnen;
+ordnen=function(){_v35ordnen(); try{if($("mehrKopf")) $("mehrKopf").classList.add("hidden"); jdRender(); v35Meta()}catch(e){}};
+function v35Init(){
+  document.body.classList.add("v35");
+  document.body.insertAdjacentHTML("afterbegin",`<svg width="0" height="0" style="position:absolute" aria-hidden="true">${Object.entries(V35_ICONS).map(([n,p])=>`<symbol id="i-${n}" viewBox="0 0 24 24">${p}</symbol>`).join("")}</svg>`);
+  const S0=$("s-start"), g=$("gruss"), td=$("today");
+  const kopf=document.createElement("div"); kopf.className="v35kopf"; kopf.innerHTML=`<div><div id="today"></div><h1 id="gruss"></h1><h1 id="tabTitel" class="hidden"></h1></div><button class="rund" id="v35Set" aria-label="Einstellungen">${ICO("sliders")}</button>`;
+  S0.insertBefore(kopf,S0.firstChild); kopf.querySelector("#today").replaceWith(td); kopf.querySelector("#gruss").replaceWith(g);
+  const P={}; ["heute","routine","fort","mehr"].forEach(t=>{const d=document.createElement("div"); d.className="tp"; d.id="tab"+t[0].toUpperCase()+t.slice(1); P[t]=d; S0.appendChild(d)});
+  P.heute.insertAdjacentHTML("beforeend",`<div class="card jd" id="jdCard"></div>`);
+  ["ringeCard","resume","jetzt"].forEach(id=>{const e=$(id); if(e) P.heute.appendChild(e)});
+  ["hero",null,"btnBuero"].forEach(id=>{const e=id?$(id):S0.querySelector(".vtiles"); if(e) P.routine.appendChild(e)});
+  const bt=S0.querySelector(".bottom"); if(bt) P.routine.appendChild(bt);
+  const mk=$("mehrKopf"); if(mk) P.fort.appendChild(mk); P.fort.appendChild($("mehr"));
+  P.mehr.insertAdjacentHTML("beforeend",`<div class="card"><div class="ckopf" data-v35="1">${ICO("sparkle")}Darstellung</div><div class="v35seg">${[["clean","Apple-clean"],["premium","Premium"],["tirol","Tirol"]].map(([k,l])=>`<button data-thm="${k}">${l}</button>`).join("")}</div><div class="onote muted" style="margin-top:10px">Tagsüber hell, ab Abendroutine dunkel (Premium immer dunkel).</div></div>`);
+  const ds=S0.querySelector("details.card"); if(ds){ds.open=true; const su=ds.querySelector("summary"); su.innerHTML=ICO("sliders")+"Einstellungen"; P.mehr.appendChild(ds)}
+  P.mehr.insertAdjacentHTML("beforeend",`<div class="v35vers">Morgen-App v35</div>`);
+  S0.querySelectorAll(":scope>.grow,:scope>#woche,:scope>#wochetxt").forEach(e=>e.classList.add("hidden"));
+  S0.insertAdjacentHTML("beforeend",`<nav class="tabbar">${[["heute","home","Heute"],["routine","list","Routine"],["fort","chart","Fortschritt"],["mehr","dots","Mehr"]].map(([t,i,l])=>`<button data-tab="${t}">${ICO(i)}<span>${l}</span></button>`).join("")}</nav>`);
+  S0.querySelectorAll(".tabbar button").forEach(b=>b.onclick=()=>v35Tab(b.dataset.tab));
+  $("v35Set").onclick=()=>v35Tab("mehr");
+  P.mehr.querySelectorAll("[data-thm]").forEach(b=>b.onclick=()=>v35Theme(b.dataset.thm));
+  $("btnBuero").innerHTML=ICO("chair")+" Büro-Pause · Stuhl &amp; Stehen <span id=\"durBuero\">"+(($("durBuero")||{}).textContent||"")+"</span>";
+  const q=new URLSearchParams(location.search).get("theme"); v35Theme(q||store.get("theme")||"clean");
+  new MutationObserver(()=>{if(V35_PEND) return; V35_PEND=1; requestAnimationFrame(()=>{V35_PEND=0; try{v35Iconize()}catch(e){}})}).observe(S0,{childList:true,subtree:true});
+  const _hr=heroRender; heroRender=function(){_hr(); try{v35Meta()}catch(e){}};
+  v35Tab("heute"); try{initStart()}catch(e){} try{heroRender()}catch(e){} v35Iconize();
+  setInterval(()=>{try{if(V35_TAB==="heute"&&$("s-start").classList.contains("on")){jdRender();v35Iconize()}}catch(e){}},60000);
+}
+try{v35Init()}catch(e){console.error("v35",e)}
 </script>
 </body>
 </html>
