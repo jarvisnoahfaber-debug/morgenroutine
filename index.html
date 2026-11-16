@@ -395,6 +395,25 @@ details.card summary{color:var(--text)}
 .ewk button small{color:var(--muted);font-size:12px}
 .ewk button.arm{background:var(--accent);color:#fff;border-color:var(--accent)}
 .ewk button.arm small{color:#fff}
+/* v30 */
+.ringe{display:flex;justify-content:space-around;align-items:flex-start}
+.rg{text-align:center;width:31%}.rg svg{width:66px;height:66px;transform:rotate(-90deg);display:block;margin:0 auto}
+.rb{fill:none;stroke:var(--fill);stroke-width:7}.rv{fill:none;stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset 1.1s ease}
+.rg b{display:block;font-size:16px;font-weight:600;margin-top:6px}.rg span{display:block;font-size:11px;color:var(--muted);margin-top:1px}
+.sekt{font-size:20px;font-weight:700;margin:26px 0 2px;letter-spacing:-.3px}
+#jetzt .ckopf,#mehr .ckopf{justify-content:flex-start;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#jetzt .ckopf>span,#mehr .ckopf>span{margin-left:auto}
+#jetzt .ckopf::before,#mehr .ckopf::before{content:"⌄";color:var(--muted);font-size:13px;display:inline-block;transition:transform .2s}
+.card.zu .ckopf::before{transform:rotate(-90deg)}
+.card.zu>*:not(.ckopf){display:none!important}.card.zu .ckopf{margin-bottom:0}
+.fp{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px;box-shadow:0 0 0 1px var(--sep)}
+.gchart .roh{fill:none;stroke:var(--muted);stroke-width:1;opacity:.45}
+.gchart .trend{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.gchart .prog{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 4;opacity:.75}
+.gchart .pkt{fill:var(--muted);opacity:.6}
+#endRing{position:relative;width:150px;height:150px;margin:18px auto 4px}
+#endRing svg{width:150px;height:150px;transform:rotate(-90deg)}#endRing .rb,#endRing .rv{stroke-width:10}#endRing .rv{stroke:var(--accent)}
+#endRing b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700}
 </style>
 </head>
 <body>
@@ -404,7 +423,9 @@ details.card summary{color:var(--text)}
   <h1 id="gruss">Guten Morgen, Noah</h1>
   <div class="muted" id="today"></div>
   <div class="woche" id="woche"></div><div class="wochetxt" id="wochetxt"></div>
+  <div class="card hidden" id="ringeCard"></div>
   <div class="hero" id="hero"></div>
+  <div id="jetzt"></div>
   <div class="card hidden" id="losCard"></div>
   <div class="card hidden" id="befehlCard"></div>
   <div class="card hidden" id="pjCard"></div>
@@ -432,6 +453,8 @@ details.card summary{color:var(--text)}
     <button data-v="abend" class="vbtn"><span class="ic">🌙</span><b>Abend</b><span id="durAbend"></span></button>
   </div>
   <button class="ghost" id="btnBuero" style="width:100%;margin-top:10px">🪑 Büro-Pause · Stuhl &amp; Stehen <span id="durBuero"></span></button>
+  <div class="sekt hidden" id="mehrKopf">Mehr</div>
+  <div id="mehr"></div>
 
   <details class="card">
     <summary>⚙︎ Einstellungen</summary>
@@ -535,6 +558,7 @@ details.card summary{color:var(--text)}
 <section id="s-end" class="screen">
   <h1 id="endTitel">Fertig 💪</h1>
   <div class="muted" id="endSub"></div>
+  <div id="endRing"></div>
   <div class="tiles" id="tiles"></div>
   <div class="card sum" id="sum"></div>
   <div class="grow"></div>
@@ -919,7 +943,8 @@ function enter(i){
   $("next").textContent=nx?"Nächste: "+(nx.k==="ex"?EX[nx.id].n+(nx.side?" · "+nx.side:""):nx.k==="timer"?TIMER[nx.id].n:nx.k==="schritt"?SCHRITT[nx.id].t:CHECK[nx.id].n):"Danach: fertig";
   $("stepView").classList.add("hidden"); miniStop(); cminiStop(); $("cmini").classList.add("hidden");
   const phAkt=st.k==="schritt"?SCHRITT[st.id].ph:st.ph;
-  $("phasen").classList.toggle("hidden",!phAkt);
+  $("phasen").classList.toggle("hidden",!phAkt); $("phasen").style.gridTemplateColumns="";
+  if(!phAkt&&S.v!=="abend"&&S.v!=="buero"){try{const g=mGruppe(st),ai=MPH.findIndex(p=>p[0]===g);$("phasen").classList.remove("hidden");$("phasen").style.gridTemplateColumns="repeat(5,1fr)";$("phasen").innerHTML=MPH.map((p,k)=>`<div class="${k===ai?"akt":k<ai?"done":""}"><span>${p[1]}</span>${p[2]}</div>`).join("")}catch(e){}}
   if(phAkt){const ai=PHASEN.findIndex(p=>p[0]===phAkt);$("phasen").innerHTML=PHASEN.map((p,k)=>`<div class="${k===ai?"akt":k<ai?"done":""}"><span>${k<ai?"✓":p[1]}</span>${p[2]}</div>`).join("")}
   if(st.k==="schritt"){const sc=SCHRITT[st.id],gr=steps.filter(x=>x.k==="schritt"&&SCHRITT[x.id].ph===sc.ph),pos=gr.indexOf(st)+1;
     phase="check"; document.body.classList.remove("nacht");
@@ -1149,7 +1174,7 @@ function heroRender(){
     <div class="chips">${chips.map(c=>`<span>${(c==="flow"?"Rücken-Flow":BAUSTEIN[c]).replace(/^\S+\s/,"")}</span>`).join("")}</div>`;
   document.body.classList.toggle("abend",ab);document.body.classList.toggle("morgen",!ab);
   $("btnStart").textContent=ab?"Abendroutine starten":"Morgenroutine starten";
-  befehlRender(); heuteRender(); gewichtRender(); pjRender(); glowRender(); wocheRender2(); try{reiseRender();losRender();kalRender()}catch(e){}
+  befehlRender(); heuteRender(); gewichtRender(); pjRender(); glowRender(); wocheRender2(); try{reiseRender();losRender();kalRender()}catch(e){} try{ringeRender();ordnen()}catch(e){}
 }
 function wocheRender(){
   const h=store.get("verlauf",[])||[],d=new Date(),mo=new Date(d);mo.setDate(d.getDate()-((d.getDay()+6)%7));
@@ -1171,7 +1196,7 @@ function kacheln(){
   const T=(v,l,c)=>`<div class="tile ${c}"><div class="v">${v}</div><div class="l">${l}</div></div>`;
   const vierte=S.v==="abend"?T(S.res.lesen?"15<small> Min.</small>":"–","Gelesen 📖","d"):T(S.kg?S.kg.replace(".",",")+"<small> kg</small>":"–","Gewicht ⚖️","d");
   $("endTitel").textContent=S.v==="abend"?"Gute Nacht 🌙":"Stark gestartet ☀️";
-  $("tiles").innerHTML=T(min+"<small> Min.</small>","Dauer","a")+T(`${ok}/${chk.length}`,"Punkte erledigt","b")+T(`${fd}/${fl.length}`,"Rücken-Flow","c")+vierte;
+  $("tiles").innerHTML=T(min+"<small> Min.</small>","Dauer","a")+T(`${ok}/${chk.length}`,"Punkte erledigt","b")+T(`${fd}/${fl.length}`,"Rücken-Flow","c")+vierte; try{endRing()}catch(e){}
 }
 
 /* ---------- Start-Bildschirm ---------- */
@@ -1240,9 +1265,10 @@ function pjRender(){
   z("Haut morgens",!!((p&&p.haut_morgens)||lok.haut_m||ja(log.haut_morgens)));z("Haut abends",!!(lok.haut_a||ja(log.haut_abends)));z("Outfit am Herrendiener",!!(lok.hd||ja(log.herrendiener)));
   if(p&&p.schritte_gestern!=null&&!abend) z("Schritte gestern",p.schritte_gestern>=6500,`${Number(p.schritte_gestern).toLocaleString("de-AT")} / 6.500`);
   const sc=glowScore();
+  PJSTAT={ok:R.filter(x=>x.ok===true).length,n:R.filter(x=>x.ok!==null).length};
   const zeilen=abend?R.filter(x=>x.ok!==true):R;
   el.innerHTML=`<div class="ckopf">${abend?"🌙 Heute noch offen":"🏁 Heute für PJ"}<span>${p?"Stand "+esc(TERMINE.stand||""):""}</span></div>${zeilen.length?zeilen.map(x=>x.h).join(""):'<div class="orow"><span>✅ Alles erledigt – stark.</span></div>'}<div class="orow"><span>✨ Glow-up-Score diese Woche</span><b>${sc} %</b></div>`;
-  el.classList.remove("hidden"); ewBind(el);
+  el.classList.remove("hidden"); ewBind(el); try{ringeRender()}catch(e){}
 }
 /* ---------- Glow-up ---------- */
 const GLOW_FRISEUR=21, GLOW_PEDI=49, PJ_MESS=["2026-11-22","2026-12-20","2027-01-15"];
@@ -1353,7 +1379,7 @@ function putzRender(){
 }
 function termineRender(){
   const el=$("termineCard"); if(!el) return;
-  putzRender(); pjRender(); try{reiseRender();losRender()}catch(e){}
+  putzRender(); pjRender(); try{reiseRender();losRender();ringeRender();ordnen()}catch(e){}
   if(!TERMINE||!TERMINE.termine.length){el.classList.add("hidden");return}
   const s=store.get(tKey())||{};
   el.innerHTML=`<div class="ckopf">Heute<span>Stand ${esc(TERMINE.stand||"")}</span></div>`+TERMINE.termine.map(t=>`<div class="trow"><div class="tt"><i>${esc(t.zeit)}</i><b>${esc(t.titel)}</b></div><div class="tbtn">${[["hin","Ich gehe hin"],["nein","Egal"],["aus","Fällt aus"]].map(([k,l])=>`<button data-tid="${t.id}" data-st="${k}" class="${s[t.id]===k?"on "+k:""}">${l}</button>`).join("")}</div></div>`).join("")+`<button class="tsend" id="tSend">An Jarvis senden</button>`;
@@ -1389,28 +1415,36 @@ function heuteRender(){
   if(o.abend_oberteil) z.push(["Abends umziehen",[o.abend_oberteil,o.abend_hose].filter(Boolean).join(", ").replace(/\s*\([A-Z]{2}\d{2}\)/g,"")]);
   try{const wt=wetterText(ab?tagMorgen():isoLocal(new Date()).slice(0,10)); if(wt) z.push(["Wetter",wt]);}catch(e){}
   const d=ab?null:duftHeute(); if(d) z.push(["Duft",`№ ${d.nr} ${d.name}`+(d.abend?` · abends № ${d.abend}`:"")]);
-  el.innerHTML=`<div class="ckopf">${ab?"Morgen anziehen":"Heute anziehen"}<span>Stufe ${esc(o.stufe)}</span></div>`+z.map(x=>`<div class="orow"><span>${esc(x[0])}</span><b>${esc(x[1])}</b></div>`).join("");
+  el.innerHTML=`<div class="ckopf">${ab?"Morgen anziehen":"Heute anziehen"}<span>Stufe ${esc(o.stufe)}</span></div>`+z.map(x=>`<div class="orow"><span>${esc(x[0])}</span><b>${x[0]==="Duft"||x[0]==="Wetter"?"":farbPunkte(x[1])}${esc(x[1])}</b></div>`).join("");
   el.classList.remove("hidden");
 }
 const fmtKg=n=>n.toFixed(1).replace(".",",");
 function gewichtRender(){
   const el=$("gewCard"); if(!el) return;
-  if(variante==="abend"){el.classList.add("hidden");return}
   const h=(store.get("verlauf")||[]).filter(x=>x.kg).slice(-60);
   el.classList.remove("hidden");
-  if(!h.length){el.innerHTML=`<div class="ckopf">Gewicht</div><div class="onote" style="margin:2px 0 0">Die Kurve startet mit deiner nächsten Messung in der Morgenroutine.</div>`;return}
-  const last=h[h.length-1], first=h[0], ZIEL=90, ZD="2026-12-24";
-  const W=320,H=110,pt=10,pb=10;
-  const t0=new Date(first.d).getTime(), t1=Math.max(new Date(last.d).getTime(),t0+7*864e5);
-  const ks=h.map(x=>x.kg).concat([ZIEL]), lo=Math.floor(Math.min(...ks)-.5), hi=Math.ceil(Math.max(...ks)+.5);
-  const X=d=>6+(new Date(d).getTime()-t0)/(t1-t0)*(W-12), Y=k=>pt+(hi-k)/(hi-lo)*(H-pt-pb);
-  const pts=h.map(x=>`${X(x.d).toFixed(1)},${Y(x.kg).toFixed(1)}`).join(" ");
-  const diff=last.kg-first.kg, rest=last.kg-ZIEL, tage=Math.ceil((new Date(ZD)-new Date())/864e5);
-  const seit=new Date(first.d).toLocaleDateString("de-AT",{day:"numeric",month:"short"});
-  el.innerHTML=`<div class="ckopf">Gewicht<span>${fmtKg(last.kg)} kg</span></div>
-    <svg viewBox="0 0 ${W} ${H}" class="gchart" aria-hidden="true"><line x1="0" x2="${W}" y1="${Y(ZIEL)}" y2="${Y(ZIEL)}" class="ziel"/><text x="${W-2}" y="${Y(ZIEL)-4}" text-anchor="end" class="zl">Ziel ${ZIEL}</text>${h.length>1?`<polyline points="${pts}" class="kurve"/>`:""}<circle cx="${X(last.d)}" cy="${Y(last.kg)}" r="4.5" class="punkt"/></svg>
-    <div class="onote" style="margin:6px 0 0">${h.length>1?`${diff<=0?"−":"+"}${fmtKg(Math.abs(diff))} kg seit ${seit} · `:""}${rest>0?`noch ${fmtKg(rest)} kg bis ${ZIEL} · ${tage} Tage bis Weihnachten`:`Unter ${ZIEL} kg – Weihnachtsziel erreicht`}</div>`;
+  if(!h.length){el.innerHTML=`<div class="ckopf">⚖️ Gewicht</div><div class="onote" style="margin:2px 0 0">Die Kurve startet mit deiner nächsten Messung in der Morgenroutine.</div>`;return}
+  const last=h[h.length-1], first=h[0], ZIEL=90, ZD="2026-12-24", T=d=>new Date(d+"T12:00").getTime();
+  const r=h.filter(x=>T(x.d)>=T(last.d)-21*864e5); let slope=null, prog=null;
+  if(r.length>=3){const xs=r.map(x=>(T(x.d)-T(last.d))/864e5), ys=r.map(x=>x.kg), mx=xs.reduce((a,b)=>a+b)/xs.length, my=ys.reduce((a,b)=>a+b)/ys.length;
+    const sxx=xs.reduce((a,x)=>a+(x-mx)**2,0); if(sxx>0){slope=xs.reduce((a,x,i)=>a+(x-mx)*(ys[i]-my),0)/sxx; prog=my-slope*mx+slope*(T(ZD)-T(last.d))/864e5;}}
+  const avg=h.map(x=>{const w=h.filter(y=>T(y.d)<=T(x.d)&&T(y.d)>T(x.d)-7*864e5);return {d:x.d,kg:w.reduce((a,y)=>a+y.kg,0)/w.length}});
+  const W=320,H=120,pt=12,pb=12, zp=prog!=null&&T(ZD)>T(last.d);
+  const t0=T(first.d), t1=Math.max(zp?T(ZD):T(last.d),t0+7*864e5);
+  const ks=h.map(x=>x.kg).concat([ZIEL],zp?[prog]:[]), lo=Math.floor(Math.min(...ks)-.5), hi=Math.ceil(Math.max(...ks)+.5);
+  const X=d=>6+(T(d)-t0)/(t1-t0)*(W-12), Y=k=>pt+(hi-k)/(hi-lo)*(H-pt-pb), pl=a=>a.map(x=>`${X(x.d).toFixed(1)},${Y(x.kg).toFixed(1)}`).join(" ");
+  const diff=last.kg-first.kg, rest=last.kg-ZIEL, tage=Math.ceil((T(ZD)-Date.now())/864e5), al=avg[avg.length-1];
+  const seit=new Date(first.d+"T12:00").toLocaleDateString("de-AT",{day:"numeric",month:"short"});
+  el.innerHTML=`<div class="ckopf">⚖️ Gewicht<span>${fmtKg(last.kg)} kg</span></div>
+    <svg viewBox="0 0 ${W} ${H}" class="gchart" aria-hidden="true"><line x1="0" x2="${W}" y1="${Y(ZIEL)}" y2="${Y(ZIEL)}" class="ziel"/><text x="${W-2}" y="${Y(ZIEL)-4}" text-anchor="end" class="zl">Ziel ${ZIEL}</text>`
+    +(h.length>1?`<polyline points="${pl(h)}" class="roh"/>`:"")+h.map(x=>`<circle cx="${X(x.d).toFixed(1)}" cy="${Y(x.kg).toFixed(1)}" r="2" class="pkt"/>`).join("")
+    +(avg.length>1?`<polyline points="${pl(avg)}" class="trend"/>`:"")
+    +(zp?`<line x1="${X(al.d).toFixed(1)}" y1="${Y(al.kg).toFixed(1)}" x2="${X(ZD).toFixed(1)}" y2="${Y(prog).toFixed(1)}" class="prog"/><text x="${X(ZD)-2}" y="${Y(prog)+(prog>ZIEL?-6:14)}" text-anchor="end" class="zl">24.12.</text>`:"")
+    +`<circle cx="${X(last.d)}" cy="${Y(last.kg)}" r="4.5" class="punkt"/></svg>
+    <div class="onote" style="margin:6px 0 0">${h.length>1?`${diff<=0?"−":"+"}${fmtKg(Math.abs(diff))} kg seit ${seit} · `:""}${rest>0?`noch ${fmtKg(rest)} kg bis ${ZIEL} · ${tage} Tage bis Weihnachten`:`Unter ${ZIEL} kg – Weihnachtsziel erreicht`}</div>`
+    +(slope!=null?`<div class="onote" style="margin:2px 0 0">Trend ${slope<=0?"−":"+"}${fmtKg(Math.abs(slope*7))} kg/Woche${zp?` · Prognose 24.12.: ${fmtKg(prog)} kg ${prog<=ZIEL?"– auf Kurs ✓":"– "+fmtKg(prog-ZIEL)+" kg über Ziel"}`:""}</div>`:`<div class="onote muted" style="margin:2px 0 0">Trend ab 3 Messungen</div>`);
 }
+
 
 function initStart(){
   const d=new Date();
@@ -1576,6 +1610,43 @@ function ewBind(root){root.querySelectorAll("button[data-ew]").forEach(b=>b.oncl
   ewArm=null;clearTimeout(ewArmT); const x=EWK.find(y=>y.k===k), now=new Date(), tag=ewTag(), t=Date.now().toString(36);
   const l=store.get("ewlok-"+tag)||[]; l.push({t,k,e:x.e,kc:x.kc}); store.set("ewlok-"+tag,l); pjRender();
   location.href="shortcuts://run-shortcut?name="+encodeURIComponent("Morgen an Jarvis")+"&input=text&text="+encodeURIComponent(`Essen; key=${k}; t=${t}; datum=${tag}; zeit=${hm(now)};`);})}
+/* ---------- v30: Ringe, Ordnung/Einklappen, Farbpunkte, Morgen-Phasen, Abschluss-Ring ---------- */
+var PJSTAT=null;
+function ring(p,farbe,lbl,wert){const r=26,c=2*Math.PI*r,o=c*(1-Math.min(1,Math.max(0,p||0)));
+  return `<div class="rg"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="${r}" class="rb"/><circle cx="32" cy="32" r="${r}" class="rv" style="stroke:${farbe};stroke-dasharray:${c.toFixed(1)};stroke-dashoffset:${o.toFixed(1)}"/></svg><b>${wert}</b><span>${lbl}</span></div>`}
+function ringeRender(){const el=$("ringeCard"); if(!el) return; const heute=isoLocal(new Date()).slice(0,10);
+  const p=(TERMINE&&TERMINE.pj&&TERMINE.datum===heute)?TERMINE.pj:null;
+  const ew=p?(p.eiweiss||0)+ewLokal(p).e:null, sg=p&&p.schritte_gestern!=null?+p.schritte_gestern:null;
+  const d4=isoLocal(new Date(Date.now()-4*3600e3)).slice(0,10), v=store.get("verlauf")||[], rm=v.some(x=>x.d===d4&&x.v!=="abend"), ra=v.some(x=>x.d===d4&&x.v==="abend");
+  el.innerHTML=`<div class="ringe">${ring(ew==null?0:ew/165,"#ff375f","Eiweiß / 165 g",ew==null?"–":ew+" g")}${ring(sg==null?0:sg/6500,"#30d158","Schritte gestern",sg==null?"–":(sg/1000).toFixed(1).replace(".",",")+"k")}${ring(((rm?1:0)+(ra?1:0))/2,"#0a84ff","Routinen heute",((rm?1:0)+(ra?1:0))+"/2")}</div>`
+    +(PJSTAT&&PJSTAT.n?`<div class="onote" style="text-align:center;margin:8px 0 0">🏁 PJ heute: ${PJSTAT.ok} von ${PJSTAT.n} erledigt</div>`:"");
+  el.classList.remove("hidden");}
+var ORDNUNG={morgen:["losCard","befehlCard","termineCard","heuteCard","reiseCard","pjCard","putzCard"],
+  tag:["termineCard","pjCard","reiseCard","heuteCard","putzCard","losCard","befehlCard"],
+  abend:["pjCard","heuteCard","reiseCard","putzCard","termineCard","befehlCard","losCard"]};
+var MEHR=["gewCard","wocheCard","glowCard","kalCard"];
+function ordnen(){const j=$("jetzt"), m=$("mehr"); if(!j||!m) return; const h=new Date().getHours(), k=variante==="abend"||h>=17?"abend":h<12?"morgen":"tag";
+  ORDNUNG[k].forEach(id=>{const e=$(id); if(e) j.appendChild(e)}); MEHR.forEach(id=>{const e=$(id); if(e) m.appendChild(e)});
+  const zu=Object.assign({glowCard:true,kalCard:true},store.get("zu")||{}); [...ORDNUNG[k],...MEHR].forEach(id=>{const e=$(id); if(e) e.classList.toggle("zu",!!zu[id])});
+  $("mehrKopf").classList.toggle("hidden",!MEHR.some(id=>$(id)&&!$(id).classList.contains("hidden")));}
+document.addEventListener("click",e=>{const k=e.target.closest("#jetzt .ckopf,#mehr .ckopf"); if(!k||e.target.closest("a,button,input,select,label")) return;
+  const c=k.closest(".card"); if(!c||!c.id) return; c.classList.toggle("zu"); const z=store.get("zu")||{}; z[c.id]=c.classList.contains("zu"); store.set("zu",z);});
+var FARBEN=[["dunkelblau","#1f2a44"],["hellblau","#9cc3e6"],["hellgrau","#c8c8c8"],["dunkelgrau","#55585e"],["navy","#1f2a44"],["marine","#1f2a44"],["blau","#3b6db3"],["weiß","#ffffff"],["weiss","#ffffff"],["creme","#f2ead8"],["ecru","#f2ead8"],["beige","#d9c7a3"],["stein","#cfc6b4"],["sand","#d8c39a"],["khaki","#b5a36f"],["camel","#c19a6b"],["cognac","#9a5b2e"],["braun","#6b4a2f"],["oliv","#6b6b3a"],["grün","#3f6b46"],["anthrazit","#3a3d42"],["grau","#9a9a9a"],["schwarz","#111111"],["bordeaux","#6d1f2b"],["weinrot","#6d1f2b"],["rot","#b03030"],["rosa","#e8b4bc"],["gelb","#e2c044"]];
+function farbPunkte(t){if(!FARBEN) return ""; let s=String(t||"").toLowerCase(); const out=[];
+  FARBEN.forEach(([w,c])=>{if(out.length<3&&s.includes(w)){out.push(c); s=s.split(w).join(" ")}});
+  return out.map(c=>`<i class="fp" style="background:${c}"></i>`).join("")}
+var MPH=[["start","🛏️","Start"],["flow","🧘","Flow"],["drill","💪","Drill"],["bad","🚿","Bad"],["los","👔","Los"]];
+function mGruppe(st){if(st.k==="ex"||["haltung","haltungFoto","verspannung"].includes(st.id)) return "flow";
+  if(st.k==="check"&&CHECK[st.id]&&CHECK[st.id].r&&!CHECK[st.id].skala) return "drill";
+  if(["dusche","rasieren","haut","deoHaare"].includes(st.id)) return "bad";
+  if(["supps","outfit"].includes(st.id)) return "los"; return "start"}
+function endRing(){const el=$("endRing"); if(!el) return;
+  const chk=steps.filter(x=>x.k==="check"||x.k==="schritt"||x.k==="timer"), ok=chk.filter(x=>S.res[x.id]).length;
+  const fl=steps.map((s,i)=>s.k==="ex"?i:-1).filter(i=>i>=0), fd=fl.filter(i=>S.ex[i]).length;
+  const p=(ok+fd)/Math.max(1,chk.length+fl.length), r=52, c=2*Math.PI*r;
+  el.innerHTML=`<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="${r}" class="rb"/><circle cx="60" cy="60" r="${r}" class="rv" style="stroke-dasharray:${c.toFixed(1)};stroke-dashoffset:${c.toFixed(1)}"/></svg><b>${Math.round(p*100)} %</b>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{const v=el.querySelector(".rv"); if(v) v.style.strokeDashoffset=(c*(1-p)).toFixed(1)}));}
+setTimeout(()=>{try{heroRender()}catch(e){}},80);
 </script>
 </body>
 </html>
