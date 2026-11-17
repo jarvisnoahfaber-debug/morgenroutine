@@ -960,10 +960,12 @@ const SCHRITT={
   fechtAusgleich:{ph:"dehnen",i:"🤺",t:"Fecht-Ausgleich",x:"Heute war Fechten – kurz die Gegenseite ausgleichen:\n• Einarmiges Rudern mit Band, Nicht-Fechtseite – 2 × 12\n• Band Pull-Aparts – 15×",d:180},
   zahnseide:{ph:"pflege",i:"🦷",t:"Zahnseide",x:"Einmal zwischen allen Zähnen durch, sanft am Zahnfleisch entlang.",tipp:"Optional – „Auslassen“ ist okay.",d:60},
   magnesium:{ph:"pflege",i:"💊",t:"Magnesium",x:"Magnesium (Oxid), ca. 200 mg elementar – laut Routine des Ernährungsbots optional.",tipp:"Einzige Magnesiumquelle des Tages.",d:30},
+  alkohol:{ph:"schlafen",i:"🍺",t:"Alkoholregel heute eingehalten?",x:"Mo–Fr kein Alkohol. Sa/So nur bei einer Veranstaltung (Partei, Skalden, Verbindung), höchstens 8 Getränke.",tipp:"Fertig = eingehalten · Auslassen = nicht eingehalten",d:15},
   sleep:{ph:"schlafen",i:"🌙",t:"Sleep Cycle einschalten",x:"Sleep Cycle starten und das Handy ans Ladekabel. Ab jetzt nur noch der Lese-Timer.",d:45}
 };
 const PREP = 8, SWITCH = 4;
 const CHECK = {
+  handy:{n:"Handy erst nach der Routine?",e:"📵",c:"Erste 30 Minuten nach dem Aufstehen: nur Wecker, Musik/Podcast und diese App – kein Social Media, keine Messenger, Mails oder News.",d:15,l:[["Fertig = eingehalten"],["Auslassen = nicht eingehalten"]]},
   gymtasche:{n:"Gymtasche dabei?",e:"🎒",c:"Heute ist Krafttraining:",d:30,l:[["Trainingskleidung und Schuhe"],["Handtuch, Trinkflasche"],["Duschzeug"],["Im Gym am Ende: Face Pulls 3 × 15, Y-Raises 2 × 12","Zug mindestens doppelt so viel wie Druck"]]},
   bett:{n:"Bett bauen",e:"🛏️",c:"Wie beim Bundesheer:",d:90,l:[["Decke glatt ziehen","keine Falten, straff"],["Kanten sauber einschlagen"],["Polster gerade und aufgeschüttelt"]]},
   hampelmann:{n:"Step-Jacks",r:30,c:"Ohne Sprung: abwechselnd ein Bein zur Seite setzen, Arme dabei über den Kopf – zügig, aber leise.",d:45},
@@ -1149,7 +1151,7 @@ function flowSteps(v){
 function build(v){return build0(v).filter(s=>s.k==="ex"||!(einst().aus||[]).includes(s.id))}
 function build0(v){
   if(v==="buero") return flowSteps("buero");
-  if(v==="abend") return [...["waerme","kleidung","schuhe","accessoires",...([0,1,4].includes(new Date(Date.now()-4*3600e3).getDay())?["gymAbend"]:[]),...(new Date(Date.now()-4*3600e3).getDay()===0?["wochencheck","pflegecheck"]:[])].map(id=>({k:"schritt",id})),...(new Date(Date.now()-4*3600e3).getDay()===0?[{k:"check",id:"verspannung",ph:"vorbereiten"}]:[]),{k:"timer",id:"zaehneAbend",ph:"pflege"},...["zahnseide","reinigen","wirkstoff","creme","magnesium"].map(id=>({k:"schritt",id})),...([3,4].includes(new Date(Date.now()-4*3600e3).getDay())?[{k:"schritt",id:"fechtAusgleich"}]:[]),{k:"schritt",id:"massage"},...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
+  if(v==="abend") return [...["waerme","kleidung","schuhe","accessoires",...([0,1,4].includes(new Date(Date.now()-4*3600e3).getDay())?["gymAbend"]:[]),...(new Date(Date.now()-4*3600e3).getDay()===0?["wochencheck","pflegecheck"]:[])].map(id=>({k:"schritt",id})),...(new Date(Date.now()-4*3600e3).getDay()===0?[{k:"check",id:"verspannung",ph:"vorbereiten"}]:[]),{k:"timer",id:"zaehneAbend",ph:"pflege"},...["zahnseide","reinigen","wirkstoff","creme","magnesium"].map(id=>({k:"schritt",id})),...([3,4].includes(new Date(Date.now()-4*3600e3).getDay())?[{k:"schritt",id:"fechtAusgleich"}]:[]),{k:"schritt",id:"massage"},...flowSteps("abend").map(x=>({...x,ph:"dehnen"})),{k:"schritt",id:"alkohol"},{k:"schritt",id:"sleep"},{k:"timer",id:"lesen",ph:"schlafen"}];
   const st=[];
   st.push({k:"check",id:"bett"},{k:"check",id:"gewicht"}); if(new Date().getDay()===0) st.push({k:"check",id:"bauch"}); st.push({k:"check",id:"wasser"});
   FLOW[v].forEach(id=>{
@@ -1162,7 +1164,7 @@ function build0(v){
   st.push({k:"check",id:"haltung"}); if(new Date().getDate()===1) st.push({k:"check",id:"haltungFoto"});
   ["hampelmann","kniebeugen","burpees","liegestuetze","klimmzuege","situps"].forEach(id=>st.push({k:"check",id}));
   st.push({k:"timer",id:"zaehne"});
-  ["dusche","rasieren","haut","deoHaare","supps",...([1,2,5].includes(new Date().getDay())?["gymtasche"]:[]),"outfit"].forEach(id=>st.push({k:"check",id}));
+  ["dusche","rasieren","haut","deoHaare","supps",...([1,2,5].includes(new Date().getDay())?["gymtasche"]:[]),"outfit"].forEach(id=>st.push({k:"check",id})); st.push({k:"check",id:"handy"});
   return st;
 }
 function dauerMin(v){
@@ -1420,7 +1422,7 @@ function finish(){
     `deo_haare=${r("deoHaare")}`,
     `gymtasche=${r("gymtasche")}`,
     `duft=${r("deoHaare")?duftHeute().nr:""}`,
-    `haut=${r("haut")}`,
+    `haut=${r("haut")}`,     `handy=${steps.some(x=>x.id==="handy")?r("handy"):""}`,
     `supplements=${r("supps")}`,
     `outfit=${r("outfit")}`,
     `outfit_ids=${r("outfit")&&outfitFuer(isoLocal(new Date()).slice(0,10))?outfitFuer(isoLocal(new Date()).slice(0,10)).ids||"":""}`
@@ -1459,7 +1461,7 @@ function finishAbend(){
   const lesen=S.res.lesen?15:0, outfit=r("kleidung")&&r("schuhe")?1:0, haut=r("reinigen")&&r("creme")?1:0;
   const log=["Abendroutine",`datum=${datum}`,`start=${S.start}`,`ende=${isoLocal(end)}`,`dauer_min=${min}`,
     `outfit=${outfit}`,...(glowTag("sauna",datum)?["sauna=1"]:[]),...(glowTag("friseur",datum)?["friseur=1"]:[]),`haut_abends=${haut}`,`zaehne_abends=${r("zaehneAbend")}`,`zahnseide=${r("zahnseide")}`,`wochencheck=${r("wochencheck")}`,`gymtasche=${r("gymAbend")}`,`supplements=${r("magnesium")}`,`dehnen=${fd}/${flow.length}`,`waerme=${r("waerme")}`,`massage=${r("massage")}`,`fecht_ausgleich=${steps.some(x=>x.id==="fechtAusgleich")?r("fechtAusgleich"):""}`,`verspannung=${steps.some(x=>x.id==="verspannung")&&S.res.verspannung?S.reps.verspannung:""}`,
-    `sleepcycle=${r("sleep")}`,`lesen_min=${lesen}`].join("; ")+";";
+    `sleepcycle=${r("sleep")}`,`alkohol_ok=${steps.some(x=>x.id==="alkohol")?r("alkohol"):""}`,`lesen_min=${lesen}`].join("; ")+";";
   S.log=log; S.fertig=isoLocal(end); save();
   tagStatus({haut_a:haut, hd:outfit}, datum);
   const z=(l,v)=>`<div><span class="muted">${l}</span><b>${v}</b></div>`;
@@ -1575,9 +1577,13 @@ function pjRender(){
   const sc=glowScore();
   PJSTAT={ok:R.filter(x=>x.ok===true).length,n:R.filter(x=>x.ok!==null).length};
   const zeilen=R.filter(x=>x.ok!==true), erl=R.filter(x=>x.ok===true);
-  el.innerHTML=`<div class="ckopf">${abend?"🌙 Heute noch offen":"🏁 Heute für PJ"}<span>${p?"Stand "+esc(TERMINE.stand||""):""}</span></div>${zeilen.length?zeilen.map(x=>x.h).join(""):'<div class="orow"><span>✅ Alles erledigt – stark.</span></div>'}${erl.length?`<details class="dd"><summary>✓ ${erl.length} erledigt</summary>${erl.map(x=>x.h).join("")}</details>`:""}<div class="orow"><span>✨ Glow-up-Score diese Woche</span><b>${sc} %</b></div>`;
+  el.innerHTML=`<div class="ckopf">${abend?"🌙 Heute noch offen":"🏁 Heute für PJ"}<span>${p?"Stand "+esc(TERMINE.stand||""):""}</span></div>${zeilen.length?zeilen.map(x=>x.h).join(""):'<div class="orow"><span>✅ Alles erledigt – stark.</span></div>'}${erl.length?`<details class="dd"><summary>✓ ${erl.length} erledigt</summary>${erl.map(x=>x.h).join("")}</details>`:""}${pjWoche(p)}<div class="orow"><span>✨ Glow-up-Score diese Woche</span><b>${sc} %</b></div>`;
   el.classList.remove("hidden"); ewBind(el); try{ringeRender()}catch(e){}
 }
+function pjWoche(p){const w=p&&p.woche; if(!w||!w.training||!w.ziele) return "";
+  const z=[["Training",w.training[0],w.training[1]],...Object.entries(w.ziele).map(([k,v])=>[k.replace(/\s*\(.*\)$/,""),v[0],v[1]])].filter(x=>x[2]>0);
+  if(!z.length) return ""; const pz=(e,g)=>Math.round(100*e/g);
+  return `<details class="dd"><summary>📊 Woche ${w.woche} bis gestern</summary>${z.map(([l,e,g])=>`<div class="orow"><span>${pz(e,g)>=95?"🟢":pz(e,g)>=50?"🟡":"🔴"} ${esc(l)}</span><b>${e}/${g} · ${pz(e,g)} %</b></div>`).join("")}<div class="orow"><span class="small muted">Quoten nach Abschnitt 2b: unter 50 % zählt nicht, ab 95 % voll. Keine Punkte.</span></div></details>`}
 /* ---------- Glow-up ---------- */
 const GLOW_FRISEUR=21, GLOW_PEDI=49, PJ_MESS=["2026-11-22","2026-12-20","2027-01-15"];
 const BASICS=["Gürtel navy (zu den navy Bootsschuhen)","Schuhe für Stufe 5 (Oxford SH05 bestellt)","Fliege (Ball)","Smokinghemd (Ball)","BHA-Peeling 2 % Salicylsäure","Retinol 0,2–0,3 %"];
@@ -2485,7 +2491,7 @@ var _v43tab=v35Tab; v35Tab=function(t){_v43tab(t); if(t==="mehr") try{v43Karte()
 try{
   if(!store.get("nutzung")) store.set("nutzung",{seit:isoLocal(new Date()).slice(0,10),z:{}});
   v43Abend(); v41Gruppen(true); v40Summen(); v43Karte();
-  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v44";
+  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v45";
 }catch(e){console.error("v43",e)}
 </script>
 </body>
