@@ -685,6 +685,8 @@ body.abend .v37zr em.spaet{color:#ff453a}body.abend .v37zr em.pünkt{color:#30d1
 .v41zugliste em{font-style:normal;color:#d70015;font-size:12px;font-weight:600}
 .v41zugliste i{font-style:normal;font-size:12px;color:var(--muted)}
 /* Hinweis „einsortiert“ als schmale Leiste */
+#satCard{padding:6px 16px!important;background:color-mix(in srgb,#ff9f0a 12%,var(--surface))!important}
+#satCard button{width:auto;padding:6px 12px;margin:0}
 #v38neu{padding:10px 16px!important;background:color-mix(in srgb,#30d158 10%,var(--surface))!important}
 #v38neu .ckopf{font-size:14px;margin-bottom:4px}
 #v38neu .v38nz{padding:2px 0;border:0}
@@ -1182,7 +1184,7 @@ function audioInit(){
 }
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&actx) audioInit(); });
 // weicher Ton: Sinus + leiser Oberton, kurzer Anstieg, natürliches Ausklingen
-function beep(f=880,dur=.14,vol=.22){
+function beep_basis(f=880,dur=.14,vol=.22){
   if(!$("optBeep").checked) return;
   if(!actx||actx.state!=="running") audioInit();
   if(!actx) return;
@@ -1194,7 +1196,7 @@ function beep(f=880,dur=.14,vol=.22){
     o.start(t); o2.start(t); o.stop(t+dur+.3); o2.stop(t+dur+.3);
   }catch(e){}
 }
-function gong(){ beep(659,.35,.22); setTimeout(()=>beep(988,.5,.18),110); }
+function gong_basis(){ beep(659,.35,.22); setTimeout(()=>beep(988,.5,.18),110); }
 function tonOk(){ beep(784,.12,.2); setTimeout(()=>beep(1175,.22,.16),90); }
 function tonAus(){ beep(523,.12,.14); }
 function loadVoices(){
@@ -1210,7 +1212,7 @@ function loadVoices(){
   // gespeicherte Stimme nur behalten, wenn sie nicht schlechter ist als die beste verfügbare
   sel.value=(i>=0&&rank(voices[i])<=rank(voices[0]))?i:0;
 }
-function say(txt){
+function say_basis(txt){
   if(!$("optVoice").checked||!("speechSynthesis" in window)||!txt) return;
   try{
     speechSynthesis.cancel();
@@ -1244,7 +1246,7 @@ function run(){
   clearInterval(timer); timer=setInterval(tick,100);
   enter(S.idx);
 }
-function enter(i){
+function enter_basis(i){
   if(i>=steps.length) return finish();
   S.idx=i; save(); paused=false; lastSec=-1;
   const st=steps[i];
@@ -1369,15 +1371,15 @@ function togglePause(){
   else { paused=false; phaseEnd=Date.now()+pausedRem; if(steps[S.idx].k==="timer"){S.tIdx=S.idx;S.tEnd=phaseEnd;save();} setPhase(phase,phase==="prep"?"Einnehmen":steps[S.idx].k==="timer"?TIMER[steps[S.idx].id].n:"Halten"); $("btnPause").textContent="Pause"; }
 }
 /* v47: Aufholen nach dem Zurückkehren in die App (Timer läuft weiter) */
-var V47_STUMM=false; var _v47say=say; say=function(t){if(!V47_STUMM) return _v47say(t)}; var _v47beep=beep; beep=function(a,b,c){if(!V47_STUMM) return _v47beep(a,b,c)}; if(typeof gong==="function"){var _v47gong=gong; gong=function(){if(!V47_STUMM) return _v47gong()}}
+var V47_STUMM=false;   if(typeof gong==="function"){}
 function v47Aufholen(){ if(!S||paused||!steps.length) return; let n=0; V47_STUMM=true;
   try{ while((phase==="prep"||phase==="hold")&&Date.now()>=phaseEnd&&n<300){ const ueber=Date.now()-phaseEnd, st=steps[S.idx];
     if(phase==="prep") startPhase("hold",st.t); else if(st.k==="timer"){S.ex[S.idx]=1; S.res[st.id]=1; save(); enter(S.idx+1);} else {S.ex[S.idx]=1; save(); enter(S.idx+1);}
     if(phase==="prep"||phase==="hold") phaseEnd-=ueber; n++; } }finally{ V47_STUMM=false; }
-  if(n&&steps[S.idx]){ const st=steps[S.idx]; try{_v47say("Weiter: "+(st.k==="ex"?EX[st.id].n:st.k==="timer"?TIMER[st.id].n:st.k==="schritt"?SCHRITT[st.id].t:CHECK[st.id].n))}catch(e){} } }
+  if(n&&steps[S.idx]){ const st=steps[S.idx]; try{say_basis("Weiter: "+(st.k==="ex"?EX[st.id].n:st.k==="timer"?TIMER[st.id].n:st.k==="schritt"?SCHRITT[st.id].t:CHECK[st.id].n))}catch(e){} } }
 function bauchWerte(){return ["b1","b2","b3"].map(b=>parseFloat($(b).value.trim().replace(",","."))).filter(n=>n>=50&&n<=200);}
 function bauchZeig(){const m=bauchWerte();$("bauchMittel").textContent=m.length===3?"Mittelwert: "+(m.reduce((a,b)=>a+b,0)/3).toFixed(1).replace(".",",")+" cm":"";}
-function checkDone(ok){
+function checkDone_basis(ok){
   const st=steps[S.idx];
   if(st.id==="gewicht"){
     const v=$("kg").value.trim().replace(",",".");
@@ -1578,7 +1580,6 @@ function pjRender(){
     z("Eiweiß",ew>=165,`${ew} / 165 g`); if(ew<165) R.push({ok:false,h:`<div class="orow"><span class="small muted">↳ noch ${165-ew} g: ${esc(ewVorschlag(165-ew))}</span></div>`});
     z("Kalorien",kc?kc<=2400:null,kc?`${kc} / max. 2.400`:"noch nichts erfasst");}
   if(p) R.push({ok:null,h:ewKnoepfe()});
-  {const sb=store.get("saturo:bestellt")||"2026-11-22", sd=Math.floor((new Date(heute)-new Date(sb))/864e5); if(sd>=21) R.push({ok:null,h:`<div class="orow"><span>🥤 Saturo nachbestellen <small class="muted">(zuletzt vor ${sd} Tagen)</small></span><b><button class="ghost" id="satBest" style="width:auto;padding:6px 12px;margin:0">Bestellt ✓</button></b></div>`});}
   if([1,2,5].includes(wd)) z("Krafttraining",tr.some(a=>/kraft|cardio/i.test(a))||th.some(x=>/kraft|cardio/i.test(x.art))||ja(log.training));
   if([3,4].includes(wd)) z("Fechten",tr.some(a=>/fecht/i.test(a))||th.some(x=>/fecht/i.test(x.art))||ja(log.fechten),(tr.some(a=>/ausfall/i.test(a))||(store.get("noah:hist")||[]).some(x=>x.datum===heute&&x.nicht))?"Ausfall gemeldet":"");
   z("Haut morgens",!!((p&&p.haut_morgens)||lok.haut_m||ja(log.haut_morgens)));z("Haut abends",!!(lok.haut_a||ja(log.haut_abends)));z("Outfit am Herrendiener",!!(lok.hd||ja(log.herrendiener)));
@@ -1587,7 +1588,7 @@ function pjRender(){
   PJSTAT={ok:R.filter(x=>x.ok===true).length,n:R.filter(x=>x.ok!==null).length};
   const zeilen=R.filter(x=>x.ok!==true), erl=R.filter(x=>x.ok===true);
   el.innerHTML=`<div class="ckopf">${abend?"🌙 Heute noch offen":"🏁 Heute für PJ"}<span>${p?"Stand "+esc(TERMINE.stand||""):""}</span></div>${zeilen.length?zeilen.map(x=>x.h).join(""):'<div class="orow"><span>✅ Alles erledigt – stark.</span></div>'}${erl.length?`<details class="dd"><summary>✓ ${erl.length} erledigt</summary>${erl.map(x=>x.h).join("")}</details>`:""}${pjWoche(p)}<div class="orow"><span>✨ Glow-up-Score diese Woche</span><b>${sc} %</b></div>`;
-  el.classList.remove("hidden"); ewBind(el); {const b=el.querySelector("#satBest"); if(b) b.onclick=()=>{store.set("saturo:bestellt",heute); try{v37Toast("✓ Nächste Erinnerung in 3 Wochen")}catch(e){} pjRender()};} try{ringeRender()}catch(e){}
+  el.classList.remove("hidden"); ewBind(el); try{ringeRender()}catch(e){}
 }
 function pjWoche(p){const w=p&&p.woche; if(!w||!w.training||!w.ziele) return "";
   const z=[["Training",w.training[0],w.training[1]],...Object.entries(w.ziele).map(([k,v])=>[k.replace(/\s*\(.*\)$/,""),v[0],v[1]])].filter(x=>x[2]>0);
@@ -1700,7 +1701,7 @@ function putzRender(){
   el.innerHTML=`<div class="ckopf">🧹 ${diff===1?"Morgen putzen":"In 2 Tagen putzen"}<span>${p.toLocaleDateString("de-AT",{weekday:"long",day:"numeric",month:"numeric"})}</span></div><div class="orow"><span>${zeit}</span><b>${esc((g.raeume||[]).join(", "))}</b></div>`;
   el.classList.remove("hidden");
 }
-function termineRender(){
+function termineRender_basis(){
   const el=$("termineCard"); if(!el) return;
   putzRender(); pjRender(); try{reiseRender();losRender();fechtRender();schritteRender();ringeRender();ordnen()}catch(e){}
   if(!TERMINE||!TERMINE.termine.length){el.classList.add("hidden");return}
@@ -1880,7 +1881,7 @@ async function wetterLaden(force){
     try{const g=await geo(ort); if(!g) continue;
       const r=await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${g[0]}&longitude=${g[1]}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&timezone=Europe%2FVienna&start_date=${tag}&end_date=${tag}`)).json();
       const d=r.daily; WETTER[k]={ts:Date.now(),ort,max:d.temperature_2m_max[0],min:d.temperature_2m_min[0],regen:d.precipitation_probability_max[0]||0,code:d.weather_code[0]}; neu=true;}catch(e){}}
-  if(neu){const h=Date.now()-2*864e5; Object.keys(WETTER).forEach(k=>{if(WETTER[k].ts<h)delete WETTER[k]}); store.set("wetter2",WETTER); heuteRender();}
+  if(neu){const h=Date.now()-2*864e5; Object.keys(WETTER).forEach(k=>{if(WETTER[k].ts<h)delete WETTER[k]}); store.set("wetter2",WETTER); heuteRender(); try{jdRender()}catch(e){}}
 }
 function wetterText(tag){const W=WETTER||store.get("wetter2")||{}, w=W[wetterOrt(tag)+"|"+tag]; if(!w) return "";
   const h=[]; if([71,73,75,77,85,86].includes(w.code)) h.push("Schnee – feste Schuhe"); else if(w.regen>=50) h.push("Schirm einpacken");
@@ -1937,7 +1938,7 @@ function ewBind(root){root.querySelectorAll("button[data-ew]").forEach(b=>b.oncl
 var PJSTAT=null;
 function ring(p,farbe,lbl,wert){const r=26,c=2*Math.PI*r,o=c*(1-Math.min(1,Math.max(0,p||0)));
   return `<div class="rg"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="${r}" class="rb"/><circle cx="32" cy="32" r="${r}" class="rv" style="stroke:${farbe};stroke-dasharray:${c.toFixed(1)};stroke-dashoffset:${o.toFixed(1)}"/></svg><b>${wert}</b><span>${lbl}</span></div>`}
-function ringeRender(){const el=$("ringeCard"); if(!el) return; const heute=isoLocal(new Date()).slice(0,10);
+function ringeRender_basis(){const el=$("ringeCard"); if(!el) return; const heute=isoLocal(new Date()).slice(0,10);
   const p=(TERMINE&&TERMINE.pj&&TERMINE.datum===heute)?TERMINE.pj:null;
   const ew=p?(p.eiweiss||0)+ewLokal(p).e:null, sg=p&&p.schritte_gestern!=null?+p.schritte_gestern:null;
   const d4=isoLocal(new Date(Date.now()-4*3600e3)).slice(0,10), v=store.get("verlauf")||[], rm=v.some(x=>x.d===d4&&x.v!=="abend"), ra=v.some(x=>x.d===d4&&x.v==="abend");
@@ -1948,7 +1949,7 @@ var ORDNUNG={morgen:["losCard","befehlCard","termineCard","heuteCard","reiseCard
   tag:["termineCard","pjCard","reiseCard","heuteCard","putzCard","losCard","befehlCard"],
   abend:["fechtCard","pjCard","schritteCard","heuteCard","reiseCard","putzCard","termineCard","befehlCard","losCard"]};
 var MEHR=["gewCard","wocheCard","glowCard","kalCard"];
-function ordnen(){const j=$("jetzt"), m=$("mehr"); if(!j||!m) return; const h=new Date().getHours(), k=variante==="abend"||h>=17?"abend":h<12?"morgen":"tag";
+function ordnen_basis(){const j=$("jetzt"), m=$("mehr"); if(!j||!m) return; const h=new Date().getHours(), k=variante==="abend"||h>=17?"abend":h<12?"morgen":"tag";
   ORDNUNG[k].forEach(id=>{const e=$(id); if(e) j.appendChild(e)}); MEHR.forEach(id=>{const e=$(id); if(e) m.appendChild(e)});
   if(k==="abend"&&$("termineCard")) m.insertBefore($("termineCard"),m.firstChild); try{document.documentElement.style.background=getComputedStyle(document.body).backgroundColor}catch(e){}
   const zu=Object.assign({glowCard:true,kalCard:true},store.get("zu")||{}); [...ORDNUNG[k],...MEHR].forEach(id=>{const e=$(id); if(e) e.classList.toggle("zu",!!zu[id])}); if(k==="abend"&&$("termineCard")) $("termineCard").classList.add("zu");
@@ -1964,7 +1965,7 @@ function mGruppe(st){if(st.k==="ex"||["haltung","haltungFoto","verspannung"].inc
   if(st.k==="check"&&CHECK[st.id]&&CHECK[st.id].r&&!CHECK[st.id].skala) return "drill";
   if(["dusche","rasieren","haut","deoHaare"].includes(st.id)) return "bad";
   if(["supps","outfit"].includes(st.id)) return "los"; return "start"}
-function endRing(){const el=$("endRing"); if(!el) return;
+function endRing_basis(){const el=$("endRing"); if(!el) return;
   const chk=steps.filter(x=>x.k==="check"||x.k==="schritt"||x.k==="timer"), ok=chk.filter(x=>S.res[x.id]).length;
   const fl=steps.map((s,i)=>s.k==="ex"?i:-1).filter(i=>i>=0), fd=fl.filter(i=>S.ex[i]).length;
   const p=(ok+fd)/Math.max(1,chk.length+fl.length), r=52, c=2*Math.PI*r;
@@ -2061,13 +2062,13 @@ function v35Iconize(){
       const v=d<now; r.classList.toggle("vorbei",v); if(v) vorbei++; else if(!erst) erst=r;});
     const alt=tc.querySelector(".jetztlinie"); if(vorbei&&erst){if(!alt||alt.nextElementSibling!==erst){if(alt) alt.remove(); erst.insertAdjacentHTML("beforebegin",`<div class="jetztlinie">jetzt ${hm(now)}</div>`)}} else if(alt) alt.remove();}
 }
-function v35Naechst(){if(!TERMINE||!TERMINE.termine) return null; const e=einst(), now=new Date(), st=store.get(tKey())||{};
+function v35Naechst_basis(){if(!TERMINE||!TERMINE.termine) return null; const e=einst(), now=new Date(), st=store.get(tKey())||{};
   const t=TERMINE.termine.filter(x=>/^\d\d:\d\d/.test(x.zeit)&&st[x.id]!=="nein"&&st[x.id]!=="aus").map(x=>{const [h,m]=x.zeit.split(":").map(Number),d=new Date();d.setHours(h,m,0,0);return {x,d}}).filter(o=>o.d>now).sort((a,b)=>a.d-b.d)[0];
   if(!t) return null; const los=new Date(t.d.getTime()-(e.weg+e.puffer)*60000); return {x:t.x,d:t.d,los,min:Math.round((los-now)/60000)}}
 var v35Min=m=>m>=60?`${m/60|0} h ${m%60} Min.`:m+" Min.";
 function v35Wetter(tag){const W=WETTER||store.get("wetter2")||{}, w=W[wetterOrt(tag)+"|"+tag]; if(!w) return "";
   return `${w.ort} ${Math.round(w.min)}–${Math.round(w.max)}°`+(w.regen>=50?" · Schirm":"")}
-function jdRender(){const el=$("jdCard"); if(!el) return;
+function jdRender_basis(){const el=$("jdCard"); if(!el) return;
   const now=new Date(), h=now.getHours(), d4=isoLocal(new Date(Date.now()-4*3600e3)).slice(0,10), v=store.get("verlauf")||[];
   const rm=v.some(x=>x.d===d4&&x.v!=="abend"), ra=v.some(x=>x.d===d4&&x.v==="abend"), ab=variante==="abend", nt=v35Naechst();
   const alt=store.get("sitzung"), res=alt&&!alt.fertig&&(Date.now()-new Date(alt.start))<3*3600e3;
@@ -2098,17 +2099,12 @@ ringeRender=function(){const el=$("ringeCard"); if(!el) return; const heute=isoL
     +(PJSTAT&&PJSTAT.n?`<div class="rpj">${ICO("flag")}PROJECT JANUARY heute: <b>${PJSTAT.ok} von ${PJSTAT.n}</b></div>`:"");
   el.classList.remove("hidden"); RG_LAST=ziel.map(z=>z.o);
   requestAnimationFrame(()=>requestAnimationFrame(()=>el.querySelectorAll(".rv").forEach((c,i)=>c.style.strokeDashoffset=ziel[i].o.toFixed(1))));};
-var _v35endRing=endRing;
-endRing=function(){_v35endRing(); const b=document.querySelector("#endRing b"); if(!b) return; b.classList.add("pop");
-  if(parseInt(b.textContent,10)>=100){const f=["var(--r1)","var(--r2)","var(--r3)","var(--accent)"]; for(let i=0;i<36;i++){const s=document.createElement("i"); s.className="konf";
-    const a=Math.random()*Math.PI*2, d=120+Math.random()*180; s.style.cssText=`background:${f[i%4]};--x:${(Math.cos(a)*d).toFixed(0)}px;--y:${(Math.sin(a)*d+120).toFixed(0)}px;--r:${(Math.random()*720-360).toFixed(0)}deg;animation-delay:${(.9+Math.random()*.2).toFixed(2)}s`;
-    document.body.appendChild(s); setTimeout(()=>s.remove(),2800)}}};
-function v35Tab(t){V35_TAB=t; document.querySelectorAll(".tp").forEach(p=>p.classList.toggle("on",p.id==="tab"+t[0].toUpperCase()+t.slice(1)));
+
+function v35Tab_basis(t){V35_TAB=t; document.querySelectorAll(".tp").forEach(p=>p.classList.toggle("on",p.id==="tab"+t[0].toUpperCase()+t.slice(1)));
   document.querySelectorAll(".tabbar button").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
   const ti={heute:null,routine:"Routine",fort:"Fortschritt",mehr:"Mehr"}[t]; $("gruss").classList.toggle("hidden",!!ti); $("tabTitel").classList.toggle("hidden",!ti); if(ti) $("tabTitel").textContent=ti;
   window.scrollTo(0,0); if(t==="heute") jdRender();}
-var _v35ordnen=ordnen;
-ordnen=function(){_v35ordnen(); try{if($("mehrKopf")) $("mehrKopf").classList.add("hidden"); jdRender(); v35Meta()}catch(e){}};
+
 function v35Init(){
   document.body.classList.add("v35");
   document.body.insertAdjacentHTML("afterbegin",`<svg width="0" height="0" style="position:absolute" aria-hidden="true">${Object.entries(V35_ICONS).map(([n,p])=>`<symbol id="i-${n}" viewBox="0 0 24 24">${p}</symbol>`).join("")}</svg>`);
@@ -2138,19 +2134,14 @@ function v35Init(){
 }
 try{v35Init()}catch(e){console.error("v35",e)}
 /* ---------- v36: Gewichtskurve, Lauf-Animationen, Häkchen, Serie, Wischen ---------- */
-var _v36enter=enter;
-enter=function(i){_v36enter(i); try{["stepView","checkView","exView"].forEach(id=>{const e=$(id); if(e&&!e.classList.contains("hidden")){e.classList.remove("v36in"); void e.offsetWidth; e.classList.add("v36in")}});
-  const n=$("name"); if(n){n.classList.remove("v36in"); void n.offsetWidth; n.classList.add("v36in")}}catch(e){}};
-var _v36cd=checkDone;
-checkDone=function(ok){const vor=S&&S.idx; _v36cd(ok); try{if(S&&S.idx!==vor) v36Flash(ok)}catch(e){}};
+
+
 function v36Flash(ok){let f=$("v36flash"); if(!f){f=document.createElement("div"); f.id="v36flash"; document.body.appendChild(f)}
   f.className=""; f.innerHTML=ok?`<svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg>`:`<svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M18 26h16"/></svg>`;
   void f.offsetWidth; f.className=ok?"an ok":"an aus"; clearTimeout(f._t); f._t=setTimeout(()=>f.className="",700)}
 function v36Serie(){const v=store.get("verlauf")||[], s=new Set(v.filter(x=>x.v!=="abend").map(x=>x.d)), iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   let n=0; const d=new Date(Date.now()-4*3600e3); if(!s.has(iso(d))) d.setDate(d.getDate()-1); while(s.has(iso(d))){n++; d.setDate(d.getDate()-1)} return n}
-var _v36jd=jdRender;
-jdRender=function(){_v36jd(); try{const n=v36Serie(), m=document.querySelector("#jdCard .meta"); if(n>=2){const h=`<span class="v36serie">${ICO("fire")}${n} Tage Serie</span>`;
-  if(m) m.insertAdjacentHTML("beforeend",h); else {const s=document.querySelector("#jdCard .s"); if(s) s.insertAdjacentHTML("afterend",`<div class="meta">${h}</div>`)}}}catch(e){}};
+
 gewichtRender=function(){
   const el=$("gewCard"); if(!el) return;
   const h=(store.get("verlauf")||[]).filter(x=>x.kg).slice(-60);
@@ -2244,10 +2235,7 @@ function v37Zug(){const z=TERMINE&&TERMINE.zug; if(!z||TERMINE.datum!==isoLocal(
   const hin=(Array.isArray(z.hin)?z.hin:[]).filter(x=>!x.ausfall).map(x=>{const ab=new Date(x.ab_iso).getTime()+(x.vsp||0)*60000;return Object.assign({},x,{abT:ab,los:ab-bhf*60000})});
   const mach=hin.filter(x=>x.los>now-60000), best=mach.length?mach[mach.length-1]:null;
   return {z,bhf,best,hin,rueck:Array.isArray(z.rueck)?z.rueck:[]}}
-var _v37nae=v35Naechst;
-v35Naechst=function(){const n=_v37nae(), Z=v37Zug(); if(!Z||!Z.best) return n;
-  const b=Z.best, los=new Date(b.los); if(n&&n.d&&n.d.getTime()<new Date(b.an_iso).getTime()-5*60000) return n;
-  return {x:{titel:`Zug ${b.ab}${b.vsp?` (+${b.vsp})`:""} → Kufstein`,zeit:b.ab},d:new Date(b.abT),los,min:Math.round((b.los-Date.now())/60000)}};
+
 function v37ZugKarte(){let el=$("v37zug"); const j=$("jetzt"); if(!j) return; const Z=v37Zug();
   if(!Z){if(el) el.classList.add("hidden"); return}
   if(!el){j.insertAdjacentHTML("afterbegin",`<div class="card" id="v37zug"></div>`); el=$("v37zug")}
@@ -2262,20 +2250,11 @@ function v37ZugKarte(){let el=$("v37zug"); const j=$("jetzt"); if(!j) return; co
 /* Auto-Kurz + Hinweise in „Jetzt dran“ */
 var v37Manuell=false, v37Auto=false, v37InJd=false;
 document.querySelectorAll(".vbtn").forEach(b=>b.addEventListener("click",()=>{v37Manuell=true; v37Auto=false}));
-var _v37jd=jdRender;
-jdRender=function(){if(v37InJd) return; v37InJd=true;
-  try{const h=new Date().getHours(), d4=isoLocal(new Date(Date.now()-4*3600e3)).slice(0,10), rm=(store.get("verlauf")||[]).some(x=>x.d===d4&&x.v!=="abend"), nt=v35Naechst();
-    if(!v37Manuell&&variante==="lang"&&!rm&&h<14&&nt&&nt.min<dauerMin("lang")+5&&nt.min>=dauerMin("kurz")){variante="kurz"; v37Auto=true; markV()}
-    _v37jd();
-    const m=()=>{let x=document.querySelector("#jdCard .meta"); if(!x){const s=document.querySelector("#jdCard .s"); if(s){s.insertAdjacentHTML("afterend",`<div class="meta"></div>`); x=document.querySelector("#jdCard .meta")}} return x};
-    if(v37Auto&&variante==="kurz"&&/Morgenroutine/.test(($("jdCard").textContent||""))){const x=m(); if(x) x.insertAdjacentHTML("afterbegin",`<span>${ICO("bolt")}automatisch kurz – Zeit knapp</span>`)}
-    if(v37Problem()){const x=m(); if(x) x.insertAdjacentHTML("beforeend",`<span class="v37warn" onclick="v35Tab('mehr')">${ICO("pulse")}System prüfen</span>`)}
-  }finally{v37InJd=false}
-  try{v37ZugKarte()}catch(e){}};
+
 function v37Einst(){const w=$("setPuffer"); if(!w||$("setBhf")) return; const l=w.closest("label");
   l.insertAdjacentHTML("afterend",`<label class="row"><span>Weg zum Bahnhof (Min., Zug Kufstein)</span><input id="setBhf" type="number" inputmode="numeric" min="0" max="90" style="width:80px"></label>`);
   const b=$("setBhf"); b.value=einst().bhf??15; b.onchange=()=>{einstSet({bhf:Math.max(0,+b.value||0)}); jdRender()};}
-var _v37tr=termineRender; termineRender=function(){_v37tr(); try{v37Status(); jdRender()}catch(e){}};
+
 try{
   Object.assign(V35_ICONS,{note:'<path d="M5 4.5h10l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 19V6a1.5 1.5 0 0 1 1-1.5zM15 4.5V9h4M8 13h8M8 16.5h5"/>',
     pulse:'<path d="M3 12h4l2.5-6 4 12 2.5-6H21"/>',train:'<rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 10h14M9 21l1.5-4M15 21l-1.5-4M8.5 13.5h.01M15.5 13.5h.01"/>'});
@@ -2312,7 +2291,13 @@ function v38Notizen(){const el=$("v38notizen"); if(!el) return; const N=(TERMINE
   el.classList.remove("hidden");
   el.innerHTML=`<div class="ckopf" data-v35="1">${ICO("note")}Letzte Notizen<span>${N.filter(x=>x.status==="neu").length?N.filter(x=>x.status==="neu").length+" offen":"alle einsortiert"}</span></div>`
     +zeilen.slice(0,6).map(x=>`<div class="v38nz"><div>${esc(x.t)}</div><i class="${x.s==="erledigt"?"ok":""}">${x.s==="netz"?"wartet auf Netz":x.s==="erledigt"?"✓ "+esc(x.v||"erledigt"):"bei Jarvis – wird einsortiert"}</i></div>`).join("");}
-var _v38tr=termineRender; termineRender=function(){_v38tr(); try{v38Notizen(); v38Heute()}catch(e){}};
+
+function satRender(){/* Nachbestell-Erinnerung Saturo alle 21 Tage */
+  const heute=isoLocal(new Date()).slice(0,10), sb=store.get("saturo:bestellt")||"2026-11-22", sd=Math.floor((new Date(heute)-new Date(sb))/864e5); let el=$("satCard");
+  if(sd<21){if(el) el.remove(); return}
+  if(!el){const j=$("jetzt"); if(!j) return; j.insertAdjacentHTML("afterbegin",`<div class="card" id="satCard"></div>`); el=$("satCard")}
+  el.innerHTML=`<div class="orow"><span>🥤 Saturo nachbestellen <small class="muted">(zuletzt vor ${sd} Tagen)</small></span><b><button class="ghost" id="satBest">Bestellt ✓</button></b></div>`;
+  $("satBest").onclick=()=>{store.set("saturo:bestellt",heute); try{v37Toast("✓ Nächste Erinnerung in 3 Wochen")}catch(e){} satRender()};}
 function v38Heute(){/* frisch einsortierte Notiz kurz in „Heute“ zeigen (12 h) */
   let el=$("v38neu"); const N=(TERMINE&&Array.isArray(TERMINE.notizen))?TERMINE.notizen:[], gesehen=store.get("v38gesehen")||[];
   const f=N.filter(x=>x.status==="erledigt"&&x.vermerk&&!gesehen.includes(x.id)&&Date.now()-new Date(x.zeit_iso||Date.now()).getTime()<12*3600e3);
@@ -2332,15 +2317,15 @@ try{
 }catch(e){console.error("v38",e)}
 /* ---------- v40: Übersicht – Tagesablauf, kompakte Zeilen, Ringe in „Jetzt dran“ ---------- */
 var V40_ZU={befehlCard:true,heuteCard:true,reiseCard:true,pjCard:true,putzCard:true,v37zug:true,schritteCard:true,losCard:true};
-function v40ZuAnwenden(){const z=Object.assign({},V40_ZU,store.get("zu2")||{});
+function v40ZuAnwenden_basis(){const z=Object.assign({},V40_ZU,store.get("zu2")||{});
   document.querySelectorAll("#jetzt>.card").forEach(c=>{if(!c.id||c.id==="termineCard"&&!(c.id in (store.get("zu2")||{}))) return;
     let zu=!!z[c.id]; if(c.id==="reiseCard"&&c.querySelector("[data-reise]")) zu=false; /* offene Reise-Frage nie zuklappen */
     if(c.id==="fechtCard"||c.id==="v38neu") zu=false; c.classList.toggle("zu",zu)})}
 document.addEventListener("click",e=>{const k=e.target.closest("#jetzt .ckopf,#mehr .ckopf"); if(!k||e.target.closest("a,button,input,select,label")) return;
   const c=k.closest(".card"); if(!c||!c.id) return; setTimeout(()=>{const z=store.get("zu2")||{}; z[c.id]=c.classList.contains("zu"); store.set("zu2",z)},0)});
-var _v40ord=ordnen; ordnen=function(){_v40ord(); try{v40ZuAnwenden()}catch(e){}};
+
 var v40Kurz=(s,n)=>{s=String(s||"").replace(/\s*\([A-Z]{2}\d{2}\)/g,"").replace(/\s+/g," ").trim(); n=n||64; return s.length>n?s.slice(0,n-1)+"…":s};
-function v40Summen(){
+function v40Summen_basis(){
   const T=(el,sel,i)=>{const x=el.querySelectorAll(sel)[i||0]; return x?x.textContent:""};
   const F={
     heuteCard:el=>[T(el,".orow b",0),T(el,".orow b",1)].filter(Boolean).map(x=>v40Kurz(x,30)).join(" · "),
@@ -2362,13 +2347,10 @@ function v40ZugZeile(){const tc=$("termineCard"); if(!tc||tc.querySelector(".v40
   const b=Z.best, rows=[...tc.querySelectorAll(".trow")], h=`<div class="trow v40zug"><div class="tt"><i>${esc(b.ab)}</i><b>${ICO("train")} Zug nach Kufstein${b.gleis?" · Gl. "+esc(b.gleis):""}</b><em class="${b.vsp?"spaet":""}">${b.vsp?"+"+b.vsp+" Min.":"los "+hm(new Date(b.los))}</em></div></div>`;
   const vor=rows.find(r=>((r.querySelector(".tt i")||{}).textContent||"99")>b.ab);
   if(vor) vor.insertAdjacentHTML("beforebegin",h); else if(rows.length) rows[rows.length-1].insertAdjacentHTML("afterend",h); else return;}
-function v40Ringe(){const jd=$("jdCard"), rc=$("ringeCard"); if(!jd||!rc) return; const sv=rc.querySelector(".rk svg");
-  rc.classList.toggle("v40weg",!store.get("v40ringe"));
-  if(!sv) return; let m=jd.querySelector(".v40mini"); if(!m){const g=jd.querySelector(".gross"); if(g) g.remove(); jd.insertAdjacentHTML("afterbegin",`<button class="v40mini" aria-label="Ringe anzeigen"></button>`); m=jd.querySelector(".v40mini")}
-  m.innerHTML=sv.outerHTML; m.onclick=e=>{e.stopPropagation(); const o=!store.get("v40ringe"); store.set("v40ringe",o); rc.classList.toggle("v40weg",!o)};}
-var _v40tr=termineRender; termineRender=function(){_v40tr(); try{v40ZugZeile(); v40Summen(); v40ZuAnwenden(); v40Ringe()}catch(e){console.error(e)}};
-var _v40jd=jdRender; jdRender=function(){_v40jd(); try{v40Ringe()}catch(e){}};
-var _v40rr=ringeRender; ringeRender=function(){_v40rr(); try{v40Ringe()}catch(e){}};
+function v40Ringe(){/* Mini-Ringe entfernt (Neubau, nie benutzt) */ const jd=$("jdCard"), rc=$("ringeCard"); if(rc) rc.classList.add("v40weg"); if(jd) jd.querySelectorAll(".gross,.v40mini").forEach(e=>e.remove());}
+
+
+
 try{
   new MutationObserver(()=>{clearTimeout(window._v40t); window._v40t=setTimeout(()=>{try{v40Summen()}catch(e){}},120)}).observe($("jetzt"),{childList:true,subtree:true,characterData:true});
   v40ZugZeile(); v40Summen(); v40ZuAnwenden(); v40Ringe();
@@ -2397,8 +2379,8 @@ function v41Termine(){const tc=$("termineCard"); if(!tc||tc.classList.contains("
   const zr=tc.querySelector(".v40zug"); if(zr&&!zr.dataset.v41){zr.dataset.v41=1; zr.onclick=()=>{let l=tc.querySelector(".v41zugliste"); if(l){l.remove(); return}
     const Z=v37Zug(); if(!Z) return; const L=Z.hin.length?Z.hin:Z.rueck;
     zr.insertAdjacentHTML("afterend",`<div class="v41zugliste">${L.map(x=>`<div class="${Z.best&&x.ab_iso===Z.best.ab_iso?"best":""}"><b>${esc(x.ab)}</b>${x.vsp?` <em>+${x.vsp}</em>`:""} → ${esc(x.an)} · ${esc(x.linie||"")}${x.gleis?" · Gl. "+esc(x.gleis):""}</div>`).join("")}<i>Für den markierten Zug ${Z.bhf} Min. Weg zum Bahnhof eingerechnet.</i></div>`)}}}
-var _v41tr=termineRender; termineRender=function(){_v41tr(); try{v41Termine(); v41Gruppen(true)}catch(e){console.error(e)}};
-var _v41ord=ordnen; ordnen=function(){_v41ord(); try{v41Gruppen(true)}catch(e){}};
+
+
 try{
   v41Termine(); v41Gruppen(true);
   setInterval(()=>{try{if(V35_TAB==="heute"){v41Termine(); v41Gruppen(false)}}catch(e){}},60000);
@@ -2430,16 +2412,16 @@ function v42Schnell(){const jd=$("jdCard"); if(!jd||jd.querySelector(".v42schnel
     v42Menu(e.currentTarget,"Routine wählen",[["kurz","Morgen kurz","sun"],["lang","Morgen lang","sunrise"],["abend","Abend","moon"]].map(([v,l,i])=>({label:l,sub:`ca. ${dauerMin(v)} Min.`,icon:i,an:variante===v,tun:()=>{v37Manuell=true; v37Auto=false; variante=v; markV(); jdRender()}}))
       .concat([{trenner:1},{label:"Büro-Pause",sub:"Stuhl & Stehen",icon:"chair",tun:()=>$("btnBuero").click()},{label:"Jetzt starten",icon:"play",tun:()=>$("btnStart").click()}]))};
   jd.querySelector('[data-m="notiz"]').onclick=e=>{e.stopPropagation(); $("v37fab").click()};}
-var _v42jd=jdRender; jdRender=function(){_v42jd(); try{v42Schnell()}catch(e){}};
+
 /* Termin-Aktionen im Tagesablauf */
 function v42Termine(){const tc=$("termineCard"); if(!tc||!TERMINE||!TERMINE.termine) return;
   tc.querySelectorAll("details.tdd").forEach((d,i)=>{const t=TERMINE.termine[i]; if(!t||d.querySelector(".v42akt")) return;
     const ok=/^\d\d:\d\d$/.test(t.zeit), kurz=String(t.titel).replace(/\s*\(Christofer\)$/,"");
-    d.insertAdjacentHTML("beforeend",`<div class="v42akt">${ok?`<button data-er="${esc(t.zeit)}">${ICO("bell")}Erinnern ▾</button>`:""}<a href="maps://?q=${encodeURIComponent(kurz)}">${ICO("pin")}Karte</a></div>`);
+    d.insertAdjacentHTML("beforeend",`<div class="v42akt">${ok?`<button data-er="${esc(t.zeit)}">${ICO("bell")}Erinnern ▾</button>`:""}</div>`);
     const b=d.querySelector("[data-er]"); if(b) b.onclick=e=>{e.preventDefault(); e.stopPropagation(); const [h,m]=t.zeit.split(":").map(Number);
       v42Menu(b,`Erinnern an „${esc(kurz)}“`,[15,30,60].map(min=>{const z=new Date(); z.setHours(h,m-min,0,0); return {label:`${min} Min. vorher`,sub:`um ${hm(z)} per Telegram`,icon:"bell",
         tun:()=>{if(z<new Date()){v37Toast("Zeitpunkt ist schon vorbei",true); return} jarvisSend(`Notiz: Erinnere mich heute um ${hm(z)} an „${kurz}“ (Termin ${t.zeit}).`)}}}))};});}
-var _v42tr=termineRender; termineRender=function(){_v42tr(); try{v42Termine(); v42Schnell()}catch(e){console.error(e)}};
+
 /* Kopf-Menü */
 function v42Kopf(){const b=$("v35Set"); if(!b) return; b.onclick=e=>{e.stopPropagation(); const th=document.documentElement.dataset.theme;
   v42Menu(b,"Helfer",[{label:"Systemstatus",sub:v37Problem()?"⚠︎ bitte prüfen":"alles in Ordnung",icon:"pulse",tun:()=>{v35Tab("mehr"); setTimeout(()=>$("v37stat")?.scrollIntoView({behavior:"smooth"}),50)}},
@@ -2456,16 +2438,15 @@ try{
 /* ---------- v43: Abend-Feinschliff + Nutzungsstatistik ---------- */
 /* Zusammenfassungen: Beschriftung und Wert mit Trenner */
 var v43Zeile=r=>{if(!r) return ""; const s=r.querySelector("span"), b=r.querySelector("b"); return s&&b?`${s.textContent.trim()}: ${b.textContent.trim()}`:r.textContent};
-var _v43sum=v40Summen;
-v40Summen=function(){_v43sum(); try{["schritteCard","putzCard","losCard"].forEach(id=>{const c=$(id), s=c&&c.querySelector(":scope>.v40sum"), r=c&&c.querySelector(".orow"); if(s&&r){const t=v40Kurz(v43Zeile(r)); if(s.textContent!==t) s.textContent=t}})}catch(e){}};
+
 /* Abends: Termine, die noch kommen, bleiben in „Heute“; „Morgen anziehen“ offen */
 function v43Abend(){const h=new Date().getHours(), ab=variante==="abend"||h>=17; if(!ab) return;
   const tc=$("termineCard"), j=$("jetzt"); if(tc&&j&&TERMINE&&TERMINE.termine){const now=new Date();
     const rest=TERMINE.termine.filter(t=>{const m=String(t.zeit).match(/^(\d\d):(\d\d)/); if(!m) return false; const d=new Date(); d.setHours(+m[1],+m[2],0,0); return d>now});
     if(rest.length&&tc.parentElement!==j){j.insertBefore(tc,j.querySelector(".card.zu")||null); tc.classList.remove("zu")}}
   const z2=store.get("zu2")||{}; const hc=$("heuteCard"); if(hc&&!("heuteCard" in z2)) hc.classList.remove("zu");}
-var _v43za=v40ZuAnwenden; v40ZuAnwenden=function(){_v43za(); try{const h=new Date().getHours(); if(variante==="abend"||h>=17){const z2=store.get("zu2")||{}, hc=$("heuteCard"); if(hc&&!("heuteCard" in z2)) hc.classList.remove("zu")}}catch(e){}};
-var _v43ord=ordnen; ordnen=function(){_v43ord(); try{v43Abend(); v41Gruppen(true); v40Summen()}catch(e){}};
+
+
 /* Nutzungsstatistik – bleibt nur auf diesem Gerät */
 function v43Log(k){try{const n=store.get("nutzung")||{seit:isoLocal(new Date()).slice(0,10),z:{}}; n.z[k]=(n.z[k]||0)+1; store.set("nutzung",n)}catch(e){}}
 document.addEventListener("click",e=>{const t=e.target; let k=null;
@@ -2496,12 +2477,85 @@ function v43Karte(){const p=$("tabMehr"); if(!p) return; let el=$("v43nutz"); if
     +(nie.length?`<div class="onote" style="margin-top:10px"><b>Noch nie benutzt:</b> ${nie.map(x=>esc(x.replace(/^.*?: /,""))).join(" · ")}</div>`:"")
     +`<button class="tsend" id="v43reset" style="margin-top:10px">Zählung neu starten</button>`;
   $("v43reset").onclick=()=>{if(confirm("Nutzung zurücksetzen?")){store.set("nutzung",{seit:isoLocal(new Date()).slice(0,10),z:{}}); v43Karte()}};}
-var _v43tab=v35Tab; v35Tab=function(t){_v43tab(t); if(t==="mehr") try{v43Karte()}catch(e){}};
+
 try{
   if(!store.get("nutzung")) store.set("nutzung",{seit:isoLocal(new Date()).slice(0,10),z:{}});
   v43Abend(); v41Gruppen(true); v40Summen(); v43Karte();
-  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v47";
+  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v50";
 }catch(e){console.error("v43",e)}
+
+/* ========== Zusammengeführte Erweiterungen (früher Hüllen v35–v47) ========== */
+function say(t){if(!V47_STUMM) return say_basis(t)}
+
+function beep(a,b,c){if(!V47_STUMM) return beep_basis(a,b,c)}
+
+function gong(){if(!V47_STUMM) return gong_basis()}
+
+
+function endRing(){ endRing_basis();
+  const b=document.querySelector("#endRing b"); if(!b) return; b.classList.add("pop");
+  if(parseInt(b.textContent,10)>=100){const f=["var(--r1)","var(--r2)","var(--r3)","var(--accent)"]; for(let i=0;i<36;i++){const s=document.createElement("i"); s.className="konf";
+    const a=Math.random()*Math.PI*2, d=120+Math.random()*180; s.style.cssText=`background:${f[i%4]};--x:${(Math.cos(a)*d).toFixed(0)}px;--y:${(Math.sin(a)*d+120).toFixed(0)}px;--r:${(Math.random()*720-360).toFixed(0)}deg;animation-delay:${(.9+Math.random()*.2).toFixed(2)}s`;
+    document.body.appendChild(s); setTimeout(()=>s.remove(),2800)}} }
+
+
+function ordnen(){ ordnen_basis();
+  try{if($("mehrKopf")) $("mehrKopf").classList.add("hidden"); jdRender(); v35Meta()}catch(e){}
+  try{v40ZuAnwenden()}catch(e){}
+  try{v41Gruppen(true)}catch(e){}
+  try{v43Abend(); v41Gruppen(true); v40Summen()}catch(e){} }
+
+
+function enter(i){ enter_basis(i);
+  try{["stepView","checkView","exView"].forEach(id=>{const e=$(id); if(e&&!e.classList.contains("hidden")){e.classList.remove("v36in"); void e.offsetWidth; e.classList.add("v36in")}});
+  const n=$("name"); if(n){n.classList.remove("v36in"); void n.offsetWidth; n.classList.add("v36in")}}catch(e){} }
+
+function checkDone(ok){const vor=S&&S.idx; checkDone_basis(ok); try{if(S&&S.idx!==vor) v36Flash(ok)}catch(e){}}
+
+function jdRender_stufe1(){ jdRender_basis();
+  try{const n=v36Serie(), m=document.querySelector("#jdCard .meta"); if(n>=2){const h=`<span class="v36serie">${ICO("fire")}${n} Tage Serie</span>`;
+  if(m) m.insertAdjacentHTML("beforeend",h); else {const s=document.querySelector("#jdCard .s"); if(s) s.insertAdjacentHTML("afterend",`<div class="meta">${h}</div>`)}}}catch(e){} }
+function jdRender_stufe2(){if(v37InJd) return; v37InJd=true;
+  try{const h=new Date().getHours(), d4=isoLocal(new Date(Date.now()-4*3600e3)).slice(0,10), rm=(store.get("verlauf")||[]).some(x=>x.d===d4&&x.v!=="abend"), nt=v35Naechst();
+    if(!v37Manuell&&variante==="lang"&&!rm&&h<14&&nt&&nt.min<dauerMin("lang")+5&&nt.min>=dauerMin("kurz")){variante="kurz"; v37Auto=true; markV()}
+    jdRender_stufe1();
+    const m=()=>{let x=document.querySelector("#jdCard .meta"); if(!x){const s=document.querySelector("#jdCard .s"); if(s){s.insertAdjacentHTML("afterend",`<div class="meta"></div>`); x=document.querySelector("#jdCard .meta")}} return x};
+    if(v37Auto&&variante==="kurz"&&/Morgenroutine/.test(($("jdCard").textContent||""))){const x=m(); if(x) x.insertAdjacentHTML("afterbegin",`<span>${ICO("bolt")}automatisch kurz – Zeit knapp</span>`)}
+    if(v37Problem()){const x=m(); if(x) x.insertAdjacentHTML("beforeend",`<span class="v37warn" onclick="v35Tab('mehr')">${ICO("pulse")}System prüfen</span>`)}
+  }finally{v37InJd=false}
+  try{v37ZugKarte()}catch(e){}}
+function jdRender(){ jdRender_stufe2();
+  try{v40Ringe()}catch(e){}
+  try{v42Schnell()}catch(e){} }
+
+function v35Naechst(){const n=v35Naechst_basis(), Z=v37Zug(); if(!Z||!Z.best) return n;
+  const b=Z.best, los=new Date(b.los); if(n&&n.d&&n.d.getTime()<new Date(b.an_iso).getTime()-5*60000) return n;
+  return {x:{titel:`Zug ${b.ab}${b.vsp?` (+${b.vsp})`:""} → Kufstein`,zeit:b.ab},d:new Date(b.abT),los,min:Math.round((b.los-Date.now())/60000)}}
+
+
+function termineRender(){ try{satRender()}catch(e){}
+  termineRender_basis();
+  try{v37Status(); jdRender()}catch(e){}
+  try{v38Notizen(); v38Heute()}catch(e){}
+  try{v40ZugZeile(); v40Summen(); v40ZuAnwenden(); v40Ringe()}catch(e){console.error(e)}
+  try{v41Termine(); v41Gruppen(true)}catch(e){console.error(e)}
+  try{v42Termine(); v42Schnell()}catch(e){console.error(e)} }
+
+
+function ringeRender(){ ringeRender_basis();
+  try{v40Ringe()}catch(e){} }
+
+
+function v40Summen(){ v40Summen_basis();
+  try{["schritteCard","putzCard","losCard"].forEach(id=>{const c=$(id), s=c&&c.querySelector(":scope>.v40sum"), r=c&&c.querySelector(".orow"); if(s&&r){const t=v40Kurz(v43Zeile(r)); if(s.textContent!==t) s.textContent=t}})}catch(e){} }
+
+
+function v40ZuAnwenden(){ v40ZuAnwenden_basis();
+  try{const h=new Date().getHours(); if(variante==="abend"||h>=17){const z2=store.get("zu2")||{}, hc=$("heuteCard"); if(hc&&!("heuteCard" in z2)) hc.classList.remove("zu")}}catch(e){} }
+
+
+function v35Tab(t){ v35Tab_basis(t);
+  if(t==="mehr") try{v43Karte()}catch(e){} }
 </script>
 </body>
 </html>
