@@ -841,6 +841,7 @@ body.abend .v37zr em.spaet{color:#ff453a}body.abend .v37zr em.pünkt{color:#30d1
       <div class="muted small">Bauchumfang in cm – 3 Messungen</div>
       <div style="display:flex;gap:8px"><input id="b1" class="kg" style="width:33%;font-size:26px" inputmode="decimal" placeholder="1." autocomplete="off"><input id="b2" class="kg" style="width:33%;font-size:26px" inputmode="decimal" placeholder="2." autocomplete="off"><input id="b3" class="kg" style="width:33%;font-size:26px" inputmode="decimal" placeholder="3." autocomplete="off"></div>
       <div class="muted small" id="bauchMittel" style="text-align:center;margin-top:8px"></div>
+      <button class="ghost" id="bauchFertig" type="button" onclick="try{document.activeElement.blur()}catch(e){}" style="margin-top:8px">Fertig – Tastatur schließen</button>
     </div>
   </div>
 
@@ -1367,6 +1368,13 @@ function togglePause(){
   if(!paused){ paused=true; pausedRem=Math.max(0,phaseEnd-Date.now()); if(steps[S.idx].k==="timer"){S.tEnd=0;save();} setPhase("pause","Pause"); $("btnPause").textContent="Weiter"; try{speechSynthesis.cancel()}catch(e){} }
   else { paused=false; phaseEnd=Date.now()+pausedRem; if(steps[S.idx].k==="timer"){S.tIdx=S.idx;S.tEnd=phaseEnd;save();} setPhase(phase,phase==="prep"?"Einnehmen":steps[S.idx].k==="timer"?TIMER[steps[S.idx].id].n:"Halten"); $("btnPause").textContent="Pause"; }
 }
+/* v47: Aufholen nach dem Zurückkehren in die App (Timer läuft weiter) */
+var V47_STUMM=false; var _v47say=say; say=function(t){if(!V47_STUMM) return _v47say(t)}; var _v47beep=beep; beep=function(a,b,c){if(!V47_STUMM) return _v47beep(a,b,c)}; if(typeof gong==="function"){var _v47gong=gong; gong=function(){if(!V47_STUMM) return _v47gong()}}
+function v47Aufholen(){ if(!S||paused||!steps.length) return; let n=0; V47_STUMM=true;
+  try{ while((phase==="prep"||phase==="hold")&&Date.now()>=phaseEnd&&n<300){ const ueber=Date.now()-phaseEnd, st=steps[S.idx];
+    if(phase==="prep") startPhase("hold",st.t); else if(st.k==="timer"){S.ex[S.idx]=1; S.res[st.id]=1; save(); enter(S.idx+1);} else {S.ex[S.idx]=1; save(); enter(S.idx+1);}
+    if(phase==="prep"||phase==="hold") phaseEnd-=ueber; n++; } }finally{ V47_STUMM=false; }
+  if(n&&steps[S.idx]){ const st=steps[S.idx]; try{_v47say("Weiter: "+(st.k==="ex"?EX[st.id].n:st.k==="timer"?TIMER[st.id].n:st.k==="schritt"?SCHRITT[st.id].t:CHECK[st.id].n))}catch(e){} } }
 function bauchWerte(){return ["b1","b2","b3"].map(b=>parseFloat($(b).value.trim().replace(",","."))).filter(n=>n>=50&&n<=200);}
 function bauchZeig(){const m=bauchWerte();$("bauchMittel").textContent=m.length===3?"Mittelwert: "+(m.reduce((a,b)=>a+b,0)/3).toFixed(1).replace(".",",")+" cm":"";}
 function checkDone(ok){
@@ -1379,7 +1387,7 @@ function checkDone(ok){
   }
   if(st.id==="bauch"){
     const m=bauchWerte();
-    if(ok&&m.length<3){ $("b1").focus(); $("cue").textContent="Bitte alle 3 Messungen eingeben (50–200 cm) – oder „Auslassen“."; return; }
+    if(ok&&m.length<3){ try{document.activeElement.blur()}catch(e){} const roh=["b1","b2","b3"].map(b=>parseFloat($(b).value.trim().replace(",","."))).filter(n=>n>0); const msg=roh.some(n=>n<50)?"Wert unter 50 – vermutlich Zoll-Seite des Maßbands. Bitte die cm-Seite ablesen.":"Bitte alle 3 Messungen in cm eingeben (50–200) – oder „Auslassen“."; $("cue").textContent=msg; try{v37Toast(msg,true)}catch(e){} return; }
     S.bauchM=ok?m.map(x=>x.toFixed(1)):[]; S.bauch=ok?(m.reduce((a,b)=>a+b,0)/3).toFixed(1):"";
   }
   if(st.k==="check"&&CHECK[st.id].r){ S.reps=S.reps||{}; S.reps[st.id]=ok?repN:(CHECK[st.id].skala?"":0); }
@@ -1798,8 +1806,8 @@ $("btnDone").onclick=()=>{tonOk();checkDone(true)};
 $("btnNo").onclick=()=>{tonAus();checkDone(false)};
 $("btnAbort").onclick=()=>{ if(confirm("Routine jetzt beenden? Erledigtes wird gespeichert.")) finish(); };
 document.addEventListener("visibilitychange",()=>{
-  if(document.hidden){ if((phase==="prep"||phase==="hold")&&!paused&&!(steps[S.idx]&&steps[S.idx].k==="timer")) togglePause(); }  // Timer (Zähne, Lesen) laufen im Hintergrund weiter
-  else if(phase) wakeOn();
+  if(document.hidden){ /* v47: Timer läuft im Hintergrund weiter, beim Zurückkommen wird aufgeholt */ }
+  else if(phase){ wakeOn(); try{v47Aufholen()}catch(e){} }
 });
 
 /* ---------- Ende ---------- */
@@ -2492,7 +2500,7 @@ var _v43tab=v35Tab; v35Tab=function(t){_v43tab(t); if(t==="mehr") try{v43Karte()
 try{
   if(!store.get("nutzung")) store.set("nutzung",{seit:isoLocal(new Date()).slice(0,10),z:{}});
   v43Abend(); v41Gruppen(true); v40Summen(); v43Karte();
-  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v46";
+  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v47";
 }catch(e){console.error("v43",e)}
 </script>
 </body>
