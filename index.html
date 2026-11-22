@@ -1570,6 +1570,7 @@ function pjRender(){
     z("Eiweiß",ew>=165,`${ew} / 165 g`); if(ew<165) R.push({ok:false,h:`<div class="orow"><span class="small muted">↳ noch ${165-ew} g: ${esc(ewVorschlag(165-ew))}</span></div>`});
     z("Kalorien",kc?kc<=2400:null,kc?`${kc} / max. 2.400`:"noch nichts erfasst");}
   if(p) R.push({ok:null,h:ewKnoepfe()});
+  {const sb=store.get("saturo:bestellt")||"2026-11-22", sd=Math.floor((new Date(heute)-new Date(sb))/864e5); if(sd>=21) R.push({ok:null,h:`<div class="orow"><span>🥤 Saturo nachbestellen <small class="muted">(zuletzt vor ${sd} Tagen)</small></span><b><button class="ghost" id="satBest" style="width:auto;padding:6px 12px;margin:0">Bestellt ✓</button></b></div>`});}
   if([1,2,5].includes(wd)) z("Krafttraining",tr.some(a=>/kraft|cardio/i.test(a))||th.some(x=>/kraft|cardio/i.test(x.art))||ja(log.training));
   if([3,4].includes(wd)) z("Fechten",tr.some(a=>/fecht/i.test(a))||th.some(x=>/fecht/i.test(x.art))||ja(log.fechten),(tr.some(a=>/ausfall/i.test(a))||(store.get("noah:hist")||[]).some(x=>x.datum===heute&&x.nicht))?"Ausfall gemeldet":"");
   z("Haut morgens",!!((p&&p.haut_morgens)||lok.haut_m||ja(log.haut_morgens)));z("Haut abends",!!(lok.haut_a||ja(log.haut_abends)));z("Outfit am Herrendiener",!!(lok.hd||ja(log.herrendiener)));
@@ -1578,7 +1579,7 @@ function pjRender(){
   PJSTAT={ok:R.filter(x=>x.ok===true).length,n:R.filter(x=>x.ok!==null).length};
   const zeilen=R.filter(x=>x.ok!==true), erl=R.filter(x=>x.ok===true);
   el.innerHTML=`<div class="ckopf">${abend?"🌙 Heute noch offen":"🏁 Heute für PJ"}<span>${p?"Stand "+esc(TERMINE.stand||""):""}</span></div>${zeilen.length?zeilen.map(x=>x.h).join(""):'<div class="orow"><span>✅ Alles erledigt – stark.</span></div>'}${erl.length?`<details class="dd"><summary>✓ ${erl.length} erledigt</summary>${erl.map(x=>x.h).join("")}</details>`:""}${pjWoche(p)}<div class="orow"><span>✨ Glow-up-Score diese Woche</span><b>${sc} %</b></div>`;
-  el.classList.remove("hidden"); ewBind(el); try{ringeRender()}catch(e){}
+  el.classList.remove("hidden"); ewBind(el); {const b=el.querySelector("#satBest"); if(b) b.onclick=()=>{store.set("saturo:bestellt",heute); try{v37Toast("✓ Nächste Erinnerung in 3 Wochen")}catch(e){} pjRender()};} try{ringeRender()}catch(e){}
 }
 function pjWoche(p){const w=p&&p.woche; if(!w||!w.training||!w.ziele) return "";
   const z=[["Training",w.training[0],w.training[1]],...Object.entries(w.ziele).map(([k,v])=>[k.replace(/\s*\(.*\)$/,""),v[0],v[1]])].filter(x=>x[2]>0);
@@ -1911,7 +1912,7 @@ setTimeout(()=>{try{einstInit();wetterLaden();reiseRender();losRender();kalRende
 setInterval(()=>{try{if($("s-start").classList.contains("on"))losRender()}catch(e){}},60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){try{wetterLaden();losRender();reiseRender()}catch(e){}}});
 /* ---------- v29: Eiweiß-Schnellknöpfe ---------- */
-const EWK=[{k:"skyr",n:"Skyr 500 g",e:55,kc:315},{k:"huhn",n:"Hühnerbrust 200 g",e:46,kc:220},{k:"topfen",n:"Magertopfen 250 g",e:30,kc:170},{k:"thun",n:"Thunfisch",e:25,kc:120},{k:"whey",n:"Whey-Shake",e:24,kc:120},{k:"eier",n:"3 Eier",e:19,kc:230}];
+const EWK=[{k:"saturo",n:"🥤 Saturo",e:36,kc:400},{k:"skyr",n:"Skyr 500 g",e:55,kc:315},{k:"huhn",n:"Hühnerbrust 200 g",e:46,kc:220},{k:"topfen",n:"Magertopfen 250 g",e:30,kc:170},{k:"thun",n:"Thunfisch",e:25,kc:120},{k:"whey",n:"Whey-Shake",e:24,kc:120},{k:"eier",n:"3 Eier",e:19,kc:230}];
 var ewArm=null, ewArmT=0;
 function ewTag(){return isoLocal(new Date(Date.now()-4*3600e3)).slice(0,10)}
 function ewLokal(p){const l=store.get("ewlok-"+ewTag())||[], s=(p&&p.schnell)||[], o=l.filter(x=>!s.includes(x.t));
@@ -2491,7 +2492,7 @@ var _v43tab=v35Tab; v35Tab=function(t){_v43tab(t); if(t==="mehr") try{v43Karte()
 try{
   if(!store.get("nutzung")) store.set("nutzung",{seit:isoLocal(new Date()).slice(0,10),z:{}});
   v43Abend(); v41Gruppen(true); v40Summen(); v43Karte();
-  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v45";
+  const vv=document.querySelector(".v35vers"); if(vv) vv.textContent="Helfer v46";
 }catch(e){console.error("v43",e)}
 </script>
 </body>
